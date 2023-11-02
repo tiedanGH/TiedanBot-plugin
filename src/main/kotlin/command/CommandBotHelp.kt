@@ -1,0 +1,189 @@
+package com.tiedan.command
+
+import com.tiedan.Config
+import com.tiedan.TiedanGame
+import com.tiedan.TiedanGame.logger
+import com.tiedan.TiedanGame.sendQuoteReply
+import com.tiedan.plugindata.BotInfoData
+import net.mamoe.mirai.console.command.BuiltInCommands
+import net.mamoe.mirai.console.command.CommandContext
+import net.mamoe.mirai.console.command.RawCommand
+import net.mamoe.mirai.console.plugin.version
+import net.mamoe.mirai.message.data.MessageChain
+import net.mamoe.mirai.message.data.SingleMessage
+import net.mamoe.mirai.message.data.content
+import net.mamoe.mirai.utils.warning
+
+object CommandBotHelp : RawCommand(
+    owner = TiedanGame,
+    primaryName = "bot",
+    description = "查看bot相关帮助"
+){
+    override suspend fun CommandContext.onCommand(args: MessageChain) {
+
+        val commands : MutableList<SingleMessage> = mutableListOf()
+        for (element in args) {
+            commands.add(element)
+        }
+
+        try {
+            when (commands[0].content) {
+
+                "help"-> {   // 查看bot帮助
+                    val reply = "·bot插件及功能帮助：\n" +
+                                "#bot help    显示此条帮助\n" +
+                                "#bot info    查看bot信息\n" +
+                                "#bot status   mirai状态\n" +
+                                "#bot lgt    LGT相关帮助\n" +
+                                "#bot cloud    词云帮助\n" +
+                                "#bot fly    飞行棋帮助\n" +
+                                "#bot grass   草图相关帮助\n" +
+                                "#bot pet    表情相关帮助\n" +
+                                "#bot jcc    在线编译器帮助\n" +
+                                "#bot mcmod    MC百科查询帮助\n" +
+                                "#抽卡    原神抽卡插件菜单\n" +
+                                "\n" +
+                                "如bot使用出现任何问题可直接在群内联系铁蛋"
+                    sendQuoteReply(sender, originalMessage, reply)
+                }
+
+                "info" -> {   // 查看bot信息
+                    val whiteEnable: String = if (Config.WhiteList_enable) {"已启用"} else {"未启用"}
+                    val limit: String =
+                        if (BotInfoData.todayFriendImageNum < Config.dailyLimit * 0.85) {
+                            "未达"
+                        } else if (BotInfoData.todayFriendImageNum < Config.dailyLimit) {
+                            "*即将*"
+                        } else {
+                            "*已达*"
+                        }
+                    val reply = "Plugin version：v${TiedanGame.version}\n" +
+                                "白名单功能：$whiteEnable\n" +
+                                "  ·bot数据统计\n" +
+                                "总计发送消息：${BotInfoData.totalMsgNum}\n" +
+                                "总计发送图片：${BotInfoData.totalImageNum}\n" +
+                                "昨日发送消息：${BotInfoData.yesterdayMsgNum}\n" +
+                                "昨日发送图片：${BotInfoData.yesterdayImageNum}\n" +
+                                "  ·今日数据统计\n" +
+                                "今日发送消息：${BotInfoData.todayMsgNum}\n" +
+                                "今日发送图片：${BotInfoData.todayImageNum}\n" +
+                                "今日私信图片${limit}上限：\n" +
+                                "       ${BotInfoData.todayFriendImageNum} / ${Config.dailyLimit}"
+                    sendQuoteReply(sender, originalMessage, reply)
+                }
+
+                "status"-> {   // 查看mirai状态
+                    BuiltInCommands.StatusCommand.run {
+                        sender.handle()
+                    }
+                }
+
+                "lgt"-> {   // LGT相关帮助
+                    val reply = "LGTBot\n" +
+                                "\n" +
+                                "作者：森高（QQ：654867229）\n" +
+                                "GitHub：http://github.com/slontia/lgtbot\n" +
+                                "\n" +
+                                "若您使用中遇到任何 BUG 或其它问题，欢迎私信作者，或前往 GitHub 主页提 issue\n" +
+                                "本项目仅供娱乐和技术交流，请勿用于商业用途，健康游戏，拒绝赌博\n" +
+                                "\n" +
+                                "·发送信息：\n" +
+                                "<@此bot> <指令>\n" +
+                                "·来运行LGTBot游戏"
+                    sendQuoteReply(sender, originalMessage, reply)
+                }
+
+                "cloud"-> {   // 词云帮助
+                    val reply = "·词云指令列表：\n" +
+                                "本日词云\n" +
+                                "昨日词云\n" +
+                                "本月词云\n" +
+                                "获取词云 <from> <to>\n" +
+                                "·请注意：词云功能比较消耗性能，请尽量在没有游戏房间运行时使用"
+//                                "用户本日词云 + <用户名>\n" +
+//                                "用户昨日词云 + <用户名>\n" +
+//                                "用户本月词云 + <用户名>\n" +
+//                                "获取用户词云 + <用户名> <from> <to>"
+                    sendQuoteReply(sender, originalMessage, reply)
+                }
+
+                "fly"-> {   // 飞行棋帮助
+                    val reply = "飞行棋插件相关帮助：\n" +
+                                "·创建游戏指令：\n" +
+                                "    创建飞行棋\n" +
+                                "·加入游戏指令：\n" +
+                                "    加入飞行棋\n" +
+                                "·开始游戏指令\n" +
+                                "    开始飞行棋\n" +
+                                "·移动棋子指令：\n" +
+                                "    /1  /2  /3  /4\n" +
+                                " （数字前加“/”）"
+                    sendQuoteReply(sender, originalMessage, reply)
+                }
+
+                "grass"-> {   // 草图相关帮助
+                    val reply = "草图插件相关帮助：\n" +
+                                "·获取草图指令：\n" +
+                                "    生草\n" +
+                                "·查看插件数据：\n" +
+                                "    草图信息\n" +
+                                "·草图官方网站：\n" +
+                                "https://grass.nlrdev.top"
+                    sendQuoteReply(sender, originalMessage, reply)
+                }
+
+                "pet"-> {   // 表情包相关帮助
+                    val reply = "表情包生成帮助：\n" +
+                                "·触发格式：\n" +
+                                "#关键字 + @对象/QQ昵称/QQ号\n" +
+                                "#关键字 + <回复消息/发送图片>\n" +
+                                "\n" +
+                                "·部分可用关键字：\n" +
+                                "摸、贴、打、抱、锤/捶/敲、踩、踹/踢\n" +
+                                "·以上关键字后加“爆”可加速\n" +
+                                "\n" +
+                                "·更多关键字请发送“pet”来获取完整列表\n" +
+                                "注：pet列表内的关键字需要加空格才能使用（中英文皆可）\n" +
+                                "戳一戳有10%概率生成随机表情\n" +
+                                "\n" +
+                                "·群主或管理员可以使用“pet on/off”开启和关闭此表情包功能（包括戳一戳随机表情）"
+                    sendQuoteReply(sender, originalMessage, reply)
+                }
+
+                "jcc" -> {   // jcc在线编译器相关帮助
+                   val reply = "·在线运行代码指令:\n" +
+                                "run <language> <code>\n" +
+                                "run <language> <pastebinUrl> [stdin]\n" +
+                                "引用消息: run <language> [stdin]\n" +
+                                "·仓库地址：https://github.com/jie65535/mirai-console-jcc-plugin\n" +
+                                "·其它指令：\n" +
+                                "#jcc help    # 查看jcc帮助\n" +
+                                "#jcc list    # 列出所有支持的编程语言\n" +
+                                "#jcc template <language>    # 获取指定语言的模板"
+                   sendQuoteReply(sender, originalMessage, reply)
+                }
+
+                "mcmod"-> {   // MC百科查询帮助
+                    val reply = "·Minecraft百科查询插件使用说明:\n" +
+                                "请直接输入 关键字 + 内容 进行查询\n" +
+                                "回复序号查询详细内容（每页从0-10编号）\n" +
+                                "查询物品:物品 <物品关键词>\n" +
+                                "查询模组:模组 <模组关键词>\n" +
+                                "查询教程:教程 <教程关键词>\n" +
+                                "查询整合包:整合包 <整合包关键词>\n" +
+                                "查询服务器:服务器 <服务器关键词>\n" +
+                                "·资料均来自:mcmod.cn"
+                    sendQuoteReply(sender, originalMessage, reply)
+                }
+
+                else-> {
+                    sendQuoteReply(sender, originalMessage, "[参数不匹配]\n请使用「#bot help」来查看指令帮助")
+                }
+            }
+        } catch (ex: Exception) {
+            logger.warning {"error: ${ex.message}"}
+            sendQuoteReply(sender, originalMessage, "[指令无效]\n请使用「#bot help」来查看指令帮助")
+        }
+    }
+
+}
