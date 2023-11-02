@@ -8,6 +8,7 @@ import com.tiedan.TiedanGame.sendQuoteReply
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import net.mamoe.mirai.console.command.*
+import net.mamoe.mirai.contact.Friend
 import net.mamoe.mirai.contact.PermissionDeniedException
 import net.mamoe.mirai.message.data.*
 import net.mamoe.mirai.utils.warning
@@ -20,7 +21,10 @@ object CommandAdmin : RawCommand(
 ){
     override suspend fun CommandContext.onCommand(args: MessageChain) {
 
-        if (!Config.AdminList.contains(sender.user?.id) && sender.user?.id != Config.master && sender.isNotConsole()) {
+        val whiteEnable: String = if (Config.WhiteList_enable) { "已启用" } else { "未启用" }
+
+        if (!Config.AdminList.contains(sender.user?.id) && !Config.AdminList.contains(0) &&
+            sender.user?.id != Config.master && sender.isNotConsole()) {
             sendQuoteReply(sender, originalMessage, "未持有管理员权限")
             return
         }
@@ -34,19 +38,17 @@ object CommandAdmin : RawCommand(
             when (commands[0].content) {
 
                 "help"-> {   // 查看admin可用帮助
-                    val reply = "·admin可用帮助：\n" +
-                                "->查看管理员列表\n" +
+                    val reply = " ·admin可用帮助：\n" +
+                                "-> 查看管理员列表\n" +
                                 "#admin list\n" +
-                                "->查看白名单列表\n" +
+                                "-> 查看白名单列表\n" +
                                 "#admin WhiteList [info]\n" +
-                                "->设置白名单开关状态\n" +
-                                "#admin setWhiteList <enable/disable>\n" +
-                                "->添加白名单\n" +
-                                "#admin addWhiteList <group> [desc]\n" +
-                                "->移除白名单\n" +
-                                "#admin delWhiteList [group]\n" +
-                                "->重载配置及数据\n" +
-                                "#admin reload\n"
+                                "-> 设置白名单开关状态\n" +
+                                "#admin setWhiteList <开启/关闭>\n" +
+                                "-> 添加白名单\n" +
+                                "#admin addWhiteList [group] [desc]\n" +
+                                "-> 移除白名单\n" +
+                                "#admin delWhiteList [group]"
                     sendQuoteReply(sender, originalMessage, reply)
                 }
 
@@ -67,7 +69,11 @@ object CommandAdmin : RawCommand(
                             Config.AdminList.sort()
                             Config.AdminList = Config.AdminList.distinct().toMutableList()
                             Config.save()
-                            sendQuoteReply(sender, originalMessage, "已将 $qq 设为管理员")
+                            if (qq == 0.toLong()) {   // 0视为all
+                                sendQuoteReply(sender, originalMessage, "已解除管理员权限限制")
+                            } else {
+                                sendQuoteReply(sender, originalMessage, "已将 $qq 设为管理员")
+                            }
                         } else {
                             sendQuoteReply(sender, originalMessage, "[未知原因] 添加失败")
                         }
@@ -83,7 +89,11 @@ object CommandAdmin : RawCommand(
                         val result = Config.AdminList.remove(qq)
                         if (result) {
                             Config.save()
-                            sendQuoteReply(sender, originalMessage, "已将 $qq 移除管理员")
+                            if (qq == 0.toLong()) {   // 0视为all
+                                sendQuoteReply(sender, originalMessage, "已恢复管理员权限限制")
+                            } else {
+                                sendQuoteReply(sender, originalMessage, "已将 $qq 移除管理员")
+                            }
                         } else {
                             sendQuoteReply(sender, originalMessage, "不存在管理员 $qq")
                         }
@@ -105,8 +115,8 @@ object CommandAdmin : RawCommand(
 
                 "transfer"-> {   // bot积分转账
                     masterOnly(sender)
-                    val qq = commands[1].content
-                    val point = commands[2].content
+                    val qq = commands[1]
+                    val point = commands[2]
                     sender.sendMessage("/pt transfer $qq $point")
                 }
 
@@ -134,7 +144,6 @@ object CommandAdmin : RawCommand(
                     } catch (ex: Exception) {
                         false
                     }
-                    val whiteEnable: String = if (Config.WhiteList_enable) { "已启用" } else { "未启用" }
                     var whiteListInfo = "白名单功能：$whiteEnable\n·白名单列表：\n"
                     for (key in Config.WhiteList.keys) {
                         whiteListInfo += key
@@ -147,40 +156,48 @@ object CommandAdmin : RawCommand(
                 }
 
                 "setWhiteList"-> {   // 设置白名单功能状态
+                    val enable: List<String> = arrayListOf("enable","on","true","开启")
+                    val disable: List<String> = arrayListOf("disable","off","false","关闭")
                     val option = commands[1].content
-                    if (option == "enable" && !Config.WhiteList_enable) {
+                    if (enable.contains(option) && !Config.WhiteList_enable) {
                         Config.WhiteList_enable = true
                         Config.save()
                         sendQuoteReply(sender, originalMessage, "已启用bot白名单功能")
-                    } else if (option == "disable" && Config.WhiteList_enable) {
+                    } else if (disable.contains(option) && Config.WhiteList_enable) {
                         Config.WhiteList_enable = false
                         Config.save()
                         sendQuoteReply(sender, originalMessage, "已关闭bot白名单功能")
                     } else {
-                        sendQuoteReply(sender, originalMessage, "指令或状态错误！\n当前白名单状态：${Config.WhiteList_enable}")
+                        sendQuoteReply(sender, originalMessage, "指令或状态错误！\n当前白名单状态：$whiteEnable")
                     }
                 }
 
                 "addWhiteList"-> {   // 添加白名单
-                    try {
-                        val group = commands[1].content.toLong()
-                        val desc = try {
-                            commands[2].content
-                        } catch (ex: Exception) {
-                            logger.warning {"error: ${ex.message}"}
-                            "no_desc"
-                        }
-                        val result = Config.WhiteList.put(group, desc)
-                        if (result == null) {
-                            Config.WhiteList = Config.WhiteList.toSortedMap()
-                            sendQuoteReply(sender, originalMessage, "已将 $group 添加进白名单列表")
-                        } else {
-                            sendQuoteReply(sender, originalMessage, "$group 已存在，更新描述成功：$desc")
-                        }
-                        Config.save()
+                    if (sender is Friend || sender.isConsole()) {
+                        throw PermissionDeniedException("Group only")
+                    }
+                    val group = try {
+                        commands[1].content.toLong()
                     } catch (ex: NumberFormatException) {
                         sendQuoteReply(sender, originalMessage, "数字转换错误，请检查指令")
+                        return
+                    } catch (ex: Exception) {
+                        sender.subject!!.id
                     }
+                    val desc = try {
+                        commands[2].content
+                    } catch (ex: Exception) {
+                        logger.warning {"error: ${ex.message}"}
+                        "no_desc"
+                    }
+                    val result = Config.WhiteList.put(group, desc)
+                    if (result == null) {
+                        Config.WhiteList = Config.WhiteList.toSortedMap()
+                        sendQuoteReply(sender, originalMessage, "已将 $group 添加进白名单列表")
+                    } else {
+                        sendQuoteReply(sender, originalMessage, "$group 已存在，更新描述成功：$desc")
+                    }
+                    Config.save()
                 }
 
                 "delWhiteList"-> {   // 移除白名单
@@ -222,6 +239,7 @@ object CommandAdmin : RawCommand(
                 }
 
                 "reload"-> {   // 重载配置及数据
+                    masterOnly(sender)
                     try {
                         TiedanGame.rdConfig()
                         TiedanGame.rdData()

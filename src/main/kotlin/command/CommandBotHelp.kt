@@ -9,9 +9,11 @@ import net.mamoe.mirai.console.command.BuiltInCommands
 import net.mamoe.mirai.console.command.CommandContext
 import net.mamoe.mirai.console.command.RawCommand
 import net.mamoe.mirai.console.plugin.version
+import net.mamoe.mirai.message.data.Image
 import net.mamoe.mirai.message.data.MessageChain
 import net.mamoe.mirai.message.data.SingleMessage
 import net.mamoe.mirai.message.data.content
+import net.mamoe.mirai.utils.ExternalResource
 import net.mamoe.mirai.utils.warning
 
 object CommandBotHelp : RawCommand(
