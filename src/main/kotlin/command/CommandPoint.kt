@@ -1,9 +1,8 @@
 package com.tiedan.command
 
 import com.tiedan.TiedanGame
-import net.mamoe.mirai.console.command.*
 import net.mamoe.mirai.console.command.CommandSender
-import net.mamoe.mirai.console.command.java.JCompositeCommand
+import net.mamoe.mirai.console.command.CompositeCommand
 
 object CommandPoint : CompositeCommand(
     owner = TiedanGame,

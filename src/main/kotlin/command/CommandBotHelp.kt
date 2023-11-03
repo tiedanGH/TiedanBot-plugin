@@ -9,11 +9,9 @@ import net.mamoe.mirai.console.command.BuiltInCommands
 import net.mamoe.mirai.console.command.CommandContext
 import net.mamoe.mirai.console.command.RawCommand
 import net.mamoe.mirai.console.plugin.version
-import net.mamoe.mirai.message.data.Image
 import net.mamoe.mirai.message.data.MessageChain
 import net.mamoe.mirai.message.data.SingleMessage
 import net.mamoe.mirai.message.data.content
-import net.mamoe.mirai.utils.ExternalResource
 import net.mamoe.mirai.utils.warning
 
 object CommandBotHelp : RawCommand(
@@ -84,14 +82,14 @@ object CommandBotHelp : RawCommand(
                     val reply = "LGTBot\n" +
                                 "\n" +
                                 "作者：森高（QQ：654867229）\n" +
-                                "GitHub：http://github.com/slontia/lgtbot\n" +
+                                "GitHub：https://github.com/slontia/lgtbot\n" +
                                 "\n" +
                                 "若您使用中遇到任何 BUG 或其它问题，欢迎私信作者，或前往 GitHub 主页提 issue\n" +
                                 "本项目仅供娱乐和技术交流，请勿用于商业用途，健康游戏，拒绝赌博\n" +
                                 "\n" +
                                 "·发送信息：\n" +
-                                "<@此bot> <指令>\n" +
-                                "·来运行LGTBot游戏"
+                                "<@此bot> #帮助\n" +
+                                "·来查看LGTBot相关帮助"
                     sendQuoteReply(sender, originalMessage, reply)
                 }
 

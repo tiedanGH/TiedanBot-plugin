@@ -22,7 +22,7 @@ object TiedanGame : KotlinPlugin(
     JvmPluginDescription(
         id = "com.tiedan.TiedanGame",
         name = "TiedanGame",
-        version = "1.0.3",
+        version = "1.0.0",
     ) {
         author("tiedan")
         info("""TiedanGame Plugin""")
@@ -58,7 +58,7 @@ object TiedanGame : KotlinPlugin(
         CommandBotHelp.register()
 //        Commandkanxi.register()
 //        Commandgkx.register()
-//        CommandNewgame.register()
+//        CommandNewGame.register()
 //        CommandPoint.register()
     }
 

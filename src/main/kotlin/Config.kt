@@ -7,7 +7,7 @@ import net.mamoe.mirai.console.data.value
 object Config : AutoSavePluginConfig("Config") {
 
     @ValueDescription("MASTER")
-    var master: Long by value(2295824927)
+    var master: Long by value(1145141919810)
 
     @ValueDescription("启用引用回复")
     var quote_enable: Boolean by value(true)
