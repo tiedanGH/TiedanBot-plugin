@@ -1,4 +1,0 @@
-·授予用户指令权限
-AbstractPermitteeId.ExactUser(qq).permit(CommandAdmin.permission)
-·移除用户指令权限
-AbstractPermitteeId.ExactUser(qq).cancel(CommandAdmin.permission, true)
