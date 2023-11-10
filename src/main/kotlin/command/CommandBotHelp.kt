@@ -17,6 +17,7 @@ import net.mamoe.mirai.utils.warning
 object CommandBotHelp : RawCommand(
     owner = TiedanGame,
     primaryName = "bot",
+    secondaryNames = arrayOf("b"),
     description = "查看bot相关帮助"
 ){
     override suspend fun CommandContext.onCommand(args: MessageChain) {
@@ -29,7 +30,7 @@ object CommandBotHelp : RawCommand(
         try {
             when (commands[0].content) {
 
-                "help"-> {   // 查看bot帮助
+                "help", "帮助"-> {   // 查看bot帮助
                     val reply = "·bot插件及功能帮助：\n" +
                                 "#bot help    显示此条帮助\n" +
                                 "#bot info    查看bot信息\n" +
@@ -47,7 +48,7 @@ object CommandBotHelp : RawCommand(
                     sendQuoteReply(sender, originalMessage, reply)
                 }
 
-                "info" -> {   // 查看bot信息
+                "info", "信息"-> {   // 查看bot信息
                     val whiteEnable: String = if (Config.WhiteList_enable) {"已启用"} else {"未启用"}
                     val limit: String =
                         if (BotInfoData.todayFriendImageNum < Config.dailyLimit * 0.85) {
@@ -72,13 +73,13 @@ object CommandBotHelp : RawCommand(
                     sendQuoteReply(sender, originalMessage, reply)
                 }
 
-                "status"-> {   // 查看mirai状态
+                "status", "状态"-> {   // 查看mirai状态
                     BuiltInCommands.StatusCommand.run {
                         sender.handle()
                     }
                 }
 
-                "lgt"-> {   // LGT相关帮助
+                "lgt", "LGT"-> {   // LGT相关帮助
                     val reply = "LGTBot\n" +
                                 "\n" +
                                 "作者：森高（QQ：654867229）\n" +
@@ -93,7 +94,7 @@ object CommandBotHelp : RawCommand(
                     sendQuoteReply(sender, originalMessage, reply)
                 }
 
-                "cloud"-> {   // 词云帮助
+                "cloud", "词云"-> {   // 词云帮助
                     val reply = "·词云指令列表：\n" +
                                 "本日词云\n" +
                                 "昨日词云\n" +
@@ -107,7 +108,7 @@ object CommandBotHelp : RawCommand(
                     sendQuoteReply(sender, originalMessage, reply)
                 }
 
-                "fly"-> {   // 飞行棋帮助
+                "fly", "飞行棋"-> {   // 飞行棋帮助
                     val reply = "飞行棋插件相关帮助：\n" +
                                 "·创建游戏指令：\n" +
                                 "    创建飞行棋\n" +
@@ -121,7 +122,7 @@ object CommandBotHelp : RawCommand(
                     sendQuoteReply(sender, originalMessage, reply)
                 }
 
-                "grass"-> {   // 草图相关帮助
+                "grass", "生草", "草图"-> {   // 草图相关帮助
                     val reply = "草图插件相关帮助：\n" +
                                 "·获取草图指令：\n" +
                                 "    生草\n" +
@@ -132,7 +133,7 @@ object CommandBotHelp : RawCommand(
                     sendQuoteReply(sender, originalMessage, reply)
                 }
 
-                "pet"-> {   // 表情包相关帮助
+                "pet", "表情"-> {   // 表情包相关帮助
                     val reply = "表情包生成帮助：\n" +
                                 "·触发格式：\n" +
                                 "#关键字 + @对象/QQ昵称/QQ号\n" +
@@ -150,7 +151,7 @@ object CommandBotHelp : RawCommand(
                     sendQuoteReply(sender, originalMessage, reply)
                 }
 
-                "jcc" -> {   // jcc在线编译器相关帮助
+                "jcc", "编译器"-> {   // jcc在线编译器相关帮助
                    val reply = "·在线运行代码指令:\n" +
                                 "run <language> <code>\n" +
                                 "run <language> <pastebinUrl> [stdin]\n" +
@@ -163,7 +164,7 @@ object CommandBotHelp : RawCommand(
                    sendQuoteReply(sender, originalMessage, reply)
                 }
 
-                "mcmod"-> {   // MC百科查询帮助
+                "mcmod", "MC", "mc"-> {   // MC百科查询帮助
                     val reply = "·Minecraft百科查询插件使用说明:\n" +
                                 "请直接输入 关键字 + 内容 进行查询\n" +
                                 "回复序号查询详细内容（每页从0-10编号）\n" +

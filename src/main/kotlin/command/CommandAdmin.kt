@@ -8,6 +8,7 @@ import com.tiedan.TiedanGame.sendQuoteReply
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import net.mamoe.mirai.console.command.*
+import net.mamoe.mirai.console.command.descriptor.ExperimentalCommandDescriptors
 import net.mamoe.mirai.contact.Friend
 import net.mamoe.mirai.contact.PermissionDeniedException
 import net.mamoe.mirai.message.data.*
@@ -17,8 +18,10 @@ import java.util.concurrent.TimeUnit
 object CommandAdmin : RawCommand(
     owner = TiedanGame,
     primaryName = "admin",
+    secondaryNames = arrayOf("管理"),
     description = "管理员相关指令"
 ){
+    @OptIn(ExperimentalCommandDescriptors::class)
     override suspend fun CommandContext.onCommand(args: MessageChain) {
 
         val whiteEnable: String = if (Config.WhiteList_enable) { "已启用" } else { "未启用" }
@@ -37,7 +40,7 @@ object CommandAdmin : RawCommand(
         try {
             when (commands[0].content) {
 
-                "help"-> {   // 查看admin可用帮助
+                "help", "帮助"-> {   // 查看admin可用帮助
                     val reply = " ·admin可用帮助：\n" +
                                 "-> 查看管理员列表\n" +
                                 "#admin list\n" +
@@ -52,7 +55,7 @@ object CommandAdmin : RawCommand(
                     sendQuoteReply(sender, originalMessage, reply)
                 }
 
-                "list"-> {   // 查看管理员列表
+                "list", "列表"-> {   // 查看管理员列表
                     var adminListInfo = "·管理员列表：\n"
                     for (admin in Config.AdminList) {
                         adminListInfo = adminListInfo + admin + "\n"
@@ -60,7 +63,7 @@ object CommandAdmin : RawCommand(
                     sendQuoteReply(sender, originalMessage, adminListInfo)
                 }
 
-                "op"-> {   // 添加管理员
+                "op", "添加管理员"-> {   // 添加管理员
                     masterOnly(sender)
                     try {
                         val qq = commands[1].content.toLong()
@@ -82,7 +85,7 @@ object CommandAdmin : RawCommand(
                     }
                 }
 
-                "deop"-> {   // 移除管理员
+                "deop", "移除管理员"-> {   // 移除管理员
                     masterOnly(sender)
                     try {
                         val qq = commands[1].content.toLong()
@@ -102,25 +105,25 @@ object CommandAdmin : RawCommand(
                     }
                 }
 
-                "shutdown"-> {   // 关机指令
+                "shutdown", "关机"-> {   // 关机指令
                     masterOnly(sender)
                     sendQuoteReply(sender, originalMessage, "机器人正在关机······")
                     withContext(Dispatchers.IO) {
                         TimeUnit.SECONDS.sleep(1)
                     }
                     BuiltInCommands.StopCommand.run {
-                        sender.handle()
+                        ConsoleCommandSender.handle()
                     }
                 }
 
-                "transfer"-> {   // bot积分转账
+                "transfer", "转账"-> {   // bot积分转账
                     masterOnly(sender)
                     val qq = commands[1]
                     val point = commands[2]
                     sender.sendMessage("/pt transfer $qq $point")
                 }
 
-                "send"-> {   // bot消息发送
+                "send", "发送"-> {   // bot消息发送
                     masterOnly(sender)
                     var messages: MessageChain = messageChainOf()
                     for (element in args) {
@@ -138,9 +141,9 @@ object CommandAdmin : RawCommand(
                     }
                 }
 
-                "WhiteList"-> {   // 查看白名单列表
+                "WhiteList", "白名单"-> {   // 查看白名单列表
                     val showDesc = try {
-                        commands[1].content == "info"
+                        commands[1].content == "info" || commands[1].content == "信息"
                     } catch (ex: Exception) {
                         false
                     }
@@ -148,14 +151,14 @@ object CommandAdmin : RawCommand(
                     for (key in Config.WhiteList.keys) {
                         whiteListInfo += key
                         if (showDesc) {
-                            whiteListInfo = whiteListInfo + " " + Config.WhiteList[key]
+                            whiteListInfo += " ${Config.WhiteList[key]}"
                         }
                         whiteListInfo += "\n"
                     }
                     sendQuoteReply(sender, originalMessage, whiteListInfo)
                 }
 
-                "setWhiteList"-> {   // 设置白名单功能状态
+                "setWhiteList", "设置白名单"-> {   // 设置白名单功能状态
                     val enable: List<String> = arrayListOf("enable","on","true","开启")
                     val disable: List<String> = arrayListOf("disable","off","false","关闭")
                     val option = commands[1].content
@@ -172,8 +175,8 @@ object CommandAdmin : RawCommand(
                     }
                 }
 
-                "addWhiteList"-> {   // 添加白名单
-                    if (sender is Friend || sender.isConsole()) {
+                "addWhiteList", "添加白名单"-> {   // 添加白名单
+                    if (sender.subject is Friend || sender.isConsole()) {
                         throw PermissionDeniedException("Group only")
                     }
                     val group = try {
@@ -200,14 +203,14 @@ object CommandAdmin : RawCommand(
                     Config.save()
                 }
 
-                "delWhiteList"-> {   // 移除白名单
-                    val group: Long? = try {
+                "delWhiteList", "移除白名单"-> {   // 移除白名单
+                    val group: Long = try {
                         commands[1].content.toLong()
                     } catch (ex: NumberFormatException) {
                         sendQuoteReply(sender, originalMessage, "数字转换错误，请检查指令")
                         return
                     } catch (ex: Exception) {
-                        sender.subject?.id
+                        sender.subject!!.id
                     }
                     val result = Config.WhiteList.remove(group)
                     if (result != null) {
@@ -218,7 +221,7 @@ object CommandAdmin : RawCommand(
                     }
                 }
 
-                "focus"-> {   // 专注模式
+                "focus", "专注"-> {   // 专注模式
                     val option = commands[1].content
                     if (option == "disable") {
                         Config.focus_enable = false
@@ -238,7 +241,7 @@ object CommandAdmin : RawCommand(
                     }
                 }
 
-                "reload"-> {   // 重载配置及数据
+                "reload", "重载"-> {   // 重载配置及数据
                     masterOnly(sender)
                     try {
                         TiedanGame.rdConfig()
