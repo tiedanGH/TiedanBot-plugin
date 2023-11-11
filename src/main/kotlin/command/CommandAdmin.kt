@@ -1,19 +1,23 @@
 package com.tiedan.command
 
-import com.tiedan.config.BotConfig
 import com.tiedan.TiedanGame
 import com.tiedan.TiedanGame.logger
 import com.tiedan.TiedanGame.save
 import com.tiedan.TiedanGame.sendQuoteReply
+import com.tiedan.buildMailContent
+import com.tiedan.buildMailSession
+import com.tiedan.config.BotConfig
+import com.tiedan.config.MailConfig
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import net.mamoe.mirai.console.command.*
-import net.mamoe.mirai.console.command.descriptor.ExperimentalCommandDescriptors
 import net.mamoe.mirai.contact.Friend
 import net.mamoe.mirai.contact.PermissionDeniedException
 import net.mamoe.mirai.message.data.*
 import net.mamoe.mirai.utils.warning
+import java.io.File
 import java.util.concurrent.TimeUnit
+import kotlin.io.path.inputStream
 
 object CommandAdmin : RawCommand(
     owner = TiedanGame,
@@ -21,12 +25,11 @@ object CommandAdmin : RawCommand(
     secondaryNames = arrayOf("管理"),
     description = "管理员相关指令"
 ){
-    @OptIn(ExperimentalCommandDescriptors::class)
     override suspend fun CommandContext.onCommand(args: MessageChain) {
 
         val whiteEnable: String = if (BotConfig.WhiteList_enable) { "已启用" } else { "未启用" }
 
-        if (!BotConfig.AdminList.contains(sender.user?.id) && !BotConfig.AdminList.contains(0) &&
+        if (BotConfig.AdminList.contains(sender.user?.id).not() && BotConfig.AdminList.contains(0).not() &&
             sender.user?.id != BotConfig.master && sender.isNotConsole()) {
             sendQuoteReply(sender, originalMessage, "未持有管理员权限")
             return
@@ -250,6 +253,55 @@ object CommandAdmin : RawCommand(
                     } catch (ex: Exception) {
                         logger.warning(ex)
                         sendQuoteReply(sender, originalMessage, "出现错误：${ex.message}")
+                    }
+                }
+
+                "sendmail", "发送邮件"-> {
+                    masterOnly(sender)
+                    val address: String = try {
+                        commands[1].content
+                    } catch (ex: Exception) {
+                        MailConfig.log_mail
+                    }
+                    val session = buildMailSession {
+                        MailConfig.properties.inputStream().use {
+                            load(it)
+                        }
+                    }
+
+                    val mail = buildMailContent(session) {
+                        to = address
+                        title = "日志备份"
+                        text {
+                            val plugins = File("plugins")
+                            append("plugins: \n")
+                            for (file in plugins.listFiles().orEmpty()) {
+                                append("    ").append(file.name)
+                                    .append(" ").append(file.length().div(1024)).append("KB").append('\n')
+                            }
+                            val libs = File("libs")
+                            append("libs: \n")
+                            for (file in libs.listFiles().orEmpty()) {
+                                append("    ").append(file.name)
+                                    .append(" ").append(file.length().div(1024)).append("KB").append('\n')
+                            }
+                        }
+                        file("console.log") {
+                            val logs = File("logs")
+                            logs.listFiles()?.maxByOrNull { it.lastModified() }
+                        }
+                    }
+
+                    val current = Thread.currentThread()
+                    val oc = current.contextClassLoader
+                    try {
+                        current.contextClassLoader = MailConfig::class.java.classLoader
+                        jakarta.mail.Transport.send(mail)
+                        sendQuoteReply(sender, originalMessage, "邮件发送成功")
+                    } catch (cause: jakarta.mail.MessagingException) {
+                        sendQuoteReply(sender, originalMessage, "邮件发送失败, cause: ${cause.message}")
+                    } finally {
+                        current.contextClassLoader = oc
                     }
                 }
 

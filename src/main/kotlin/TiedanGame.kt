@@ -2,10 +2,13 @@ package com.tiedan
 
 import com.tiedan.command.*
 import com.tiedan.config.BotConfig
+import com.tiedan.config.MailConfig
+import com.tiedan.plugindata.ApplyData
 import com.tiedan.plugindata.BotInfoData
 import com.tiedan.timer.AutoUpdateDailyData
 import com.tiedan.timer.DateTime
 import net.mamoe.mirai.console.command.CommandManager.INSTANCE.register
+import net.mamoe.mirai.console.command.CommandManager.INSTANCE.unregister
 import net.mamoe.mirai.console.command.CommandSender
 import net.mamoe.mirai.console.command.isConsole
 import net.mamoe.mirai.console.plugin.jvm.JvmPluginDescription
@@ -40,10 +43,13 @@ object TiedanGame : KotlinPlugin(
 
     override fun onDisable() {
         super.onDisable()
+        CommandAdmin.unregister()
+        CommandBotHelp.unregister()
     }
 
     fun rdConfig() {
         BotConfig.reload()
+        MailConfig.reload()
     }
 
     fun rdData() {

@@ -14,6 +14,11 @@ repositories {
     mavenCentral()
 }
 
+dependencies {
+    api("jakarta.mail:jakarta.mail-api:2.1.2")
+    implementation("org.eclipse.angus:angus-mail:2.0.2")
+}
+
 mirai {
     jvmTarget = JavaVersion.VERSION_1_8
 }
