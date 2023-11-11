@@ -1,6 +1,7 @@
 package com.tiedan
 
 import com.tiedan.command.*
+import com.tiedan.config.BotConfig
 import com.tiedan.plugindata.BotInfoData
 import com.tiedan.timer.AutoUpdateDailyData
 import com.tiedan.timer.DateTime
@@ -42,7 +43,7 @@ object TiedanGame : KotlinPlugin(
     }
 
     fun rdConfig() {
-        Config.reload()
+        BotConfig.reload()
     }
 
     fun rdData() {
@@ -71,7 +72,7 @@ object TiedanGame : KotlinPlugin(
     }
 
     suspend fun sendQuoteReply(sender: CommandSender, originalMessage: MessageChain, msgToSend: String) {
-        if (sender.isConsole() || !Config.quote_enable) {
+        if (sender.isConsole() || !BotConfig.quote_enable) {
             sender.sendMessage(msgToSend)
         } else {
             sender.sendMessage(buildMessageChain {

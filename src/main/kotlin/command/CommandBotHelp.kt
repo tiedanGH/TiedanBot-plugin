@@ -1,6 +1,6 @@
 package com.tiedan.command
 
-import com.tiedan.Config
+import com.tiedan.config.BotConfig
 import com.tiedan.TiedanGame
 import com.tiedan.TiedanGame.logger
 import com.tiedan.TiedanGame.sendQuoteReply
@@ -49,11 +49,11 @@ object CommandBotHelp : RawCommand(
                 }
 
                 "info", "信息"-> {   // 查看bot信息
-                    val whiteEnable: String = if (Config.WhiteList_enable) {"已启用"} else {"未启用"}
+                    val whiteEnable: String = if (BotConfig.WhiteList_enable) {"已启用"} else {"未启用"}
                     val limit: String =
-                        if (BotInfoData.todayFriendImageNum < Config.dailyLimit * 0.85) {
+                        if (BotInfoData.todayFriendImageNum < BotConfig.dailyLimit * 0.85) {
                             "未达"
-                        } else if (BotInfoData.todayFriendImageNum < Config.dailyLimit) {
+                        } else if (BotInfoData.todayFriendImageNum < BotConfig.dailyLimit) {
                             "*即将*"
                         } else {
                             "*已达*"
@@ -69,7 +69,7 @@ object CommandBotHelp : RawCommand(
                                 "今日发送消息：${BotInfoData.todayMsgNum}\n" +
                                 "今日发送图片：${BotInfoData.todayImageNum}\n" +
                                 "今日私信图片${limit}上限：\n" +
-                                "       ${BotInfoData.todayFriendImageNum} / ${Config.dailyLimit}"
+                                "       ${BotInfoData.todayFriendImageNum} / ${BotConfig.dailyLimit}"
                     sendQuoteReply(sender, originalMessage, reply)
                 }
 

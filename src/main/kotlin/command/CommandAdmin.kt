@@ -1,6 +1,6 @@
 package com.tiedan.command
 
-import com.tiedan.Config
+import com.tiedan.config.BotConfig
 import com.tiedan.TiedanGame
 import com.tiedan.TiedanGame.logger
 import com.tiedan.TiedanGame.save
@@ -24,10 +24,10 @@ object CommandAdmin : RawCommand(
     @OptIn(ExperimentalCommandDescriptors::class)
     override suspend fun CommandContext.onCommand(args: MessageChain) {
 
-        val whiteEnable: String = if (Config.WhiteList_enable) { "已启用" } else { "未启用" }
+        val whiteEnable: String = if (BotConfig.WhiteList_enable) { "已启用" } else { "未启用" }
 
-        if (!Config.AdminList.contains(sender.user?.id) && !Config.AdminList.contains(0) &&
-            sender.user?.id != Config.master && sender.isNotConsole()) {
+        if (!BotConfig.AdminList.contains(sender.user?.id) && !BotConfig.AdminList.contains(0) &&
+            sender.user?.id != BotConfig.master && sender.isNotConsole()) {
             sendQuoteReply(sender, originalMessage, "未持有管理员权限")
             return
         }
@@ -57,7 +57,7 @@ object CommandAdmin : RawCommand(
 
                 "list", "列表"-> {   // 查看管理员列表
                     var adminListInfo = "·管理员列表：\n"
-                    for (admin in Config.AdminList) {
+                    for (admin in BotConfig.AdminList) {
                         adminListInfo = adminListInfo + admin + "\n"
                     }
                     sendQuoteReply(sender, originalMessage, adminListInfo)
@@ -67,11 +67,11 @@ object CommandAdmin : RawCommand(
                     masterOnly(sender)
                     try {
                         val qq = commands[1].content.toLong()
-                        val result = Config.AdminList.add(qq)
+                        val result = BotConfig.AdminList.add(qq)
                         if (result) {
-                            Config.AdminList.sort()
-                            Config.AdminList = Config.AdminList.distinct().toMutableList()
-                            Config.save()
+                            BotConfig.AdminList.sort()
+                            BotConfig.AdminList = BotConfig.AdminList.distinct().toMutableList()
+                            BotConfig.save()
                             if (qq == 0.toLong()) {   // 0视为all
                                 sendQuoteReply(sender, originalMessage, "已解除管理员权限限制")
                             } else {
@@ -89,9 +89,9 @@ object CommandAdmin : RawCommand(
                     masterOnly(sender)
                     try {
                         val qq = commands[1].content.toLong()
-                        val result = Config.AdminList.remove(qq)
+                        val result = BotConfig.AdminList.remove(qq)
                         if (result) {
-                            Config.save()
+                            BotConfig.save()
                             if (qq == 0.toLong()) {   // 0视为all
                                 sendQuoteReply(sender, originalMessage, "已恢复管理员权限限制")
                             } else {
@@ -148,10 +148,10 @@ object CommandAdmin : RawCommand(
                         false
                     }
                     var whiteListInfo = "白名单功能：$whiteEnable\n·白名单列表：\n"
-                    for (key in Config.WhiteList.keys) {
+                    for (key in BotConfig.WhiteList.keys) {
                         whiteListInfo += key
                         if (showDesc) {
-                            whiteListInfo += " ${Config.WhiteList[key]}"
+                            whiteListInfo += " ${BotConfig.WhiteList[key]}"
                         }
                         whiteListInfo += "\n"
                     }
@@ -162,13 +162,13 @@ object CommandAdmin : RawCommand(
                     val enable: List<String> = arrayListOf("enable","on","true","开启")
                     val disable: List<String> = arrayListOf("disable","off","false","关闭")
                     val option = commands[1].content
-                    if (enable.contains(option) && !Config.WhiteList_enable) {
-                        Config.WhiteList_enable = true
-                        Config.save()
+                    if (enable.contains(option) && !BotConfig.WhiteList_enable) {
+                        BotConfig.WhiteList_enable = true
+                        BotConfig.save()
                         sendQuoteReply(sender, originalMessage, "已启用bot白名单功能")
-                    } else if (disable.contains(option) && Config.WhiteList_enable) {
-                        Config.WhiteList_enable = false
-                        Config.save()
+                    } else if (disable.contains(option) && BotConfig.WhiteList_enable) {
+                        BotConfig.WhiteList_enable = false
+                        BotConfig.save()
                         sendQuoteReply(sender, originalMessage, "已关闭bot白名单功能")
                     } else {
                         sendQuoteReply(sender, originalMessage, "指令或状态错误！\n当前白名单状态：$whiteEnable")
@@ -193,14 +193,14 @@ object CommandAdmin : RawCommand(
                         logger.warning {"error: ${ex.message}"}
                         "no_desc"
                     }
-                    val result = Config.WhiteList.put(group, desc)
+                    val result = BotConfig.WhiteList.put(group, desc)
                     if (result == null) {
-                        Config.WhiteList = Config.WhiteList.toSortedMap()
+                        BotConfig.WhiteList = BotConfig.WhiteList.toSortedMap()
                         sendQuoteReply(sender, originalMessage, "已将 $group 添加进白名单列表")
                     } else {
                         sendQuoteReply(sender, originalMessage, "$group 已存在，更新描述成功：$desc")
                     }
-                    Config.save()
+                    BotConfig.save()
                 }
 
                 "delWhiteList", "移除白名单"-> {   // 移除白名单
@@ -212,9 +212,9 @@ object CommandAdmin : RawCommand(
                     } catch (ex: Exception) {
                         sender.subject!!.id
                     }
-                    val result = Config.WhiteList.remove(group)
+                    val result = BotConfig.WhiteList.remove(group)
                     if (result != null) {
-                        Config.save()
+                        BotConfig.save()
                         sendQuoteReply(sender, originalMessage, "已将 $group 移除白名单列表")
                     } else {
                         sendQuoteReply(sender, originalMessage, "白名单列表不存在群聊 $group")
@@ -224,17 +224,17 @@ object CommandAdmin : RawCommand(
                 "focus", "专注"-> {   // 专注模式
                     val option = commands[1].content
                     if (option == "disable") {
-                        Config.focus_enable = false
-                        Config.focus_to = 0
-                        Config.save()
+                        BotConfig.focus_enable = false
+                        BotConfig.focus_to = 0
+                        BotConfig.save()
                         sendQuoteReply(sender, originalMessage,
                             "***专注模式 [已关闭]***\n已清除专注模式配置")
                     } else {
                         try {
-                            Config.focus_to = option.toLong()
-                            Config.save()
+                            BotConfig.focus_to = option.toLong()
+                            BotConfig.save()
                             sendQuoteReply(sender, originalMessage,
-                                "***专注模式 [已启用]***\nbot将专注于群聊 ${Config.focus_to} 进行服务")
+                                "***专注模式 [已启用]***\nbot将专注于群聊 ${BotConfig.focus_to} 进行服务")
                         } catch (ex: NumberFormatException) {
                             sendQuoteReply(sender, originalMessage, "参数转换错误，请检查指令")
                         }
@@ -266,7 +266,7 @@ object CommandAdmin : RawCommand(
     }
 
     private fun masterOnly(sender: CommandSender) {
-        if (sender.user?.id != Config.master && sender.isNotConsole()) {
+        if (sender.user?.id != BotConfig.master && sender.isNotConsole()) {
             throw PermissionDeniedException("Master Only")
         }
     }
