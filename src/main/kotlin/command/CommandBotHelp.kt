@@ -44,6 +44,9 @@ object CommandBotHelp : RawCommand(
                                 "#bot mcmod    MC百科查询帮助\n" +
                                 "#抽卡    原神抽卡插件菜单\n" +
                                 "\n" +
+                                "-> 查看和添加pastebin代码\n" +
+                                "#pastebin help\n" +
+                                "\n" +
                                 "如bot使用出现任何问题可直接在群内联系铁蛋"
                     sendQuoteReply(sender, originalMessage, reply)
                 }
