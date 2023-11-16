@@ -49,7 +49,7 @@ object TiedanGame : KotlinPlugin(
     override fun onDisable() {
         CommandAdmin.unregister()
         CommandBotHelp.unregister()
-        CommandPastebin.unregister()
+        CommandApply.unregister()
     }
 
     fun rdConfig() {
@@ -60,6 +60,7 @@ object TiedanGame : KotlinPlugin(
     fun rdData() {
         BotInfoData.reload()
         PastebinData.reload()
+        ApplyData.reload()
     }
 
     private fun regEvent() {
@@ -69,7 +70,7 @@ object TiedanGame : KotlinPlugin(
     private fun regCommand() {
         CommandAdmin.register()
         CommandBotHelp.register()
-        CommandPastebin.register()
+        CommandApply.register()
 //        Commandkanxi.register()
 //        Commandgkx.register()
 //        CommandNewGame.register()

@@ -156,8 +156,7 @@ object CommandPastebin : RawCommand(
                         return
                     }
                     if (listOf("name", "author", "language", "pastebinUrl", "stdin").contains(option).not()) {
-                        sendQuoteReply(sender, originalMessage,
-                            "未知的配置项：$option\n仅支持配置\"name\",\"author\",\"language\",\"pastebinUrl\",\"stdin\"")
+                        sendQuoteReply(sender, originalMessage, "未知的配置项：$option\n仅支持配置：\nname, author, language, pastebinUrl, stdin")
                         return
                     }
                     if (option == "name") {
