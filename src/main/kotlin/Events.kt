@@ -46,21 +46,25 @@ object Events : SimpleListenerHost() {
 //        }
 //    }
 
-    // 白名单检测
+    /**
+     * 白名单检测
+     */
     @EventHandler(priority = EventPriority.HIGH)
     internal fun GroupMessageEvent.check() {
         if (BotConfig.WhiteList_enable &&
-            !BotConfig.WhiteList.containsKey(group.id) &&
-            !BotConfig.AdminList.contains(sender.id) &&
+            BotConfig.WhiteList.containsKey(group.id).not() &&
+            BotConfig.AdminList.contains(sender.id).not() &&
             sender.id != BotConfig.master
             ) {
             intercept()
         }
     }
 
-    // 监测bot新好友
+    /**
+     * 监测bot新好友
+     */
     @EventHandler(priority = EventPriority.MONITOR)
-    internal suspend fun NewFriendRequestEvent.monitor() {
+    internal suspend fun NewFriendRequestEvent.newFriend() {
         val notice: String =
                 "[机器人添加新好友]\n" +
                 "eventId：$eventId\n" +
@@ -70,16 +74,18 @@ object Events : SimpleListenerHost() {
                 "申请消息：$message"
         try {
             bot.getFriendOrFail(BotConfig.master).sendMessage(notice)
-        } catch (ex: NoSuchElementException) {
+        } catch (ex: Exception) {
             logger.warning(ex)
         }
     }
 
-    // 监测bot被邀请进群
+    /**
+     * 监测bot被邀请加群
+     */
     @EventHandler(priority = EventPriority.MONITOR)
-    internal suspend fun BotInvitedJoinGroupRequestEvent.monitor() {
+    internal suspend fun BotInvitedJoinGroupRequestEvent.newGroup() {
         val notice: String =
-                "[机器人被邀请进群]\n" +
+                "[机器人被邀请加群]\n" +
                 "eventId：$eventId\n" +
                 "邀请进群：$groupName\n" +
                 "群号：$groupId\n" +
@@ -93,7 +99,25 @@ object Events : SimpleListenerHost() {
         }
     }
 
-    // bot数据统计
+    /**
+     * 监测bot进群
+     */
+    @EventHandler(priority = EventPriority.MONITOR)
+    internal suspend fun BotJoinGroupEvent.joinGroup() {
+        val notice: String =
+                    "[机器人加入新群聊]\n" +
+                    "群名称：${group.name}\n" +
+                    "群号：${group.id}"
+        try {
+            bot.getFriendOrFail(BotConfig.master).sendMessage(notice)
+        } catch (ex: Exception) {
+            logger.warning(ex)
+        }
+    }
+
+    /**
+     * bot数据统计
+     */
     @EventHandler(priority = EventPriority.MONITOR)
     internal fun MessagePostSendEvent<*>.count() {
         if (message.contains(Image)) {
@@ -110,7 +134,11 @@ object Events : SimpleListenerHost() {
         BotInfoData.save()
     }
 
-    // 掉线时发送邮件
+    /**
+     * ### bot掉线时发送邮件
+     * [mirai-administrator](https://github.com/cssxsh/mirai-administrator/blob/main/src/main/kotlin/xyz/cssxsh/mirai/admin/MiraiAdministrator.kt)
+     * @author cssxsh
+     */
     @EventHandler
     internal fun BotOfflineEvent.handle() {
         if (MailConfig.offline.not()) return

@@ -3,7 +3,10 @@ package com.tiedan.command
 import com.tiedan.TiedanGame
 import net.mamoe.mirai.console.command.CommandSender
 import net.mamoe.mirai.console.command.CompositeCommand
+import net.mamoe.mirai.console.util.ConsoleExperimentalApi
 
+// TODO CommandPoint
+@OptIn(ConsoleExperimentalApi::class)
 object CommandPoint : CompositeCommand(
     owner = TiedanGame,
     primaryName = "point",

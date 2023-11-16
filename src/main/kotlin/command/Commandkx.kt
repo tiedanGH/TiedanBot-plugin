@@ -6,6 +6,7 @@ import net.mamoe.mirai.console.command.RawCommand
 import net.mamoe.mirai.message.data.MessageChain
 import net.mamoe.mirai.message.data.content
 
+// TODO Commandkanxi
 object Commandkanxi : RawCommand(
     owner = TiedanGame,
     primaryName = "看戏",

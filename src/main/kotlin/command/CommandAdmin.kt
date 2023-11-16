@@ -1,6 +1,7 @@
 package com.tiedan.command
 
 import com.tiedan.TiedanGame
+import com.tiedan.TiedanGame.COMMAND_PREFIX
 import com.tiedan.TiedanGame.logger
 import com.tiedan.TiedanGame.save
 import com.tiedan.TiedanGame.sendQuoteReply
@@ -13,7 +14,10 @@ import kotlinx.coroutines.withContext
 import net.mamoe.mirai.console.command.*
 import net.mamoe.mirai.contact.Friend
 import net.mamoe.mirai.contact.PermissionDeniedException
-import net.mamoe.mirai.message.data.*
+import net.mamoe.mirai.message.data.MessageChain
+import net.mamoe.mirai.message.data.PlainText
+import net.mamoe.mirai.message.data.content
+import net.mamoe.mirai.message.data.messageChainOf
 import net.mamoe.mirai.utils.warning
 import java.io.File
 import java.util.concurrent.TimeUnit
@@ -35,26 +39,36 @@ object CommandAdmin : RawCommand(
             return
         }
 
-        val commands : MutableList<SingleMessage> = mutableListOf()
-        for (element in args) {
-            commands.add(element)
-        }
-
         try {
-            when (commands[0].content) {
+            when (args[0].content) {
 
-                "help", "帮助"-> {   // 查看admin可用帮助
+                "help"-> {   // 查看admin可用帮助（help）
                     val reply = " ·admin可用帮助：\n" +
                                 "-> 查看管理员列表\n" +
-                                "#admin list\n" +
+                                "${COMMAND_PREFIX}admin list\n" +
                                 "-> 查看白名单列表\n" +
-                                "#admin WhiteList [info]\n" +
+                                "${COMMAND_PREFIX}admin WhiteList [info]\n" +
                                 "-> 设置白名单开关状态\n" +
-                                "#admin setWhiteList <开启/关闭>\n" +
+                                "${COMMAND_PREFIX}admin setWhiteList <开启/关闭>\n" +
                                 "-> 添加白名单\n" +
-                                "#admin addWhiteList [group] [desc]\n" +
+                                "${COMMAND_PREFIX}admin addWhiteList [group] [desc]\n" +
                                 "-> 移除白名单\n" +
-                                "#admin delWhiteList [group]"
+                                "${COMMAND_PREFIX}admin delWhiteList [group]"
+                    sendQuoteReply(sender, originalMessage, reply)
+                }
+
+                "帮助"-> {   // 查看admin可用帮助（帮助）
+                    val reply = " ·admin可用帮助：\n" +
+                            "-> 查看管理员列表\n" +
+                            "${COMMAND_PREFIX}管理 列表\n" +
+                            "-> 查看白名单列表\n" +
+                            "${COMMAND_PREFIX}管理 白名单 [信息]\n" +
+                            "-> 设置白名单开关状态\n" +
+                            "${COMMAND_PREFIX}管理 设置白名单 <开启/关闭>\n" +
+                            "-> 添加白名单\n" +
+                            "${COMMAND_PREFIX}管理 添加白名单 [群号] [描述]\n" +
+                            "-> 移除白名单\n" +
+                            "${COMMAND_PREFIX}管理 移除白名单 [群号]"
                     sendQuoteReply(sender, originalMessage, reply)
                 }
 
@@ -69,7 +83,7 @@ object CommandAdmin : RawCommand(
                 "op", "添加管理员"-> {   // 添加管理员
                     masterOnly(sender)
                     try {
-                        val qq = commands[1].content.toLong()
+                        val qq = args[1].content.toLong()
                         val result = BotConfig.AdminList.add(qq)
                         if (result) {
                             BotConfig.AdminList.sort()
@@ -91,7 +105,7 @@ object CommandAdmin : RawCommand(
                 "deop", "移除管理员"-> {   // 移除管理员
                     masterOnly(sender)
                     try {
-                        val qq = commands[1].content.toLong()
+                        val qq = args[1].content.toLong()
                         val result = BotConfig.AdminList.remove(qq)
                         if (result) {
                             BotConfig.save()
@@ -121,21 +135,17 @@ object CommandAdmin : RawCommand(
 
                 "transfer", "转账"-> {   // bot积分转账
                     masterOnly(sender)
-                    val qq = commands[1]
-                    val point = commands[2]
+                    val qq = args[1]
+                    val point = args[2]
                     sender.sendMessage("/pt transfer $qq $point")
                 }
 
                 "send", "发送"-> {   // bot消息发送
                     masterOnly(sender)
                     var messages: MessageChain = messageChainOf()
-                    for (element in args) {
-                        if (element.content != "send") {
-                            if (messages.isNotEmpty()) {
-                                messages = messageChainOf(messages, PlainText(" "))
-                            }
-                            messages = messageChainOf(messages, element)
-                        }
+                    args.forEachIndexed { index, element ->
+                        if (index == 1) { messages += element }
+                        if (index > 1) { messages = messages + PlainText(" ") + element }
                     }
                     if (messages.isNotEmpty()) {
                         sender.sendMessage(messages)
@@ -146,7 +156,7 @@ object CommandAdmin : RawCommand(
 
                 "WhiteList", "白名单"-> {   // 查看白名单列表
                     val showDesc = try {
-                        commands[1].content == "info" || commands[1].content == "信息"
+                        args[1].content == "info" || args[1].content == "信息"
                     } catch (ex: Exception) {
                         false
                     }
@@ -164,7 +174,7 @@ object CommandAdmin : RawCommand(
                 "setWhiteList", "设置白名单"-> {   // 设置白名单功能状态
                     val enable: List<String> = arrayListOf("enable","on","true","开启")
                     val disable: List<String> = arrayListOf("disable","off","false","关闭")
-                    val option = commands[1].content
+                    val option = args[1].content
                     if (enable.contains(option) && !BotConfig.WhiteList_enable) {
                         BotConfig.WhiteList_enable = true
                         BotConfig.save()
@@ -183,7 +193,7 @@ object CommandAdmin : RawCommand(
                         throw PermissionDeniedException("Group only")
                     }
                     val group = try {
-                        commands[1].content.toLong()
+                        args[1].content.toLong()
                     } catch (ex: NumberFormatException) {
                         sendQuoteReply(sender, originalMessage, "数字转换错误，请检查指令")
                         return
@@ -191,7 +201,7 @@ object CommandAdmin : RawCommand(
                         sender.subject!!.id
                     }
                     val desc = try {
-                        commands[2].content
+                        args[2].content
                     } catch (ex: Exception) {
                         logger.warning {"error: ${ex.message}"}
                         "no_desc"
@@ -208,7 +218,7 @@ object CommandAdmin : RawCommand(
 
                 "delWhiteList", "移除白名单"-> {   // 移除白名单
                     val group: Long = try {
-                        commands[1].content.toLong()
+                        args[1].content.toLong()
                     } catch (ex: NumberFormatException) {
                         sendQuoteReply(sender, originalMessage, "数字转换错误，请检查指令")
                         return
@@ -225,7 +235,7 @@ object CommandAdmin : RawCommand(
                 }
 
                 "focus", "专注"-> {   // 专注模式
-                    val option = commands[1].content
+                    val option = args[1].content
                     if (option == "disable") {
                         BotConfig.focus_enable = false
                         BotConfig.focus_to = 0
@@ -259,7 +269,7 @@ object CommandAdmin : RawCommand(
                 "sendmail", "发送邮件"-> {
                     masterOnly(sender)
                     val address: String = try {
-                        commands[1].content
+                        args[1].content
                     } catch (ex: Exception) {
                         MailConfig.log_mail
                     }
@@ -288,6 +298,10 @@ object CommandAdmin : RawCommand(
                         }
                         file("console.log") {
                             val logs = File("logs")
+                            logs.listFiles()?.maxByOrNull { it.lastModified() }
+                        }
+                        file("network.log") {
+                            val logs = File("bots/${sender.bot?.id}/logs")
                             logs.listFiles()?.maxByOrNull { it.lastModified() }
                         }
                     }

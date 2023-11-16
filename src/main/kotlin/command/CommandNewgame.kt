@@ -6,6 +6,7 @@ import net.mamoe.mirai.console.command.CommandContext
 import net.mamoe.mirai.console.command.CompositeCommand
 import net.mamoe.mirai.console.util.ConsoleExperimentalApi
 
+// TODO CommandNewGame
 @OptIn(ConsoleExperimentalApi::class)
 object CommandNewGame : CompositeCommand(
     owner = TiedanGame,

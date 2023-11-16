@@ -1,16 +1,16 @@
 package com.tiedan.command
 
-import com.tiedan.config.BotConfig
 import com.tiedan.TiedanGame
+import com.tiedan.TiedanGame.COMMAND_PREFIX
 import com.tiedan.TiedanGame.logger
 import com.tiedan.TiedanGame.sendQuoteReply
+import com.tiedan.config.BotConfig
 import com.tiedan.plugindata.BotInfoData
 import net.mamoe.mirai.console.command.BuiltInCommands
 import net.mamoe.mirai.console.command.CommandContext
 import net.mamoe.mirai.console.command.RawCommand
 import net.mamoe.mirai.console.plugin.version
 import net.mamoe.mirai.message.data.MessageChain
-import net.mamoe.mirai.message.data.SingleMessage
 import net.mamoe.mirai.message.data.content
 import net.mamoe.mirai.utils.warning
 
@@ -22,32 +22,50 @@ object CommandBotHelp : RawCommand(
 ){
     override suspend fun CommandContext.onCommand(args: MessageChain) {
 
-        val commands : MutableList<SingleMessage> = mutableListOf()
-        for (element in args) {
-            commands.add(element)
-        }
-
         try {
-            when (commands[0].content) {
+            when (args[0].content) {
 
-                "help", "帮助"-> {   // 查看bot帮助
+                "help"-> {   // 查看bot帮助（help）
                     val reply = "·bot插件及功能帮助：\n" +
-                                "#bot help    显示此条帮助\n" +
-                                "#bot info    查看bot信息\n" +
-                                "#bot status   mirai状态\n" +
-                                "#bot lgt    LGT相关帮助\n" +
-                                "#bot cloud    词云帮助\n" +
-                                "#bot fly    飞行棋帮助\n" +
-                                "#bot grass   草图相关帮助\n" +
-                                "#bot pet    表情相关帮助\n" +
-                                "#bot jcc    在线编译器帮助\n" +
-                                "#bot mcmod    MC百科查询帮助\n" +
-                                "#抽卡    原神抽卡插件菜单\n" +
+                                "${COMMAND_PREFIX}bot info    查看bot信息\n" +
+                                "${COMMAND_PREFIX}bot status   mirai状态\n" +
+                                "${COMMAND_PREFIX}bot lgt    LGT相关帮助\n" +
+                                "${COMMAND_PREFIX}bot cloud    词云帮助\n" +
+                                "${COMMAND_PREFIX}bot fly    飞行棋帮助\n" +
+                                "${COMMAND_PREFIX}bot grass   草图相关帮助\n" +
+                                "${COMMAND_PREFIX}bot pet    表情相关帮助\n" +
+                                "${COMMAND_PREFIX}bot jcc    在线编译器帮助\n" +
+                                "${COMMAND_PREFIX}bot mcmod    MC百科查询帮助\n" +
+                                "${COMMAND_PREFIX}抽卡    原神抽卡插件菜单\n" +
                                 "\n" +
                                 "-> 查看和添加pastebin代码\n" +
-                                "#pastebin help\n" +
+                                "${COMMAND_PREFIX}pastebin help\n" +
+                                "-> 提交权限申请相关指令\n" +
+                                "${COMMAND_PREFIX}apply help\n" +
                                 "\n" +
                                 "如bot使用出现任何问题可直接在群内联系铁蛋"
+                    sendQuoteReply(sender, originalMessage, reply)
+                }
+
+                "帮助"-> {   // 查看bot帮助（帮助）
+                    val reply = "·bot插件及功能帮助：\n" +
+                            "${COMMAND_PREFIX}b 信息    查看bot信息\n" +
+                            "${COMMAND_PREFIX}b 状态   mirai状态\n" +
+                            "${COMMAND_PREFIX}b LGT    LGT相关帮助\n" +
+                            "${COMMAND_PREFIX}b 词云    词云帮助\n" +
+                            "${COMMAND_PREFIX}b 飞行棋    飞行棋帮助\n" +
+                            "${COMMAND_PREFIX}b 生草   草图相关帮助\n" +
+                            "${COMMAND_PREFIX}b 表情    表情相关帮助\n" +
+                            "${COMMAND_PREFIX}b 编译器    在线编译器帮助\n" +
+                            "${COMMAND_PREFIX}b MC    MC百科查询帮助\n" +
+                            "${COMMAND_PREFIX}抽卡    原神抽卡插件菜单\n" +
+                            "\n" +
+                            "-> 查看和添加pastebin代码\n" +
+                            "${COMMAND_PREFIX}代码 帮助\n" +
+                            "-> 提交权限申请相关指令\n" +
+                            "${COMMAND_PREFIX}申请 帮助\n" +
+                            "\n" +
+                            "如bot使用出现任何问题可直接在群内联系铁蛋"
                     sendQuoteReply(sender, originalMessage, reply)
                 }
 
@@ -161,9 +179,9 @@ object CommandBotHelp : RawCommand(
                                 "引用消息: run <language> [stdin]\n" +
                                 "·仓库地址：https://github.com/jie65535/mirai-console-jcc-plugin\n" +
                                 "·其它指令：\n" +
-                                "#jcc help    # 查看jcc帮助\n" +
-                                "#jcc list    # 列出所有支持的编程语言\n" +
-                                "#jcc template <language>    # 获取指定语言的模板"
+                                "${COMMAND_PREFIX}jcc help    查看jcc帮助\n" +
+                                "${COMMAND_PREFIX}jcc list    列出所有支持的编程语言\n" +
+                                "${COMMAND_PREFIX}jcc template <language>    获取指定语言的模板"
                    sendQuoteReply(sender, originalMessage, reply)
                 }
 
@@ -181,12 +199,12 @@ object CommandBotHelp : RawCommand(
                 }
 
                 else-> {
-                    sendQuoteReply(sender, originalMessage, "[参数不匹配]\n请使用「#bot help」来查看指令帮助")
+                    sendQuoteReply(sender, originalMessage, "[参数不匹配]\n请使用「${COMMAND_PREFIX}bot help」来查看指令帮助")
                 }
             }
         } catch (ex: Exception) {
             logger.warning {"error: ${ex.message}"}
-            sendQuoteReply(sender, originalMessage, "[指令无效]\n请使用「#bot help」来查看指令帮助")
+            sendQuoteReply(sender, originalMessage, "[参数不足]\n请使用「${COMMAND_PREFIX}bot help」来查看指令帮助")
         }
     }
 
