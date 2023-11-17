@@ -1,13 +1,13 @@
 package com.tiedan.command
 
 import com.tiedan.TiedanGame
-import com.tiedan.TiedanGame.COMMAND_PREFIX
 import com.tiedan.TiedanGame.logger
 import com.tiedan.TiedanGame.reload
 import com.tiedan.TiedanGame.save
 import com.tiedan.TiedanGame.sendQuoteReply
 import com.tiedan.plugindata.PastebinData
 import net.mamoe.mirai.console.command.CommandContext
+import net.mamoe.mirai.console.command.CommandManager.INSTANCE.commandPrefix
 import net.mamoe.mirai.console.command.RawCommand
 import net.mamoe.mirai.message.data.MessageChain
 import net.mamoe.mirai.message.data.content
@@ -30,36 +30,36 @@ object CommandPastebin : RawCommand(
                 "help"-> {   // 查看pastebin帮助（help）
                     val reply = "·pastebin查看相关帮助：\n" +
                             "-> 查看完整列表\n" +
-                            "${COMMAND_PREFIX}pastebin list\n" +
+                            "${commandPrefix}pastebin list\n" +
                             "-> 查看具体参数及运行示例\n" +
-                            "${COMMAND_PREFIX}pastebin info <名称>\n" +
+                            "${commandPrefix}pastebin info <名称>\n" +
                             "-> 运行pastebin代码\n" +
-                            "${COMMAND_PREFIX}run <名称> [stdin]\n" +
+                            "${commandPrefix}run <名称> [stdin]\n" +
                             "\n" +
                             "·pastebin添加修改帮助：\n" +
                             "-> 添加pastebin数据\n" +
-                            "${COMMAND_PREFIX}pastebin add <名称> <作者> <语言> <pastebinUrl> [示例输入(stdin)]\n" +
+                            "${commandPrefix}pastebin add <名称> <作者> <语言> <pastebinUrl> [示例输入(stdin)]\n" +
                             "-> 修改数据中某一项的参数\n" +
-                            "${COMMAND_PREFIX}pastebin set <名称> <参数名> <内容>\n" +
-                            "(指令可以简写成「${COMMAND_PREFIX}pb」)"
+                            "${commandPrefix}pastebin set <名称> <参数名> <内容>\n" +
+                            "(指令可以简写成「${commandPrefix}pb」)"
                     sendQuoteReply(sender, originalMessage, reply)
                 }
 
                 "帮助"-> {   // 查看pastebin帮助（帮助）
                     val reply = "·pastebin查看相关帮助：\n" +
                             "-> 查看完整列表\n" +
-                            "${COMMAND_PREFIX}代码 列表\n" +
+                            "${commandPrefix}代码 列表\n" +
                             "-> 查看具体参数及运行示例\n" +
-                            "${COMMAND_PREFIX}代码 信息 <名称>\n" +
+                            "${commandPrefix}代码 信息 <名称>\n" +
                             "-> 运行pastebin代码\n" +
-                            "${COMMAND_PREFIX}代码 运行 <名称> [输入]\n" +
+                            "${commandPrefix}代码 运行 <名称> [输入]\n" +
                             "\n" +
                             "·pastebin添加修改帮助：\n" +
                             "-> 添加pastebin数据\n" +
-                            "${COMMAND_PREFIX}代码 添加 <名称> <作者> <语言> <pastebin链接> [示例输入(stdin)]\n" +
+                            "${commandPrefix}代码 添加 <名称> <作者> <语言> <pastebin链接> [示例输入(stdin)]\n" +
                             "-> 修改数据中某一项的参数\n" +
-                            "${COMMAND_PREFIX}代码 修改 <名称> <参数名> <内容>\n" +
-                            "(指令可以简写成「${COMMAND_PREFIX}pb」)"
+                            "${commandPrefix}代码 修改 <名称> <参数名> <内容>\n" +
+                            "(指令可以简写成「${commandPrefix}pb」)"
                     sendQuoteReply(sender, originalMessage, reply)
                 }
 
@@ -83,7 +83,7 @@ object CommandPastebin : RawCommand(
                 "info", "信息", "示例"-> {   // 查看数据具体参数
                     val name = args[1].content
                     if (PastebinData.pastebin.containsKey(name).not()) {
-                        sendQuoteReply(sender, originalMessage, "未知的名称：$name\n请使用「${COMMAND_PREFIX}pastebin list」来查看完整列表")
+                        sendQuoteReply(sender, originalMessage, "未知的名称：$name\n请使用「${commandPrefix}pastebin list」来查看完整列表")
                         return
                     }
                     val info = "名称：$name\n" +
@@ -152,7 +152,7 @@ object CommandPastebin : RawCommand(
                         return
                     }
                     if (PastebinData.pastebin.containsKey(name).not()) {
-                        sendQuoteReply(sender, originalMessage, "未知的名称：$name\n请使用「${COMMAND_PREFIX}pastebin list」来查看完整列表")
+                        sendQuoteReply(sender, originalMessage, "未知的名称：$name\n请使用「${commandPrefix}pastebin list」来查看完整列表")
                         return
                     }
                     if (listOf("name", "author", "language", "pastebinUrl", "stdin").contains(option).not()) {
@@ -180,12 +180,12 @@ object CommandPastebin : RawCommand(
                 }
 
                 else-> {
-                    sendQuoteReply(sender, originalMessage, "[参数不匹配]\n请使用「${COMMAND_PREFIX}pastebin help」来查看指令帮助")
+                    sendQuoteReply(sender, originalMessage, "[参数不匹配]\n请使用「${commandPrefix}pastebin help」来查看指令帮助")
                 }
             }
         } catch (ex: Exception) {
             logger.warning {"error: ${ex.message}"}
-            sendQuoteReply(sender, originalMessage, "[参数不足]\n请使用「${COMMAND_PREFIX}pastebin help」来查看指令帮助")
+            sendQuoteReply(sender, originalMessage, "[参数不足]\n请使用「${commandPrefix}pastebin help」来查看指令帮助")
         }
     }
 }

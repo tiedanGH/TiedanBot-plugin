@@ -1,13 +1,13 @@
 package com.tiedan.command
 
 import com.tiedan.TiedanGame
-import com.tiedan.TiedanGame.COMMAND_PREFIX
 import com.tiedan.TiedanGame.logger
 import com.tiedan.TiedanGame.save
 import com.tiedan.TiedanGame.sendQuoteReply
 import com.tiedan.config.BotConfig
 import com.tiedan.plugindata.ApplyData
 import net.mamoe.mirai.console.command.*
+import net.mamoe.mirai.console.command.CommandManager.INSTANCE.commandPrefix
 import net.mamoe.mirai.contact.PermissionDeniedException
 import net.mamoe.mirai.message.data.MessageChain
 import net.mamoe.mirai.message.data.content
@@ -37,18 +37,18 @@ object CommandApply : RawCommand(
                 "help"-> {   // 查看apply帮助（help）
                     var reply = "·apply指令帮助：\n" +
                                 "-> 申请群聊白名单\n" +
-                                "${COMMAND_PREFIX}apply white <group> <reason>\n" +
+                                "${commandPrefix}apply white <group> <reason>\n" +
                                 "-> 申请admin权限\n" +
-                                "${COMMAND_PREFIX}apply admin <reason>\n" +
+                                "${commandPrefix}apply admin <reason>\n" +
                                 "-> 取消个人申请\n" +
-                                "${COMMAND_PREFIX}apply cancel\n"
+                                "${commandPrefix}apply cancel\n"
                     if (BotConfig.AdminList.contains(sender.user?.id) || sender.user?.id == BotConfig.master || sender.isConsole()) {
                         reply += "\n" +
                                 "·admin管理指令：\n" +
                                 "-> 查看申请列表\n" +
-                                "${COMMAND_PREFIX}apply list [type]\n" +
+                                "${commandPrefix}apply list [type]\n" +
                                 "-> 处理申请\n" +
-                                "${COMMAND_PREFIX}apply handle <qq> <同意/拒绝> [备注]\n"
+                                "${commandPrefix}apply handle <qq> <同意/拒绝> [备注]\n"
                     }
                     reply  += "\n<>为必填项，group-群号，reason-申请原因"
                     sendQuoteReply(sender, originalMessage, reply)
@@ -57,18 +57,18 @@ object CommandApply : RawCommand(
                 "帮助"-> {   // 查看apply帮助（帮助）
                     var reply = "·apply指令帮助：\n" +
                             "-> 申请群聊白名单\n" +
-                            "${COMMAND_PREFIX}申请 白名单 <群号> <原因>\n" +
+                            "${commandPrefix}申请 白名单 <群号> <原因>\n" +
                             "-> 申请管理员权限\n" +
-                            "${COMMAND_PREFIX}申请 管理员 <原因>\n" +
+                            "${commandPrefix}申请 管理员 <原因>\n" +
                             "-> 取消个人申请\n" +
-                            "${COMMAND_PREFIX}申请 取消"
+                            "${commandPrefix}申请 取消"
                     if (BotConfig.AdminList.contains(sender.user?.id) || sender.user?.id == BotConfig.master || sender.isConsole()) {
                         reply += "\n\n" +
                                 "·admin管理指令：\n" +
                                 "-> 查看申请列表\n" +
-                                "${COMMAND_PREFIX}申请 列表 [申请种类]\n" +
+                                "${commandPrefix}申请 列表 [申请种类]\n" +
                                 "-> 处理申请\n" +
-                                "${COMMAND_PREFIX}申请 处理 <申请人> <同意/拒绝> [备注]"
+                                "${commandPrefix}申请 处理 <申请人> <同意/拒绝> [备注]"
                     }
                     sendQuoteReply(sender, originalMessage, reply)
                 }
@@ -254,14 +254,14 @@ object CommandApply : RawCommand(
                 }
 
                 else-> {
-                    sendQuoteReply(sender, originalMessage, "[参数不匹配]\n请使用「${COMMAND_PREFIX}apply help」来查看指令帮助")
+                    sendQuoteReply(sender, originalMessage, "[参数不匹配]\n请使用「${commandPrefix}apply help」来查看指令帮助")
                 }
             }
         } catch (ex: PermissionDeniedException) {
             sendQuoteReply(sender, originalMessage, "[操作无效] ${ex.message}")
         } catch (ex: Exception) {
             logger.warning {"error: ${ex.message}"}
-            sendQuoteReply(sender, originalMessage, "[参数不足]\n请使用「${COMMAND_PREFIX}apply help」来查看指令帮助")
+            sendQuoteReply(sender, originalMessage, "[参数不足]\n请使用「${commandPrefix}apply help」来查看指令帮助")
         }
     }
 
@@ -280,7 +280,7 @@ object CommandApply : RawCommand(
         val name = sender.name
         if (ApplyData.ApplyLock.contains(qq)) {
             sendQuoteReply(sender, originalMessage,
-                    "$name($qq)已经提交过申请，请等待审核完成后在执行新的操作，或使用指令「${COMMAND_PREFIX}apply cancel」来取消个人申请")
+                    "$name($qq)已经提交过申请，请等待审核完成后在执行新的操作，或使用指令「${commandPrefix}apply cancel」来取消个人申请")
             return true
         }
         return false

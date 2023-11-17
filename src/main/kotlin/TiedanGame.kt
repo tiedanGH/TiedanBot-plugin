@@ -7,7 +7,6 @@ import com.tiedan.config.BotConfig
 import com.tiedan.config.MailConfig
 import com.tiedan.plugindata.ApplyData
 import com.tiedan.plugindata.BotInfoData
-import com.tiedan.plugindata.PastebinData
 import com.tiedan.timer.AutoUpdateDailyData
 import com.tiedan.timer.DateTime
 import net.mamoe.mirai.console.command.CommandManager.INSTANCE.register
@@ -35,8 +34,6 @@ object TiedanGame : KotlinPlugin(
         info("""TiedanGame Plugin""")
     }
 ) {
-    const val COMMAND_PREFIX = "#"
-
     override fun onEnable() {
         rdConfig()
         rdData()
@@ -59,7 +56,6 @@ object TiedanGame : KotlinPlugin(
 
     fun rdData() {
         BotInfoData.reload()
-        PastebinData.reload()
         ApplyData.reload()
     }
 

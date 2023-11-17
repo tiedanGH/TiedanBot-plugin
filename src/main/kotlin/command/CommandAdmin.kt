@@ -1,7 +1,6 @@
 package com.tiedan.command
 
 import com.tiedan.TiedanGame
-import com.tiedan.TiedanGame.COMMAND_PREFIX
 import com.tiedan.TiedanGame.logger
 import com.tiedan.TiedanGame.save
 import com.tiedan.TiedanGame.sendQuoteReply
@@ -12,6 +11,7 @@ import com.tiedan.config.MailConfig
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import net.mamoe.mirai.console.command.*
+import net.mamoe.mirai.console.command.CommandManager.INSTANCE.commandPrefix
 import net.mamoe.mirai.contact.Friend
 import net.mamoe.mirai.contact.PermissionDeniedException
 import net.mamoe.mirai.message.data.MessageChain
@@ -45,30 +45,30 @@ object CommandAdmin : RawCommand(
                 "help"-> {   // 查看admin可用帮助（help）
                     val reply = " ·admin可用帮助：\n" +
                                 "-> 查看管理员列表\n" +
-                                "${COMMAND_PREFIX}admin list\n" +
+                                "${commandPrefix}admin list\n" +
                                 "-> 查看白名单列表\n" +
-                                "${COMMAND_PREFIX}admin WhiteList [info]\n" +
+                                "${commandPrefix}admin WhiteList [info]\n" +
                                 "-> 设置白名单开关状态\n" +
-                                "${COMMAND_PREFIX}admin setWhiteList <开启/关闭>\n" +
+                                "${commandPrefix}admin setWhiteList <开启/关闭>\n" +
                                 "-> 添加白名单\n" +
-                                "${COMMAND_PREFIX}admin addWhiteList [group] [desc]\n" +
+                                "${commandPrefix}admin addWhiteList [group] [desc]\n" +
                                 "-> 移除白名单\n" +
-                                "${COMMAND_PREFIX}admin delWhiteList [group]"
+                                "${commandPrefix}admin delWhiteList [group]"
                     sendQuoteReply(sender, originalMessage, reply)
                 }
 
                 "帮助"-> {   // 查看admin可用帮助（帮助）
                     val reply = " ·admin可用帮助：\n" +
                             "-> 查看管理员列表\n" +
-                            "${COMMAND_PREFIX}管理 列表\n" +
+                            "${commandPrefix}管理 列表\n" +
                             "-> 查看白名单列表\n" +
-                            "${COMMAND_PREFIX}管理 白名单 [信息]\n" +
+                            "${commandPrefix}管理 白名单 [信息]\n" +
                             "-> 设置白名单开关状态\n" +
-                            "${COMMAND_PREFIX}管理 设置白名单 <开启/关闭>\n" +
+                            "${commandPrefix}管理 设置白名单 <开启/关闭>\n" +
                             "-> 添加白名单\n" +
-                            "${COMMAND_PREFIX}管理 添加白名单 [群号] [描述]\n" +
+                            "${commandPrefix}管理 添加白名单 [群号] [描述]\n" +
                             "-> 移除白名单\n" +
-                            "${COMMAND_PREFIX}管理 移除白名单 [群号]"
+                            "${commandPrefix}管理 移除白名单 [群号]"
                     sendQuoteReply(sender, originalMessage, reply)
                 }
 
