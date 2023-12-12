@@ -102,10 +102,11 @@ object CommandApply : RawCommand(
                             "申请群号：$group\n" +
                             "原因：$reason")
 
-                    val notice = "[新申请通知]\n" +
+                    val notice = "【新申请通知】\n" +
                             "申请内容：white\n" +
                             "申请人：$name($qq)\n" +
-                            "白名单：$group"
+                            "白名单：$group\n" +
+                            "原因：$reason"
                     try {
                         sender.bot?.getFriendOrFail(BotConfig.master)?.sendMessage(notice)   // 抄送至bot所有者
                     } catch (ex: Exception) {
@@ -131,9 +132,10 @@ object CommandApply : RawCommand(
                     ApplyData.save()
                     sendQuoteReply(sender, originalMessage, "申请成功，等待管理员审核\n$reason")
 
-                    val notice = "[新申请通知]\n" +
-                            "申请内容：white\n" +
-                            "申请人：$name($qq)"
+                    val notice = "【新申请通知】\n" +
+                            "申请内容：admin\n" +
+                            "申请人QQ：$qq\n" +
+                            reason
                     try {
                         sender.bot?.getFriendOrFail(BotConfig.master)?.sendMessage(notice)   // 抄送至bot所有者
                     } catch (ex: Exception) {
@@ -219,27 +221,29 @@ object CommandApply : RawCommand(
                         sendQuoteReply(sender, originalMessage, "[操作无效] 指令参数错误")
                         return
                     }
-                    var reply = "请求处理成功！\n处理人：$name($qq)\n操作：$option"
+                    var reply = "请求处理成功！\n处理人：$name($qq)\n操作：$option\n备注：$remark"
                     try {
-                        var noticeApply = "[申请处理通知]\n" +
+                        var noticeApply = "【申请处理通知】\n" +
                                     "申请人：${handleQQ}\n" +
                                     "申请内容：${type}\n"
                         if (type == "white") {
                             noticeApply += "白名单：${ApplyData.WhiteListApplication[handleQQ]?.get("group")}\n"
                         }
-                        noticeApply += "结果：$option"
+                        noticeApply += "结果：$option\n" +
+                                "备注：$remark"
                         sender.bot?.getFriendOrFail(handleQQ)?.sendMessage(noticeApply)   // 抄送结果至申请人
 
                         if (qq != BotConfig.master && sender.isNotConsole()) {
                             reply += "\n\n结果已抄送至：${BotConfig.master}"
-                            var notice = "[申请处理结果]\n" +
+                            var notice = "【其他申请处理结果】\n" +
                                         "处理人：$name($qq)\n" +
                                         "申请内容：${type}\n" +
                                         "申请人：${handleQQ}\n"
                             if (type == "white") {
                                 notice += "白名单：${ApplyData.WhiteListApplication[handleQQ]?.get("group")}\n"
                             }
-                            notice += "操作：$option"
+                            notice += "操作：$option\n" +
+                                    "备注：$remark"
                             sender.bot?.getFriendOrFail(BotConfig.master)?.sendMessage(notice)   // 抄送结果至bot所有者
                         }
                     } catch (ex: Exception) {
