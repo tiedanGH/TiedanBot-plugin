@@ -28,7 +28,7 @@ object TiedanGame : KotlinPlugin(
     JvmPluginDescription(
         id = "com.tiedan.TiedanGame",
         name = "TiedanGame",
-        version = "1.1.1",
+        version = "1.2.0",
     ) {
         author("tiedan")
         info("""TiedanGame Plugin""")
