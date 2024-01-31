@@ -141,16 +141,26 @@ object CommandAdmin : RawCommand(
                 }
 
                 "send", "发送"-> {   // bot消息发送
-                    masterOnly(sender)
+                    val qq = args[1].content.toLong()
                     var messages: MessageChain = messageChainOf()
-                    args.forEachIndexed { index, element ->
-                        if (index == 1) { messages += element }
-                        if (index > 1) { messages = messages + PlainText(" ") + element }
+                    args.forEachIndexed { index: Int, element ->
+                        if (index == 2) { messages += element }
+                        if (index > 2) { messages = messages + PlainText(" ") + element }
                     }
-                    if (messages.isNotEmpty()) {
+                    if (messages.isEmpty()) {
+                        messages = messageChainOf(PlainText(" "))
+                    }
+                    if (qq == 0.toLong()) {
+                        masterOnly(sender)
                         sender.sendMessage(messages)
                     } else {
-                        sender.sendMessage(" ")
+                        try {
+                            sender.bot?.getFriendOrFail(qq)!!.sendMessage(messages)
+                            sender.sendMessage("发送私信成功")
+                        } catch (ex: Exception) {
+                            logger.warning(ex)
+                            sender.sendMessage("出现错误：${ex}")
+                        }
                     }
                 }
 
@@ -189,15 +199,15 @@ object CommandAdmin : RawCommand(
                 }
 
                 "addWhiteList", "添加白名单"-> {   // 添加白名单
-                    if (sender.subject is Friend || sender.isConsole()) {
-                        throw PermissionDeniedException("Group only")
-                    }
-                    val group = try {
+                    val group: Long = try {
                         args[1].content.toLong()
                     } catch (ex: NumberFormatException) {
                         sendQuoteReply(sender, originalMessage, "数字转换错误，请检查指令")
                         return
                     } catch (ex: Exception) {
+                        if (sender.subject is Friend || sender.isConsole()) {
+                            throw PermissionDeniedException("Group only")
+                        }
                         sender.subject!!.id
                     }
                     val desc = try {
@@ -223,6 +233,9 @@ object CommandAdmin : RawCommand(
                         sendQuoteReply(sender, originalMessage, "数字转换错误，请检查指令")
                         return
                     } catch (ex: Exception) {
+                        if (sender.subject is Friend || sender.isConsole()) {
+                            throw PermissionDeniedException("Group only")
+                        }
                         sender.subject!!.id
                     }
                     val result = BotConfig.WhiteList.remove(group)

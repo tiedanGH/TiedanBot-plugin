@@ -35,7 +35,7 @@ object CommandApply : RawCommand(
             when (args[0].content) {
 
                 "help"-> {   // 查看apply帮助（help）
-                    var reply = "·apply指令帮助：\n" +
+                    var reply = " ·apply指令帮助：\n" +
                                 "-> 申请群聊白名单\n" +
                                 "${commandPrefix}apply white <group> <reason>\n" +
                                 "-> 申请admin权限\n" +
@@ -44,7 +44,7 @@ object CommandApply : RawCommand(
                                 "${commandPrefix}apply cancel\n"
                     if (BotConfig.AdminList.contains(sender.user?.id) || sender.user?.id == BotConfig.master || sender.isConsole()) {
                         reply += "\n" +
-                                "·admin管理指令：\n" +
+                                " ·admin管理指令：\n" +
                                 "-> 查看申请列表\n" +
                                 "${commandPrefix}apply list [type]\n" +
                                 "-> 处理申请\n" +
@@ -55,7 +55,7 @@ object CommandApply : RawCommand(
                 }
 
                 "帮助"-> {   // 查看apply帮助（帮助）
-                    var reply = "·apply指令帮助：\n" +
+                    var reply = " ·apply指令帮助：\n" +
                             "-> 申请群聊白名单\n" +
                             "${commandPrefix}申请 白名单 <群号> <原因>\n" +
                             "-> 申请管理员权限\n" +
@@ -64,7 +64,7 @@ object CommandApply : RawCommand(
                             "${commandPrefix}申请 取消"
                     if (BotConfig.AdminList.contains(sender.user?.id) || sender.user?.id == BotConfig.master || sender.isConsole()) {
                         reply += "\n\n" +
-                                "·admin管理指令：\n" +
+                                " ·admin管理指令：\n" +
                                 "-> 查看申请列表\n" +
                                 "${commandPrefix}申请 列表 [申请种类]\n" +
                                 "-> 处理申请\n" +
@@ -172,6 +172,7 @@ object CommandApply : RawCommand(
                                     "申请群号：${ApplyData.WhiteListApplication[key]?.get("group")}\n" +
                                     "原因：${ApplyData.WhiteListApplication[key]?.get("reason")}\n"
                         }
+                        reply += "\n"
                     }
                     if (type == "admin" || type == "all"){   // 查看admin申请列表
                         reply += "-> admin申请列表：\n"
@@ -221,7 +222,7 @@ object CommandApply : RawCommand(
                         sendQuoteReply(sender, originalMessage, "[操作无效] 指令参数错误")
                         return
                     }
-                    var reply = "请求处理成功！\n处理人：$name($qq)\n操作：$option\n备注：$remark"
+                    var reply = "申请处理成功！\n处理人：$name($qq)\n操作：$option\n备注：$remark"
                     try {
                         var noticeApply = "【申请处理通知】\n" +
                                     "申请人：${handleQQ}\n" +

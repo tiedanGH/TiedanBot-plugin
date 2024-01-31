@@ -26,7 +26,7 @@ object CommandBotHelp : RawCommand(
             when (args[0].content) {
 
                 "help"-> {   // 查看bot帮助（help）
-                    val reply = "·bot插件及功能帮助：\n" +
+                    val reply = " ·bot插件及功能帮助：\n" +
                                 "${commandPrefix}bot info    查看bot信息\n" +
                                 "${commandPrefix}bot status   mirai状态\n" +
                                 "${commandPrefix}bot lgt    LGT相关帮助\n" +
@@ -48,7 +48,7 @@ object CommandBotHelp : RawCommand(
                 }
 
                 "帮助"-> {   // 查看bot帮助（帮助）
-                    val reply = "·bot插件及功能帮助：\n" +
+                    val reply = " ·bot插件及功能帮助：\n" +
                             "${commandPrefix}b 信息    查看bot信息\n" +
                             "${commandPrefix}b 状态   mirai状态\n" +
                             "${commandPrefix}b LGT    LGT相关帮助\n" +

@@ -66,7 +66,7 @@ object Events : SimpleListenerHost() {
     @EventHandler(priority = EventPriority.MONITOR)
     internal suspend fun NewFriendRequestEvent.newFriend() {
         val notice: String =
-                "[机器人添加新好友]\n" +
+                "【机器人添加新好友】\n" +
                 "eventId：$eventId\n" +
                 "好友：$fromNick\n" +
                 "QQ号：$fromId\n" +
@@ -85,7 +85,7 @@ object Events : SimpleListenerHost() {
     @EventHandler(priority = EventPriority.MONITOR)
     internal suspend fun BotInvitedJoinGroupRequestEvent.newGroup() {
         val notice: String =
-                "[机器人被邀请加群]\n" +
+                "【机器人被邀请加群】\n" +
                 "eventId：$eventId\n" +
                 "邀请进群：$groupName\n" +
                 "群号：$groupId\n" +
@@ -105,7 +105,7 @@ object Events : SimpleListenerHost() {
     @EventHandler(priority = EventPriority.MONITOR)
     internal suspend fun BotJoinGroupEvent.joinGroup() {
         val notice: String =
-                    "[机器人加入新群聊]\n" +
+                    "【机器人加入新群聊】\n" +
                     "群名称：${group.name}\n" +
                     "群号：${group.id}"
         try {
