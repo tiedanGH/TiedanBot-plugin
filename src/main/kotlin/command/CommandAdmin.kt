@@ -8,6 +8,7 @@ import com.tiedan.buildMailContent
 import com.tiedan.buildMailSession
 import com.tiedan.config.BotConfig
 import com.tiedan.config.MailConfig
+import com.tiedan.plugindata.BlackListData
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import net.mamoe.mirai.console.command.*
@@ -43,9 +44,11 @@ object CommandAdmin : RawCommand(
             when (args[0].content) {
 
                 "help"-> {   // 查看admin可用帮助（help）
-                    val reply = " ·admin可用帮助：\n" +
+                    var reply = " ·admin可用帮助：\n" +
                                 "-> 查看管理员列表\n" +
                                 "${commandPrefix}admin list\n" +
+                                "-> 查看黑名单列表\n" +
+                                "${commandPrefix}admin BlackList\n" +
                                 "-> 查看白名单列表\n" +
                                 "${commandPrefix}admin WhiteList [info]\n" +
                                 "-> 设置白名单开关状态\n" +
@@ -54,13 +57,33 @@ object CommandAdmin : RawCommand(
                                 "${commandPrefix}admin addWhiteList [group] [desc]\n" +
                                 "-> 移除白名单\n" +
                                 "${commandPrefix}admin delWhiteList [group]"
+                    if (sender.user?.id == BotConfig.master || sender.isConsole()) {
+                        reply += "\n" +
+                                " ·master管理指令：\n" +
+                                "-> 添加/移除管理员\n" +
+                                "${commandPrefix}admin op/deop <qq>\n" +
+                                "-> 添加/移除黑名单\n" +
+                                "${commandPrefix}admin black <qq>\n" +
+                                "-> 机器人关机\n" +
+                                "${commandPrefix}admin shutdown\n" +
+                                "-> 积分转账\n" +
+                                "${commandPrefix}admin transfer <qq> <point>\n" +
+                                "-> 消息发送\n" +
+                                "${commandPrefix}admin send <qq> [message]\n" +
+                                "-> 配置及数据重载\n" +
+                                "${commandPrefix}admin reload\n" +
+                                "-> 发送邮件备份日志\n" +
+                                "${commandPrefix}admin sendmail [address]"
+                    }
                     sendQuoteReply(sender, originalMessage, reply)
                 }
 
                 "帮助"-> {   // 查看admin可用帮助（帮助）
-                    val reply = " ·admin可用帮助：\n" +
+                    var reply = " ·admin可用帮助：\n" +
                             "-> 查看管理员列表\n" +
                             "${commandPrefix}管理 列表\n" +
+                            "-> 查看黑名单列表\n" +
+                            "${commandPrefix}管理 黑名单\n" +
                             "-> 查看白名单列表\n" +
                             "${commandPrefix}管理 白名单 [信息]\n" +
                             "-> 设置白名单开关状态\n" +
@@ -69,6 +92,24 @@ object CommandAdmin : RawCommand(
                             "${commandPrefix}管理 添加白名单 [群号] [描述]\n" +
                             "-> 移除白名单\n" +
                             "${commandPrefix}管理 移除白名单 [群号]"
+                    if (sender.user?.id == BotConfig.master || sender.isConsole()) {
+                        reply += "\n" +
+                                " ·master管理指令：\n" +
+                                "-> 添加/移除管理员\n" +
+                                "${commandPrefix}管理 添加/移除管理员 <QQ号>\n" +
+                                "-> 添加/移除黑名单\n" +
+                                "${commandPrefix}管理 黑名单 <QQ号>\n" +
+                                "-> 机器人关机\n" +
+                                "${commandPrefix}管理 关机\n" +
+                                "-> 积分转账\n" +
+                                "${commandPrefix}管理 转账 <QQ号> <积分>\n" +
+                                "-> 消息发送\n" +
+                                "${commandPrefix}管理 发送 <QQ号> [消息]\n" +
+                                "-> 配置及数据重载\n" +
+                                "${commandPrefix}管理 重载\n" +
+                                "-> 发送邮件备份日志\n" +
+                                "${commandPrefix}管理 发送邮件 [邮件地址]"
+                    }
                     sendQuoteReply(sender, originalMessage, reply)
                 }
 
@@ -117,6 +158,31 @@ object CommandAdmin : RawCommand(
                         } else {
                             sendQuoteReply(sender, originalMessage, "不存在管理员 $qq")
                         }
+                    } catch (ex: NumberFormatException) {
+                        sendQuoteReply(sender, originalMessage, "数字转换错误，请检查指令")
+                    }
+                }
+
+                "BlackList", "黑名单"-> {   // 查看黑名单列表
+                    var blackListInfo = "·黑名单列表：\n"
+                    for (black in BlackListData.BlackList) {
+                        blackListInfo = blackListInfo + black + "\n"
+                    }
+                    sendQuoteReply(sender, originalMessage, blackListInfo)
+                }
+
+                "black", "添加黑名单"-> {   // 添加/移除黑名单
+                    masterOnly(sender)
+                    try {
+                        val qq = args[1].content.toLong()
+                        if (BlackListData.BlackList.contains(qq)) {
+                            BlackListData.BlackList.remove(qq)
+                            sendQuoteReply(sender, originalMessage, "已将 $qq 移出黑名单")
+                        } else {
+                            BlackListData.BlackList.add(qq)
+                            sendQuoteReply(sender, originalMessage, "已将 $qq 移入黑名单")
+                        }
+                        BlackListData.save()
                     } catch (ex: NumberFormatException) {
                         sendQuoteReply(sender, originalMessage, "数字转换错误，请检查指令")
                     }

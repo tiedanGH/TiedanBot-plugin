@@ -17,15 +17,17 @@
 
 `<>`内为必填参数，`[]`为可选参数
 
+指令前缀会根据`config\Console\Command.yml`内的`commandPrefix`参数自动变化
+
 ### CommandBotHelp
 
 - 用于查看bot相关帮助
 
 | Command       | Description |
 |:--------------|:------------|
-| `#bot help`   | 查看bot相关帮助   |
-| `#bot info`   | 查看bot数据信息   |
-| `#bot status` | 查看mirai状态   |
+| `/bot help`   | 查看bot相关帮助   |
+| `/bot info`   | 查看bot数据信息   |
+| `/bot status` | 查看mirai状态   |
 
 - bot发言数据通过`MessagePostSendEvent`进行统计，在启动时注册 [定时任务](src/main/kotlin/timer/AutoUpdateDailyData.kt)，每日0点自动更新统计数据。数据保存在 [BotInfoData](src/main/kotlin/plugindata/BotInfoData.kt) 中。
 
@@ -35,19 +37,21 @@
 
 | Command                               | Description |
 |:--------------------------------------|:------------|
-| `#admin help`                         | 查看admin可用帮助 |
-| `#admin list`                         | 查看管理员列表     |
-| `#admin op <QQ>`                      | 添加管理员`*`    |
-| `#admin deop <QQ>`                    | 移除管理员`*`    |
-| `#admin shutdown`                     | 关机指令`*`     |
-| `#admin transfer <QQ> <point>`        | bot积分转账`*`  |
-| `#admin send [message]`               | bot消息发送`*`  |
-| `#admin WhiteList [info]`             | 查看白名单列表     |
-| `#admin setWhiteList <enable/diable>` | 设置白名单开关状态   |
-| `#admin addWhiteList [group] [desc]`  | 添加白名单       |
-| `#admin delWhiteList [group]`         | 移除白名单       |
-| `#admin focus <group/disable>`        | 专注模式（未实现）   |
-| `#admin reload`                       | 重载配置及数据`*`  |
+| `/admin help`                         | 查看admin可用帮助 |
+| `/admin list`                         | 查看管理员列表     |
+| `/admin BlackList`                    | 查看黑名单列表     |
+| `/admin op <QQ>`                      | 添加管理员`*`    |
+| `/admin deop <QQ>`                    | 移除管理员`*`    |
+| `/admin black <qq>`                   | 添加/移除黑名单`*` |
+| `/admin shutdown`                     | 关机指令`*`     |
+| `/admin transfer <QQ> <point>`        | bot积分转账`*`  |
+| `/admin send [message]`               | bot消息发送`*`  |
+| `/admin WhiteList [info]`             | 查看白名单列表     |
+| `/admin setWhiteList <enable/diable>` | 设置白名单开关状态   |
+| `/admin addWhiteList [group] [desc]`  | 添加白名单       |
+| `/admin delWhiteList [group]`         | 移除白名单       |
+| `/admin focus <group/disable>`        | 专注模式（未实现）   |
+| `/admin reload`                       | 重载配置及数据`*`  |
 
 - 带`*`的指令仅拥有master权限才可执行，详见 [BotConfig](#机器人配置BotConfig)。
 
@@ -59,12 +63,12 @@
 
 | Command                           | Description |
 |:----------------------------------|:------------|
-| `#apply help`                     | 查看apply帮助   |
-| `#apply white <group> <reason>`   | 申请群聊白名单     |
-| `#apply admin <reason>`           | 申请admin权限   |
-| `#apply cancel`                   | 取消个人申请      |
-| `#apply list [type]`              | 查看申请列表`*`   |
-| `#apply handle <qq> <同意/拒绝> [备注]` | 处理申请`*`     |
+| `/apply help`                     | 查看apply帮助   |
+| `/apply white <group> <reason>`   | 申请群聊白名单     |
+| `/apply admin <reason>`           | 申请admin权限   |
+| `/apply cancel`                   | 取消个人申请      |
+| `/apply list [type]`              | 查看申请列表`*`   |
+| `/apply handle <qq> <同意/拒绝> [备注]` | 处理申请`*`     |
 
 - 带`*`的指令仅拥有admin权限才可执行，详见 [BotConfig](#机器人配置BotConfig)。
 
@@ -74,12 +78,12 @@
 
 | Command                                                    | Description  |
 |:-----------------------------------------------------------|:-------------|
-| `#pastebin help`                                           | 查看pastebin帮助 |
-| `#pastebin list`                                           | 查看完整列表       |
-| `#pastebin info <名称>`                                      | 查看具体参数及运行示例  |
-| `#run <名称> [stdin]`                                        | 运行pastebin代码 |
-| `#pastebin add <名称> <作者> <语言> <pastebinUrl> [示例输入(stdin)]` | 添加pastebin数据 |
-| `#pastebin set <名称> <参数名> <内容>`                            | 修改数据中某一项的参数  |
+| `/pastebin help`                                           | 查看pastebin帮助 |
+| `/pastebin list`                                           | 查看完整列表       |
+| `/pastebin info <名称>`                                      | 查看具体参数及运行示例  |
+| `/run <名称> [stdin]`                                        | 运行pastebin代码 |
+| `/pastebin add <名称> <作者> <语言> <pastebinUrl> [示例输入(stdin)]` | 添加pastebin数据 |
+| `/pastebin set <名称> <参数名> <内容>`                            | 修改数据中某一项的参数  |
 
 ## 配置
 

@@ -4,6 +4,7 @@ import com.tiedan.TiedanGame.logger
 import com.tiedan.TiedanGame.save
 import com.tiedan.config.BotConfig
 import com.tiedan.config.MailConfig
+import com.tiedan.plugindata.BlackListData
 import com.tiedan.plugindata.BotInfoData
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
@@ -45,6 +46,19 @@ object Events : SimpleListenerHost() {
 //                        "如有疑问，请联系管理员")
 //        }
 //    }
+
+    /**
+     * 黑名单检测
+     */
+    @EventHandler(priority = EventPriority.HIGH)
+    internal fun MessageEvent.check() {
+        for (black in BlackListData.BlackList) {
+            if (black == sender.id) {
+                intercept()
+                break
+            }
+        }
+    }
 
     /**
      * 白名单检测

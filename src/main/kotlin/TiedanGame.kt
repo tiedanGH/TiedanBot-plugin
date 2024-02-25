@@ -6,6 +6,7 @@ import com.tiedan.command.CommandBotHelp
 import com.tiedan.config.BotConfig
 import com.tiedan.config.MailConfig
 import com.tiedan.plugindata.ApplyData
+import com.tiedan.plugindata.BlackListData
 import com.tiedan.plugindata.BotInfoData
 import com.tiedan.timer.AutoUpdateDailyData
 import com.tiedan.timer.DateTime
@@ -57,6 +58,7 @@ object TiedanGame : KotlinPlugin(
     fun rdData() {
         BotInfoData.reload()
         ApplyData.reload()
+        BlackListData.reload()
     }
 
     private fun regEvent() {

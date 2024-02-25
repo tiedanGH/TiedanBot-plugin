@@ -1,6 +1,6 @@
 # TiedanBot plugin
 
-👉[简体中文](README_CN.md)
+👉[简体中文](README_cn.md)
 
 > A simple bot management plugin written based on [Mirai Console](https://github.com/mamoe/mirai)
 
@@ -17,15 +17,17 @@ The functions currently implemented include the following sections:
 
 `<>` is a required parameter, `[]` is an optional parameter.
 
+The command prefix will automatically change according to the `commandPrefix` parameter in `config\Console\Command.yml`.
+
 ### CommandBotHelp
 
 - Used to view bot help
 
 | Command       | Description               |
 |:--------------|:--------------------------|
-| `#bot help`   | view bot help             |
-| `#bot info`   | view bot data information |
-| `#bot status` | view mirai status         |
+| `/bot help`   | view bot help             |
+| `/bot info`   | view bot data information |
+| `/bot status` | view mirai status         |
 
 - The bot message data is collected through `MessagePostSendEvent`. [Scheduled task](src/main/kotlin/timer/AutoUpdateDailyData.kt) is registered at startup, and the statistical data is automatically updated at 0 o'clock every day. The data is saved in [BotInfoData](src/main/kotlin/plugindata/BotInfoData.kt).
 
@@ -35,19 +37,21 @@ The functions currently implemented include the following sections:
 
 | Command                               | Description                   |
 |:--------------------------------------|:------------------------------|
-| `#admin help`                         | view available help for admin |
-| `#admin list`                         | view the AdminList            |
-| `#admin op <QQ>`                      | add administrator`*`          |
-| `#admin deop <QQ>`                    | remove administrator`*`       |
-| `#admin shutdown`                     | shutdown command`*`           |
-| `#admin transfer <QQ> <point>`        | point transfer`*`             |
-| `#admin send [message]`               | send message`*`               |
-| `#admin WhiteList [info]`             | view the WhiteList            |
-| `#admin setWhiteList <enable/diable>` | set the WhiteList status      |
-| `#admin addWhiteList [group] [desc]`  | add group to WhiteList        |
-| `#admin delWhiteList [group]`         | remove group from WhiteList   |
-| `#admin focus <group/disable>`        | focus mode (not implemented)  |
-| `#admin reload`                       | reload config and data`*`     |
+| `/admin help`                         | view available help for admin |
+| `/admin list`                         | view the AdminList            |
+| `/admin BlackList`                    | view the BlackList            |
+| `/admin op <QQ>`                      | add administrator`*`          |
+| `/admin deop <QQ>`                    | remove administrator`*`       |
+| `/admin black <qq>`                   | add/remove BlackList`*`       |
+| `/admin shutdown`                     | shutdown command`*`           |
+| `/admin transfer <QQ> <point>`        | point transfer`*`             |
+| `/admin send [message]`               | send message`*`               |
+| `/admin WhiteList [info]`             | view the WhiteList            |
+| `/admin setWhiteList <enable/diable>` | set the WhiteList status      |
+| `/admin addWhiteList [group] [desc]`  | add group to WhiteList        |
+| `/admin delWhiteList [group]`         | remove group from WhiteList   |
+| `/admin focus <group/disable>`        | focus mode (not implemented)  |
+| `/admin reload`                       | reload config and data`*`     |
 
 - Commands with `*` can only be executed by user with **master** permission, see [BotConfig](#BotConfig) for details.
 
@@ -59,12 +63,12 @@ The functions currently implemented include the following sections:
 
 | Command                                       | Description                 |
 |:----------------------------------------------|:----------------------------|
-| `#apply help`                                 | view apply help             |
-| `#apply white <group> <reason>`               | apply for group WhiteList   |
-| `#apply admin <reason>`                       | apply for admin permission  |
-| `#apply cancel`                               | cancel personal application |
-| `#apply list [type]`                          | view application list`*`    |
-| `#apply handle <qq> <Agree/Reject> [Remarks]` | handle application`*`       |
+| `/apply help`                                 | view apply help             |
+| `/apply white <group> <reason>`               | apply for group WhiteList   |
+| `/apply admin <reason>`                       | apply for admin permission  |
+| `/apply cancel`                               | cancel personal application |
+| `/apply list [type]`                          | view application list`*`    |
+| `/apply handle <qq> <Agree/Reject> [Remarks]` | handle application`*`       |
 
 - Commands with `*` can only be executed by user with **admin** permission, see [BotConfig](#BotConfig) for details.
 
@@ -74,12 +78,12 @@ The functions currently implemented include the following sections:
 
 | Command                                                                        | Description                                   |
 |:-------------------------------------------------------------------------------|:----------------------------------------------|
-| `#pastebin help`                                                               | view pastebin help                            |
-| `#pastebin list`                                                               | view the list                                 |
-| `#pastebin info <name>`                                                        | view specific parameters and running examples |
-| `#run <name> [stdin]`                                                          | run pastebin code                             |
-| `#pastebin add <name> <author> <language> <pastebinUrl> [Sample input(stdin)]` | add new pastebin data                         |
-| `#pastebin set <name> <parameter> <content>`                                   | modify one parameter of an item in the data   |
+| `/pastebin help`                                                               | view pastebin help                            |
+| `/pastebin list`                                                               | view the list                                 |
+| `/pastebin info <name>`                                                        | view specific parameters and running examples |
+| `/run <name> [stdin]`                                                          | run pastebin code                             |
+| `/pastebin add <name> <author> <language> <pastebinUrl> [Sample input(stdin)]` | add new pastebin data                         |
+| `/pastebin set <name> <parameter> <content>`                                   | modify one parameter of an item in the data   |
 
 ## Config
 
