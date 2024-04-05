@@ -45,7 +45,7 @@ The command prefix will automatically change according to the `commandPrefix` pa
 | `/admin black <qq>`                   | add/remove BlackList`*`       |
 | `/admin shutdown`                     | shutdown command`*`           |
 | `/admin transfer <QQ> <point>`        | point transfer`*`             |
-| `/admin send [message]`               | send message`*`               |
+| `/admin send <QQ> [message]`          | send message                  |
 | `/admin WhiteList [info]`             | view the WhiteList            |
 | `/admin setWhiteList <enable/diable>` | set the WhiteList status      |
 | `/admin addWhiteList [group] [desc]`  | add group to WhiteList        |

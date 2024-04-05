@@ -56,7 +56,9 @@ object CommandAdmin : RawCommand(
                                 "-> 添加白名单\n" +
                                 "${commandPrefix}admin addWhiteList [group] [desc]\n" +
                                 "-> 移除白名单\n" +
-                                "${commandPrefix}admin delWhiteList [group]"
+                                "${commandPrefix}admin delWhiteList [group]\n" +
+                                "-> 消息发送\n" +
+                                "${commandPrefix}admin send <qq> [message]"
                     if (sender.user?.id == BotConfig.master || sender.isConsole()) {
                         reply += "\n" +
                                 " ·master管理指令：\n" +
@@ -68,8 +70,6 @@ object CommandAdmin : RawCommand(
                                 "${commandPrefix}admin shutdown\n" +
                                 "-> 积分转账\n" +
                                 "${commandPrefix}admin transfer <qq> <point>\n" +
-                                "-> 消息发送\n" +
-                                "${commandPrefix}admin send <qq> [message]\n" +
                                 "-> 配置及数据重载\n" +
                                 "${commandPrefix}admin reload\n" +
                                 "-> 发送邮件备份日志\n" +
@@ -91,7 +91,9 @@ object CommandAdmin : RawCommand(
                             "-> 添加白名单\n" +
                             "${commandPrefix}管理 添加白名单 [群号] [描述]\n" +
                             "-> 移除白名单\n" +
-                            "${commandPrefix}管理 移除白名单 [群号]"
+                            "${commandPrefix}管理 移除白名单 [群号]\n" +
+                            "-> 消息发送\n" +
+                            "${commandPrefix}管理 发送 <QQ号> [消息]"
                     if (sender.user?.id == BotConfig.master || sender.isConsole()) {
                         reply += "\n" +
                                 " ·master管理指令：\n" +
@@ -103,8 +105,6 @@ object CommandAdmin : RawCommand(
                                 "${commandPrefix}管理 关机\n" +
                                 "-> 积分转账\n" +
                                 "${commandPrefix}管理 转账 <QQ号> <积分>\n" +
-                                "-> 消息发送\n" +
-                                "${commandPrefix}管理 发送 <QQ号> [消息]\n" +
                                 "-> 配置及数据重载\n" +
                                 "${commandPrefix}管理 重载\n" +
                                 "-> 发送邮件备份日志\n" +

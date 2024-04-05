@@ -45,7 +45,7 @@
 | `/admin black <qq>`                   | 添加/移除黑名单`*` |
 | `/admin shutdown`                     | 关机指令`*`     |
 | `/admin transfer <QQ> <point>`        | bot积分转账`*`  |
-| `/admin send [message]`               | bot消息发送`*`  |
+| `/admin send <QQ> [message]`          | bot消息发送     |
 | `/admin WhiteList [info]`             | 查看白名单列表     |
 | `/admin setWhiteList <enable/diable>` | 设置白名单开关状态   |
 | `/admin addWhiteList [group] [desc]`  | 添加白名单       |
