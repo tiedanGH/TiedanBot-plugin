@@ -61,14 +61,15 @@
 
 - 用于用户申请群聊白名单或admin权限，申请数据保存在 [ApplyData](src/main/kotlin/plugindata/ApplyData.kt) 中。
 
-| Command                           | Description |
-|:----------------------------------|:------------|
-| `/apply help`                     | 查看apply帮助   |
-| `/apply white <group> <reason>`   | 申请群聊白名单     |
-| `/apply admin <reason>`           | 申请admin权限   |
-| `/apply cancel`                   | 取消个人申请      |
-| `/apply list [type]`              | 查看申请列表`*`   |
-| `/apply handle <qq> <同意/拒绝> [备注]` | 处理申请`*`     |
+| Command                              | Description |
+|:-------------------------------------|:------------|
+| `/apply help`                        | 查看apply帮助   |
+| `/apply white <group> <reason>`      | 申请群聊白名单     |
+| `/apply admin <reason>`              | 申请admin权限   |
+| `/apply cancel`                      | 取消个人申请      |
+| `/apply list [type]`                 | 查看申请列表`*`   |
+| `/apply handle <qq> <同意/拒绝> [备注]`    | 处理申请`*`     |
+| `/apply handleAll <type> <同意/拒绝/忽略>` | 批量处理申请`*`   |
 
 - 带`*`的指令仅拥有admin权限才可执行，详见 [BotConfig](#机器人配置BotConfig)。
 

@@ -1,7 +1,9 @@
 package com.tiedan.command
 
 import com.tiedan.TiedanGame
+import com.tiedan.TiedanGame.adminOnly
 import com.tiedan.TiedanGame.logger
+import com.tiedan.TiedanGame.masterOnly
 import com.tiedan.TiedanGame.save
 import com.tiedan.TiedanGame.sendQuoteReply
 import com.tiedan.config.BotConfig
@@ -19,16 +21,11 @@ object CommandApply : RawCommand(
     secondaryNames = arrayOf("申请"),
     description = "申请操作指令"
 ){
-    private const val MAX_LENGTH = 80
+    private const val MAX_LENGTH = 150
 
     override suspend fun CommandContext.onCommand(args: MessageChain) {
 
-        val qq = try {
-            sender.user!!.id
-        } catch (ex: NullPointerException) {
-            logger.warning { "ConsoleCommandSender-> set to -1" }
-            -1
-        }
+        val qq = sender.user?.id ?: 10000
         val name = sender.name
 
         try {
@@ -44,11 +41,16 @@ object CommandApply : RawCommand(
                                 "${commandPrefix}apply cancel\n"
                     if (BotConfig.AdminList.contains(sender.user?.id) || sender.user?.id == BotConfig.master || sender.isConsole()) {
                         reply += "\n" +
-                                " ·admin管理指令：\n" +
-                                "-> 查看申请列表\n" +
-                                "${commandPrefix}apply list [type]\n" +
-                                "-> 处理申请\n" +
-                                "${commandPrefix}apply handle <qq> <同意/拒绝> [备注]\n"
+                                 " ·admin管理指令：\n" +
+                                 "-> 查看申请列表\n" +
+                                 "${commandPrefix}apply list [type]\n" +
+                                 "-> 处理申请\n" +
+                                 "${commandPrefix}apply handle <qq> <同意/拒绝> [备注]\n"
+                    }
+                    if (sender.user?.id == BotConfig.master || sender.isConsole()) {
+                        reply += " ·master管理指令：\n" +
+                                 "-> 批量处理申请\n" +
+                                 "${commandPrefix}apply handleAll <type> <同意/拒绝/忽略>\n"
                     }
                     reply  += "\n<>为必填项，group-群号，reason-申请原因"
                     sendQuoteReply(sender, originalMessage, reply)
@@ -56,25 +58,31 @@ object CommandApply : RawCommand(
 
                 "帮助"-> {   // 查看apply帮助（帮助）
                     var reply = " ·apply指令帮助：\n" +
-                            "-> 申请群聊白名单\n" +
-                            "${commandPrefix}申请 白名单 <群号> <原因>\n" +
-                            "-> 申请管理员权限\n" +
-                            "${commandPrefix}申请 管理员 <原因>\n" +
-                            "-> 取消个人申请\n" +
-                            "${commandPrefix}申请 取消"
+                                "-> 申请群聊白名单\n" +
+                                "${commandPrefix}申请 白名单 <群号> <原因>\n" +
+                                "-> 申请管理员权限\n" +
+                                "${commandPrefix}申请 管理员 <原因>\n" +
+                                "-> 取消个人申请\n" +
+                                "${commandPrefix}申请 取消"
                     if (BotConfig.AdminList.contains(sender.user?.id) || sender.user?.id == BotConfig.master || sender.isConsole()) {
                         reply += "\n\n" +
-                                " ·admin管理指令：\n" +
-                                "-> 查看申请列表\n" +
-                                "${commandPrefix}申请 列表 [申请种类]\n" +
-                                "-> 处理申请\n" +
-                                "${commandPrefix}申请 处理 <申请人> <同意/拒绝> [备注]"
+                                 " ·admin管理指令：\n" +
+                                 "-> 查看申请列表\n" +
+                                 "${commandPrefix}申请 列表 [申请种类]\n" +
+                                 "-> 处理申请\n" +
+                                 "${commandPrefix}申请 处理 <申请人> <同意/拒绝> [备注]\n"
                     }
+                    if (sender.user?.id == BotConfig.master || sender.isConsole()) {
+                        reply += " ·master管理指令：\n" +
+                                 "-> 批量处理申请\n" +
+                                 "${commandPrefix}申请 批量处理 <申请种类> <同意/拒绝/忽略>\n"
+                    }
+                    reply  += "\n<>为必填项，原因-申请原因"
                     sendQuoteReply(sender, originalMessage, reply)
                 }
 
                 "white", "白名单"-> {   // 申请群聊白名单
-                    if (applyLock(sender, originalMessage)) { return }
+                    if (applyLock(sender, originalMessage)) return
                     val group = try {
                         args[1].content.toLong()
                     } catch (ex: NumberFormatException) {
@@ -83,7 +91,7 @@ object CommandApply : RawCommand(
                     }
                     val reason = try {
                         if (args[2].content.length > MAX_LENGTH) {
-                            sendQuoteReply(sender, originalMessage, "申请理由过长，上限为80个字符")
+                            sendQuoteReply(sender, originalMessage, "申请理由过长，上限为${MAX_LENGTH}个字符")
                             return
                         }
                         args[2].content
@@ -115,11 +123,11 @@ object CommandApply : RawCommand(
                 }
 
                 "admin", "管理员"-> {   // 申请admin权限
-                    if (applyLock(sender, originalMessage)) { return }
+                    if (applyLock(sender, originalMessage)) return
                     val reason = try {
                         val content = args[1].content
                         if (content.length > MAX_LENGTH) {
-                            sendQuoteReply(sender, originalMessage, "申请理由过长，上限为80个字符")
+                            sendQuoteReply(sender, originalMessage, "申请理由过长，上限为${MAX_LENGTH}个字符")
                             return
                         }
                         "申请人：$name\n原因：${content}"
@@ -158,23 +166,19 @@ object CommandApply : RawCommand(
                 // admin操作
                 "list", "列表"-> {   // 查看申请列表
                     adminOnly(sender)
-                    val type = try {
-                        args[1].content
-                    } catch (ex: Exception) {
-                        "all"
-                    }
+                    val type = args.getOrElse(1) { "all" }.toString()
                     var reply = ""
-                    if (type == "white" || type == "all"){   // 查看白名单申请列表
+                    if (type == "white" || type == "all") {   // 查看白名单申请列表
                         reply += "-> 白名单申请列表：\n"
                         ApplyData.WhiteListApplication.keys.forEachIndexed { index, key ->
                             reply += "·No.${index + 1} QQ号：$key\n" +
-                                    "申请人：${ApplyData.WhiteListApplication[key]?.get("name")}\n" +
-                                    "申请群号：${ApplyData.WhiteListApplication[key]?.get("group")}\n" +
-                                    "原因：${ApplyData.WhiteListApplication[key]?.get("reason")}\n"
+                                     "申请人：${ApplyData.WhiteListApplication[key]?.get("name")}\n" +
+                                     "申请群号：${ApplyData.WhiteListApplication[key]?.get("group")}\n" +
+                                     "原因：${ApplyData.WhiteListApplication[key]?.get("reason")}\n"
                         }
                         reply += "\n"
                     }
-                    if (type == "admin" || type == "all"){   // 查看admin申请列表
+                    if (type == "admin" || type == "all") {   // 查看admin申请列表
                         reply += "-> admin申请列表：\n"
                         ApplyData.AdminApplication.keys.forEachIndexed { index, key ->
                             reply += "·No.${index + 1} QQ号：$key\n${ApplyData.AdminApplication[key]}\n"
@@ -192,11 +196,7 @@ object CommandApply : RawCommand(
                         return
                     }
                     var option = args[2].content
-                    val remark = try {
-                        args[3].content
-                    } catch (ex: Exception) {
-                        "申请处理"
-                    }
+                    val remark = args.getOrElse(3) { "申请处理(h*)" }.toString()
                     val type: String = if (ApplyData.WhiteListApplication.containsKey(handleQQ)) {
                         "white"
                     } else if (ApplyData.AdminApplication.containsKey(handleQQ)) {
@@ -225,17 +225,17 @@ object CommandApply : RawCommand(
                     var reply = "申请处理成功！\n处理人：$name($qq)\n操作：$option\n备注：$remark"
                     try {
                         var noticeApply = "【申请处理通知】\n" +
-                                    "申请人：${handleQQ}\n" +
-                                    "申请内容：${type}\n"
+                                    "申请内容：${type}\n" +
+                                    "处理人：$name($qq)\n"
                         if (type == "white") {
                             noticeApply += "白名单：${ApplyData.WhiteListApplication[handleQQ]?.get("group")}\n"
                         }
                         noticeApply += "结果：$option\n" +
-                                "备注：$remark"
+                                       "备注：$remark"
                         sender.bot?.getFriendOrFail(handleQQ)?.sendMessage(noticeApply)   // 抄送结果至申请人
 
                         if (qq != BotConfig.master && sender.isNotConsole()) {
-                            reply += "\n\n结果已抄送至：${BotConfig.master}"
+                            reply += "\n\n处理结果已抄送至：${BotConfig.master}"
                             var notice = "【其他申请处理结果】\n" +
                                         "处理人：$name($qq)\n" +
                                         "申请内容：${type}\n" +
@@ -244,17 +244,86 @@ object CommandApply : RawCommand(
                                 notice += "白名单：${ApplyData.WhiteListApplication[handleQQ]?.get("group")}\n"
                             }
                             notice += "操作：$option\n" +
-                                    "备注：$remark"
+                                      "备注：$remark"
                             sender.bot?.getFriendOrFail(BotConfig.master)?.sendMessage(notice)   // 抄送结果至bot所有者
                         }
                     } catch (ex: Exception) {
                         logger.warning {"error: ${ex.message}"}
+                        sender.sendMessage("出现错误：${ex}")
                     }
                     ApplyData.WhiteListApplication.remove(handleQQ)
                     ApplyData.AdminApplication.remove(handleQQ)
                     ApplyData.ApplyLock.remove(handleQQ)
                     BotConfig.save()
                     ApplyData.save()
+                    sendQuoteReply(sender, originalMessage, reply)   // 回复指令发出者
+                }
+
+                // master操作
+                "handleAll", "批量处理"-> {
+                    masterOnly(sender)
+                    val type = args[1].content
+                    if (type != "white" && type != "admin" && type != "all") {
+                        sendQuoteReply(sender, originalMessage, "无效的类型，仅支持 white、admin，或使用 all 处理全部申请")
+                        return
+                    }
+                    val option = if (arrayListOf("accept","同意").contains(args[2].content)) {
+                        "同意"
+                    } else if (arrayListOf("refuse","拒绝").contains(args[2].content)) {
+                        "拒绝"
+                    } else if (arrayListOf("ignore","忽略").contains(args[2].content)) {
+                        "忽略"
+                    } else {
+                        sendQuoteReply(sender, originalMessage, "无效的操作，仅支持 同意、拒绝、忽略")
+                        return
+                    }
+                    var handleCount = 0
+                    try {
+                        if (type == "white" || type == "all") {
+                            ApplyData.WhiteListApplication.keys.forEachIndexed { _, key ->
+                                if (option == "同意") {
+                                    ApplyData.WhiteListApplication[key]?.get("group")?.let { BotConfig.WhiteList.put(it.toLong(), "批量处理(h*)") }
+                                    BotConfig.WhiteList = BotConfig.WhiteList.toSortedMap()
+                                }
+                                if (option != "忽略") {
+                                    val noticeApply = "【申请处理通知】\n" +
+                                                      "申请内容：white\n" +
+                                                      "处理人：$name($qq)\n" +
+                                                      "白名单：${ApplyData.WhiteListApplication[key]?.get("group")}\n" +
+                                                      "结果：$option\n" +
+                                                      "备注：批量处理(h*)"
+                                    sender.bot?.getFriendOrFail(key)?.sendMessage(noticeApply)   // 抄送结果至申请人
+                                }
+                                ApplyData.ApplyLock.remove(key)
+                            }
+                            handleCount += ApplyData.WhiteListApplication.size
+                            ApplyData.WhiteListApplication.clear()
+                        }
+                        if (type == "admin" || type == "all") {
+                            ApplyData.AdminApplication.keys.forEachIndexed { _, key ->
+                                if (option == "同意") {
+                                    BotConfig.AdminList.add(key)
+                                }
+                                if (option != "忽略") {
+                                    val noticeApply = "【申请处理通知】\n" +
+                                                      "申请内容：admin\n" +
+                                                      "处理人：$name($qq)\n" +
+                                                      "结果：$option\n" +
+                                                      "备注：批量处理"
+                                    sender.bot?.getFriendOrFail(key)?.sendMessage(noticeApply)   // 抄送结果至申请人
+                                }
+                                ApplyData.ApplyLock.remove(key)
+                            }
+                            handleCount += ApplyData.AdminApplication.size
+                            ApplyData.AdminApplication.clear()
+                        }
+                    } catch (ex: Exception) {
+                        logger.warning {"error: ${ex.message}"}
+                        sender.sendMessage("出现错误：${ex}")
+                    }
+                    BotConfig.save()
+                    ApplyData.save()
+                    val reply = "批量处理申请成功！\n处理人：$name($qq)\n处理类别：$type\n操作：$option\n总处理数量：$handleCount"
                     sendQuoteReply(sender, originalMessage, reply)   // 回复指令发出者
                 }
 
@@ -270,18 +339,8 @@ object CommandApply : RawCommand(
         }
     }
 
-    private fun adminOnly(sender: CommandSender) {
-        if (!BotConfig.AdminList.contains(sender.user?.id) && sender.user?.id != BotConfig.master && sender.isNotConsole()) {
-            throw PermissionDeniedException("\nPermission Denied")
-        }
-    }
-
     private suspend fun applyLock(sender: CommandSender, originalMessage: MessageChain): Boolean {
-        val qq = try {
-            sender.user!!.id
-        } catch (ex: NullPointerException) {
-            0
-        }
+        val qq = sender.user?.id ?: 10000
         val name = sender.name
         if (ApplyData.ApplyLock.contains(qq)) {
             sendQuoteReply(sender, originalMessage,

@@ -61,14 +61,15 @@ The command prefix will automatically change according to the `commandPrefix` pa
 
 - Used by users to apply for group WhiteList or admin permission. The application data is saved in [ApplyData](src/main/kotlin/plugindata/ApplyData.kt).
 
-| Command                                       | Description                 |
-|:----------------------------------------------|:----------------------------|
-| `/apply help`                                 | view apply help             |
-| `/apply white <group> <reason>`               | apply for group WhiteList   |
-| `/apply admin <reason>`                       | apply for admin permission  |
-| `/apply cancel`                               | cancel personal application |
-| `/apply list [type]`                          | view application list`*`    |
-| `/apply handle <qq> <Agree/Reject> [Remarks]` | handle application`*`       |
+| Command                                          | Description                 |
+|:-------------------------------------------------|:----------------------------|
+| `/apply help`                                    | view apply help             |
+| `/apply white <group> <reason>`                  | apply for group WhiteList   |
+| `/apply admin <reason>`                          | apply for admin permission  |
+| `/apply cancel`                                  | cancel personal application |
+| `/apply list [type]`                             | view application list`*`    |
+| `/apply handle <qq> <accept/refuse> [remarks]`   | handle application`*`       |
+| `/apply handleAll <type> <accept/refuse/ignore>` | handle all applications`*`  |
 
 - Commands with `*` can only be executed by user with **admin** permission, see [BotConfig](#BotConfig) for details.
 
