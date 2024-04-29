@@ -14,8 +14,10 @@ import net.mamoe.mirai.console.command.CommandManager.INSTANCE.register
 import net.mamoe.mirai.console.command.CommandManager.INSTANCE.unregister
 import net.mamoe.mirai.console.command.CommandSender
 import net.mamoe.mirai.console.command.isConsole
+import net.mamoe.mirai.console.command.isNotConsole
 import net.mamoe.mirai.console.plugin.jvm.JvmPluginDescription
 import net.mamoe.mirai.console.plugin.jvm.KotlinPlugin
+import net.mamoe.mirai.contact.PermissionDeniedException
 import net.mamoe.mirai.event.GlobalEventChannel
 import net.mamoe.mirai.message.data.MessageChain
 import net.mamoe.mirai.message.data.PlainText
@@ -91,6 +93,19 @@ object TiedanGame : KotlinPlugin(
                 +QuoteReply(originalMessage)
                 +PlainText(msgToSend)
             })
+        }
+    }
+
+    fun masterOnly(sender: CommandSender) {
+        if (sender.user?.id != BotConfig.master && sender.isNotConsole()) {
+            throw PermissionDeniedException("Master Only")
+        }
+    }
+
+    fun adminOnly(sender: CommandSender) {
+        if (BotConfig.AdminList.contains(sender.user?.id).not() && BotConfig.AdminList.contains(0).not() &&
+            sender.user?.id != BotConfig.master && sender.isNotConsole()) {
+            throw PermissionDeniedException("未持有管理员权限")
         }
     }
 }

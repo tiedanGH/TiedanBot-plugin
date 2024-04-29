@@ -53,7 +53,7 @@ object Events : SimpleListenerHost() {
     @EventHandler(priority = EventPriority.HIGH)
     internal fun MessageEvent.check() {
         for (black in BlackListData.BlackList) {
-            if (black == sender.id) {
+            if (sender.id == black && sender.id != BotConfig.master) {
                 intercept()
                 break
             }
@@ -150,7 +150,7 @@ object Events : SimpleListenerHost() {
 
     /**
      * ### bot掉线时发送邮件
-     * [mirai-administrator](https://github.com/cssxsh/mirai-administrator/blob/main/src/main/kotlin/xyz/cssxsh/mirai/admin/MiraiAdministrator.kt)
+     * [mirai-administrator](https://github.com/cssxsh/mirai-administrator/blob/main/src/main/kotlin/xyz/cssxsh/mirai/admin/MiraiAdministrator.kt#L484)
      * @author cssxsh
      */
     @EventHandler

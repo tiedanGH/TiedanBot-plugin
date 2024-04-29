@@ -13,7 +13,7 @@ object BotConfig : AutoSavePluginConfig("BotConfig") {
     var quote_enable: Boolean by value(true)
 
     @ValueDescription("管理员列表")
-    var AdminList: MutableList<Long> by value(mutableListOf(114514))
+    var AdminList: MutableSet<Long> by value(mutableSetOf(114514))
 
     @ValueDescription("启用白名单功能")
     var WhiteList_enable: Boolean by value(false)
