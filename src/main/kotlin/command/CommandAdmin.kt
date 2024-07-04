@@ -30,7 +30,8 @@ object CommandAdmin : RawCommand(
     owner = TiedanGame,
     primaryName = "admin",
     secondaryNames = arrayOf("管理"),
-    description = "管理员相关指令"
+    description = "管理员相关指令",
+    usage = "${commandPrefix}admin help"
 ){
     override suspend fun CommandContext.onCommand(args: MessageChain) {
 
@@ -83,20 +84,20 @@ object CommandAdmin : RawCommand(
 
                 "帮助"-> {   // 查看admin可用帮助（帮助）
                     var reply = " ·admin可用帮助：\n" +
-                            "-> 查看管理员列表\n" +
-                            "${commandPrefix}管理 列表\n" +
-                            "-> 查看黑名单列表\n" +
-                            "${commandPrefix}管理 黑名单\n" +
-                            "-> 查看白名单列表\n" +
-                            "${commandPrefix}管理 白名单 [信息]\n" +
-                            "-> 设置白名单开关状态\n" +
-                            "${commandPrefix}管理 设置白名单 <开启/关闭>\n" +
-                            "-> 添加白名单\n" +
-                            "${commandPrefix}管理 添加白名单 [群号] [描述]\n" +
-                            "-> 移除白名单\n" +
-                            "${commandPrefix}管理 移除白名单 [群号]\n" +
-                            "-> 消息发送\n" +
-                            "${commandPrefix}管理 发送 <QQ号> [消息]"
+                                "-> 查看管理员列表\n" +
+                                "${commandPrefix}管理 列表\n" +
+                                "-> 查看黑名单列表\n" +
+                                "${commandPrefix}管理 黑名单\n" +
+                                "-> 查看白名单列表\n" +
+                                "${commandPrefix}管理 白名单 [信息]\n" +
+                                "-> 设置白名单开关状态\n" +
+                                "${commandPrefix}管理 设置白名单 <开启/关闭>\n" +
+                                "-> 添加白名单\n" +
+                                "${commandPrefix}管理 添加白名单 [群号] [描述]\n" +
+                                "-> 移除白名单\n" +
+                                "${commandPrefix}管理 移除白名单 [群号]\n" +
+                                "-> 消息发送\n" +
+                                "${commandPrefix}管理 发送 <QQ号> [消息]"
                     if (sender.user?.id == BotConfig.master || sender.isConsole()) {
                         reply += "\n" +
                                 " ·master管理指令：\n" +
@@ -203,7 +204,7 @@ object CommandAdmin : RawCommand(
 
                 "transfer", "转账"-> {   // bot积分转账
                     masterOnly(sender)
-                    val qq = args[1]
+                    val qq = args[1].content.replace("@", "")
                     val point = args[2]
                     sender.sendMessage("/pt transfer $qq $point")
                 }
@@ -212,8 +213,8 @@ object CommandAdmin : RawCommand(
                     val qq = args[1].content.toLong()
                     var messages: MessageChain = messageChainOf()
                     args.forEachIndexed { index: Int, element ->
-                        if (index == 2) { messages += element }
-                        if (index > 2) { messages = messages + PlainText(" ") + element }
+                        if (index == 2) messages += element
+                        if (index > 2) messages = messages + PlainText(" ") + element
                     }
                     if (messages.isEmpty()) {
                         messages = messageChainOf(PlainText(" "))
@@ -222,8 +223,7 @@ object CommandAdmin : RawCommand(
                         masterOnly(sender)
                         sender.sendMessage(messages)
                     } else {
-                        val banList: LongArray = longArrayOf(2373664833, 1021694966, 1042439327)
-                        if (qq in banList) { masterOnly(sender) }
+                        messages = messageChainOf(PlainText("${sender.name}(${sender.user?.id})给您发送了一条私信：\n") + messages)
                         try {
                             sender.bot?.getFriendOrFail(qq)!!.sendMessage(messages)
                             sender.sendMessage("发送私信成功")

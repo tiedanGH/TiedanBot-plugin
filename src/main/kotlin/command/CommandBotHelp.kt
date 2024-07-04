@@ -18,7 +18,8 @@ object CommandBotHelp : RawCommand(
     owner = TiedanGame,
     primaryName = "bot",
     secondaryNames = arrayOf("b"),
-    description = "查看bot相关帮助"
+    description = "查看bot相关帮助",
+    usage = "${commandPrefix}bot help"
 ){
     override suspend fun CommandContext.onCommand(args: MessageChain) {
 
@@ -35,8 +36,8 @@ object CommandBotHelp : RawCommand(
                                 "${commandPrefix}bot grass   草图相关帮助\n" +
                                 "${commandPrefix}bot pet    表情相关帮助\n" +
                                 "${commandPrefix}bot jcc    在线编译器帮助\n" +
-                                "${commandPrefix}bot mcmod    MC百科查询帮助\n" +
-                                "${commandPrefix}抽卡    原神抽卡插件菜单\n" +
+//                                "${commandPrefix}bot mcmod    MC百科查询帮助\n" +
+//                                "${commandPrefix}抽卡    原神抽卡插件菜单\n" +
                                 "\n" +
                                 "-> 查看和添加pastebin代码\n" +
                                 "${commandPrefix}pastebin help\n" +
@@ -57,8 +58,8 @@ object CommandBotHelp : RawCommand(
                             "${commandPrefix}b 生草   草图相关帮助\n" +
                             "${commandPrefix}b 表情    表情相关帮助\n" +
                             "${commandPrefix}b 编译器    在线编译器帮助\n" +
-                            "${commandPrefix}b MC    MC百科查询帮助\n" +
-                            "${commandPrefix}抽卡    原神抽卡插件菜单\n" +
+//                            "${commandPrefix}b MC    MC百科查询帮助\n" +
+//                            "${commandPrefix}抽卡    原神抽卡插件菜单\n" +
                             "\n" +
                             "-> 查看和添加pastebin代码\n" +
                             "${commandPrefix}代码 帮助\n" +
@@ -71,14 +72,14 @@ object CommandBotHelp : RawCommand(
 
                 "info", "信息"-> {   // 查看bot信息
                     val whiteEnable: String = if (BotConfig.WhiteList_enable) {"已启用"} else {"未启用"}
-                    val limit: String =
-                        if (BotInfoData.todayFriendImageNum < BotConfig.dailyLimit * 0.85) {
-                            "未达"
-                        } else if (BotInfoData.todayFriendImageNum < BotConfig.dailyLimit) {
-                            "*即将*"
-                        } else {
-                            "*已达*"
-                        }
+//                    val limit: String =
+//                        if (BotInfoData.todayFriendImageNum < BotConfig.dailyLimit * 0.85) {
+//                            "未达"
+//                        } else if (BotInfoData.todayFriendImageNum < BotConfig.dailyLimit) {
+//                            "*即将*"
+//                        } else {
+//                            "*已达*"
+//                        }
                     val reply = "Plugin version：v${TiedanGame.version}\n" +
                                 "白名单功能：$whiteEnable\n" +
                                 "  ·bot数据统计\n" +
@@ -89,8 +90,9 @@ object CommandBotHelp : RawCommand(
                                 "  ·今日数据统计\n" +
                                 "今日发送消息：${BotInfoData.todayMsgNum}\n" +
                                 "今日发送图片：${BotInfoData.todayImageNum}\n" +
-                                "今日私信图片${limit}上限：\n" +
-                                "       ${BotInfoData.todayFriendImageNum} / ${BotConfig.dailyLimit}"
+                                "今日私信图片：${BotInfoData.todayFriendImageNum}"
+//                                "今日私信图片${limit}上限：\n" +
+//                                "       ${BotInfoData.todayFriendImageNum} / ${BotConfig.dailyLimit}"
                     sendQuoteReply(sender, originalMessage, reply)
                 }
 

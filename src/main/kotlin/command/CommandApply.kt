@@ -19,7 +19,8 @@ object CommandApply : RawCommand(
     owner = TiedanGame,
     primaryName = "apply",
     secondaryNames = arrayOf("申请"),
-    description = "申请操作指令"
+    description = "申请操作指令",
+    usage = "${commandPrefix}apply help"
 ){
     private const val MAX_LENGTH = 150
 
