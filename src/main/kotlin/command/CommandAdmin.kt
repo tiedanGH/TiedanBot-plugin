@@ -307,6 +307,15 @@ object CommandAdmin : RawCommand(
                     }
                 }
 
+                "timezone", "时区"-> {   // 修改时区显示
+                    masterOnly(sender)
+                    val zone = args[1].content
+                    val zoneName = args[2].content
+                    BotConfig.TimeZone = mutableListOf(zone, zoneName)
+                    BotConfig.save()
+                    sendQuoteReply(sender, originalMessage, "时区显示已修改：${BotConfig.TimeZone[0]}（${BotConfig.TimeZone[1]}时间）")
+                }
+
                 "focus", "专注"-> {   // 专注模式
                     val option = args[1].content
                     if (option == "disable") {

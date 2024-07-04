@@ -1,8 +1,6 @@
 package com.tiedan
 
-import com.tiedan.command.CommandAdmin
-import com.tiedan.command.CommandApply
-import com.tiedan.command.CommandBotHelp
+import com.tiedan.command.*
 import com.tiedan.config.BotConfig
 import com.tiedan.config.MailConfig
 import com.tiedan.plugindata.ApplyData
@@ -37,6 +35,8 @@ object TiedanGame : KotlinPlugin(
         info("""TiedanGame Plugin""")
     }
 ) {
+    var thread : Int = 0
+
     override fun onEnable() {
         rdConfig()
         rdData()
@@ -49,6 +49,7 @@ object TiedanGame : KotlinPlugin(
     override fun onDisable() {
         CommandAdmin.unregister()
         CommandBotHelp.unregister()
+        CommandTime.unregister()
         CommandApply.unregister()
     }
 
@@ -70,6 +71,7 @@ object TiedanGame : KotlinPlugin(
     private fun regCommand() {
         CommandAdmin.register()
         CommandBotHelp.register()
+        CommandTime.register()
         CommandApply.register()
 //        Commandkanxi.register()
 //        Commandgkx.register()

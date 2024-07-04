@@ -21,6 +21,9 @@ object BotConfig : AutoSavePluginConfig("BotConfig") {
     @ValueDescription("白名单列表")
     var WhiteList: MutableMap<Long, String> by value(mutableMapOf(1919810.toLong() to "none"))
 
+    @ValueDescription("时区")
+    var TimeZone : MutableList<String> by value(mutableListOf("Asia/Shanghai", "北京"))
+
     @ValueDescription("启用专注功能")
     var focus_enable: Boolean by value(false)
 
