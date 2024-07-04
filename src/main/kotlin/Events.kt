@@ -15,6 +15,7 @@ import net.mamoe.mirai.event.ExceptionInEventHandlerException
 import net.mamoe.mirai.event.SimpleListenerHost
 import net.mamoe.mirai.event.events.*
 import net.mamoe.mirai.message.data.Image
+import net.mamoe.mirai.utils.MiraiExperimentalApi
 import net.mamoe.mirai.utils.MiraiInternalApi
 import net.mamoe.mirai.utils.error
 import net.mamoe.mirai.utils.warning
@@ -121,11 +122,40 @@ object Events : SimpleListenerHost() {
         val notice: String =
                     "【机器人加入新群聊】\n" +
                     "群名称：${group.name}\n" +
-                    "群号：${group.id}"
+                    "群号：${groupId}"
         try {
             bot.getFriendOrFail(BotConfig.master).sendMessage(notice)
         } catch (ex: Exception) {
             logger.warning(ex)
+        }
+    }
+
+    /**
+     * 监测bot退出白名单群聊
+     */
+    @OptIn(MiraiExperimentalApi::class)
+    @EventHandler(priority = EventPriority.MONITOR)
+    internal suspend fun BotLeaveEvent.leaveGroup() {
+        if (BotConfig.WhiteList.containsKey(groupId)) {
+            val type = when (this) {
+                is BotLeaveEvent.Active-> "主动退出"
+                is BotLeaveEvent.Disband -> "群聊解散"
+                is BotLeaveEvent.Kick -> "被踢出群聊"
+            }
+            val notice: String =
+                        "【机器人退出白名单群聊】\n" +
+                        "群名称：${group.name}\n" +
+                        "群号：${groupId}\n" +
+                        "原因：$type\n" +
+                        "白名单注释：${BotConfig.WhiteList[groupId]}\n" +
+                        "（白名单已被自动移除）"
+            BotConfig.WhiteList.remove(groupId)
+            BotConfig.save()
+            try {
+                bot.getFriendOrFail(BotConfig.master).sendMessage(notice)
+            } catch (ex: Exception) {
+                logger.warning(ex)
+            }
         }
     }
 
