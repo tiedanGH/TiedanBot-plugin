@@ -4,8 +4,10 @@ import com.tiedan.TiedanGame.logger
 import com.tiedan.TiedanGame.save
 import com.tiedan.config.BotConfig
 import com.tiedan.config.MailConfig
+import com.tiedan.plugindata.AdminListData
 import com.tiedan.plugindata.BlackListData
 import com.tiedan.plugindata.BotInfoData
+import com.tiedan.plugindata.WhiteListData
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 import net.mamoe.mirai.contact.Friend
@@ -67,8 +69,8 @@ object Events : SimpleListenerHost() {
     @EventHandler(priority = EventPriority.HIGH)
     internal fun GroupMessageEvent.check() {
         if (BotConfig.WhiteList_enable &&
-            BotConfig.WhiteList.containsKey(group.id).not() &&
-            BotConfig.AdminList.contains(sender.id).not() &&
+            WhiteListData.WhiteList.containsKey(group.id).not() &&
+            AdminListData.AdminList.contains(sender.id).not() &&
             sender.id != BotConfig.master
             ) {
             intercept()
@@ -136,7 +138,7 @@ object Events : SimpleListenerHost() {
     @OptIn(MiraiExperimentalApi::class)
     @EventHandler(priority = EventPriority.MONITOR)
     internal suspend fun BotLeaveEvent.leaveGroup() {
-        if (BotConfig.WhiteList.containsKey(groupId)) {
+        if (WhiteListData.WhiteList.containsKey(groupId)) {
             val type = when (this) {
                 is BotLeaveEvent.Active-> "主动退出"
                 is BotLeaveEvent.Disband -> "群聊解散"
@@ -147,9 +149,9 @@ object Events : SimpleListenerHost() {
                         "群名称：${group.name}\n" +
                         "群号：${groupId}\n" +
                         "原因：$type\n" +
-                        "白名单注释：${BotConfig.WhiteList[groupId]}\n" +
+                        "白名单注释：${WhiteListData.WhiteList[groupId]}\n" +
                         "（白名单已被自动移除）"
-            BotConfig.WhiteList.remove(groupId)
+            WhiteListData.WhiteList.remove(groupId)
             BotConfig.save()
             try {
                 bot.getFriendOrFail(BotConfig.master).sendMessage(notice)

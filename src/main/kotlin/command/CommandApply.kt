@@ -7,7 +7,9 @@ import com.tiedan.TiedanGame.masterOnly
 import com.tiedan.TiedanGame.save
 import com.tiedan.TiedanGame.sendQuoteReply
 import com.tiedan.config.BotConfig
+import com.tiedan.plugindata.AdminListData
 import com.tiedan.plugindata.ApplyData
+import com.tiedan.plugindata.WhiteListData
 import net.mamoe.mirai.console.command.*
 import net.mamoe.mirai.console.command.CommandManager.INSTANCE.commandPrefix
 import net.mamoe.mirai.contact.PermissionDeniedException
@@ -40,7 +42,7 @@ object CommandApply : RawCommand(
                                 "${commandPrefix}apply admin <reason>\n" +
                                 "-> 取消个人申请\n" +
                                 "${commandPrefix}apply cancel\n"
-                    if (BotConfig.AdminList.contains(sender.user?.id) || sender.user?.id == BotConfig.master || sender.isConsole()) {
+                    if (AdminListData.AdminList.contains(sender.user?.id) || sender.user?.id == BotConfig.master || sender.isConsole()) {
                         reply += "\n" +
                                  " ·admin管理指令：\n" +
                                  "-> 查看申请列表\n" +
@@ -65,7 +67,7 @@ object CommandApply : RawCommand(
                                 "${commandPrefix}申请 管理员 <原因>\n" +
                                 "-> 取消个人申请\n" +
                                 "${commandPrefix}申请 取消"
-                    if (BotConfig.AdminList.contains(sender.user?.id) || sender.user?.id == BotConfig.master || sender.isConsole()) {
+                    if (AdminListData.AdminList.contains(sender.user?.id) || sender.user?.id == BotConfig.master || sender.isConsole()) {
                         reply += "\n\n" +
                                  " ·admin管理指令：\n" +
                                  "-> 查看申请列表\n" +
@@ -210,11 +212,11 @@ object CommandApply : RawCommand(
                         option = "同意"
                         when(type) {
                             "white"-> {
-                                ApplyData.WhiteListApplication[handleQQ]?.get("group")?.let { BotConfig.WhiteList.put(it.toLong(), remark) }
-                                BotConfig.WhiteList = BotConfig.WhiteList.toSortedMap()
+                                ApplyData.WhiteListApplication[handleQQ]?.get("group")?.let { WhiteListData.WhiteList.put(it.toLong(), remark) }
+                                WhiteListData.WhiteList = WhiteListData.WhiteList.toSortedMap()
                             }
                             "admin"-> {
-                                BotConfig.AdminList.add(handleQQ)
+                                AdminListData.AdminList.add(handleQQ)
                             }
                         }
                     } else if (arrayListOf("refuse","拒绝").contains(option)) {
@@ -283,8 +285,8 @@ object CommandApply : RawCommand(
                         if (type == "white" || type == "all") {
                             ApplyData.WhiteListApplication.keys.forEachIndexed { _, key ->
                                 if (option == "同意") {
-                                    ApplyData.WhiteListApplication[key]?.get("group")?.let { BotConfig.WhiteList.put(it.toLong(), "批量处理(h*)") }
-                                    BotConfig.WhiteList = BotConfig.WhiteList.toSortedMap()
+                                    ApplyData.WhiteListApplication[key]?.get("group")?.let { WhiteListData.WhiteList.put(it.toLong(), "批量处理(h*)") }
+                                    WhiteListData.WhiteList = WhiteListData.WhiteList.toSortedMap()
                                 }
                                 if (option != "忽略") {
                                     val noticeApply = "【申请处理通知】\n" +
@@ -303,7 +305,7 @@ object CommandApply : RawCommand(
                         if (type == "admin" || type == "all") {
                             ApplyData.AdminApplication.keys.forEachIndexed { _, key ->
                                 if (option == "同意") {
-                                    BotConfig.AdminList.add(key)
+                                    AdminListData.AdminList.add(key)
                                 }
                                 if (option != "忽略") {
                                     val noticeApply = "【申请处理通知】\n" +

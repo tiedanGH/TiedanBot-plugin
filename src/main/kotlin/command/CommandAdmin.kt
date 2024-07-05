@@ -10,7 +10,9 @@ import com.tiedan.buildMailContent
 import com.tiedan.buildMailSession
 import com.tiedan.config.BotConfig
 import com.tiedan.config.MailConfig
+import com.tiedan.plugindata.AdminListData
 import com.tiedan.plugindata.BlackListData
+import com.tiedan.plugindata.WhiteListData
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import net.mamoe.mirai.console.command.*
@@ -119,7 +121,7 @@ object CommandAdmin : RawCommand(
 
                 "list", "列表"-> {   // 查看管理员列表
                     var adminListInfo = "·管理员列表："
-                    for (admin in BotConfig.AdminList) {
+                    for (admin in AdminListData.AdminList) {
                         adminListInfo += "\n$admin"
                     }
                     sendQuoteReply(sender, originalMessage, adminListInfo)
@@ -129,9 +131,9 @@ object CommandAdmin : RawCommand(
                     masterOnly(sender)
                     try {
                         val qq = args[1].content.toLong()
-                        val result = BotConfig.AdminList.add(qq)
+                        val result = AdminListData.AdminList.add(qq)
                         if (result) {
-                            BotConfig.AdminList = BotConfig.AdminList.toSortedSet()
+                            AdminListData.AdminList = AdminListData.AdminList.toSortedSet()
                             BotConfig.save()
                             if (qq == 0.toLong()) {   // 0视为all
                                 sendQuoteReply(sender, originalMessage, "已解除管理员权限限制")
@@ -150,7 +152,7 @@ object CommandAdmin : RawCommand(
                     masterOnly(sender)
                     try {
                         val qq = args[1].content.toLong()
-                        val result = BotConfig.AdminList.remove(qq)
+                        val result = AdminListData.AdminList.remove(qq)
                         if (result) {
                             BotConfig.save()
                             if (qq == 0.toLong()) {   // 0视为all
@@ -236,11 +238,11 @@ object CommandAdmin : RawCommand(
 
                 "WhiteList", "白名单"-> {   // 查看白名单列表
                     val showDesc = args.getOrNull(1)?.content?.let { it == "info" || it == "信息" } ?: false
-                    var whiteListInfo = "白名单功能：$whiteEnable\n白名单总数：${BotConfig.WhiteList.size}\n·白名单列表："
-                    for (key in BotConfig.WhiteList.keys) {
+                    var whiteListInfo = "白名单功能：$whiteEnable\n白名单总数：${WhiteListData.WhiteList.size}\n·白名单列表："
+                    for (key in WhiteListData.WhiteList.keys) {
                         whiteListInfo += "\n$key"
                         if (showDesc) {
-                            whiteListInfo += " ${BotConfig.WhiteList[key]}"
+                            whiteListInfo += " ${WhiteListData.WhiteList[key]}"
                         }
                     }
                     sendQuoteReply(sender, originalMessage, whiteListInfo)
@@ -276,9 +278,9 @@ object CommandAdmin : RawCommand(
                         sender.subject!!.id
                     }
                     val desc = args.getOrElse(2) { "no_desc" }.toString()
-                    val result = BotConfig.WhiteList.put(group, desc)
+                    val result = WhiteListData.WhiteList.put(group, desc)
                     if (result == null) {
-                        BotConfig.WhiteList = BotConfig.WhiteList.toSortedMap()
+                        WhiteListData.WhiteList = WhiteListData.WhiteList.toSortedMap()
                         sendQuoteReply(sender, originalMessage, "已将 $group 添加进白名单列表")
                     } else {
                         sendQuoteReply(sender, originalMessage, "$group 已存在，更新描述成功：$desc")
@@ -298,7 +300,7 @@ object CommandAdmin : RawCommand(
                         }
                         sender.subject!!.id
                     }
-                    val result = BotConfig.WhiteList.remove(group)
+                    val result = WhiteListData.WhiteList.remove(group)
                     if (result != null) {
                         BotConfig.save()
                         sendQuoteReply(sender, originalMessage, "已将 $group 移除白名单列表")

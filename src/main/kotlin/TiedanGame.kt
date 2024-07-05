@@ -3,9 +3,7 @@ package com.tiedan
 import com.tiedan.command.*
 import com.tiedan.config.BotConfig
 import com.tiedan.config.MailConfig
-import com.tiedan.plugindata.ApplyData
-import com.tiedan.plugindata.BlackListData
-import com.tiedan.plugindata.BotInfoData
+import com.tiedan.plugindata.*
 import com.tiedan.timer.AutoUpdateDailyData
 import com.tiedan.timer.DateTime
 import net.mamoe.mirai.console.command.CommandManager.INSTANCE.register
@@ -59,6 +57,8 @@ object TiedanGame : KotlinPlugin(
     }
 
     fun rdData() {
+        AdminListData.reload()
+        WhiteListData.reload()
         BotInfoData.reload()
         ApplyData.reload()
         BlackListData.reload()
@@ -105,7 +105,7 @@ object TiedanGame : KotlinPlugin(
     }
 
     fun adminOnly(sender: CommandSender) {
-        if (BotConfig.AdminList.contains(sender.user?.id).not() && BotConfig.AdminList.contains(0).not() &&
+        if (AdminListData.AdminList.contains(sender.user?.id).not() && AdminListData.AdminList.contains(0).not() &&
             sender.user?.id != BotConfig.master && sender.isNotConsole()) {
             throw PermissionDeniedException("未持有管理员权限")
         }
