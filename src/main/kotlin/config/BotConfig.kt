@@ -18,6 +18,9 @@ object BotConfig : AutoSavePluginConfig("BotConfig") {
     @ValueDescription("时区")
     var TimeZone : MutableList<String> by value(mutableListOf("Asia/Shanghai", "北京"))
 
+    @ValueDescription("记录消息上限")
+    var recordLimit: Int by value(500)
+
     @ValueDescription("启用专注功能")
     var focus_enable: Boolean by value(false)
 

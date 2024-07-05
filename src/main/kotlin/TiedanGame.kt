@@ -48,6 +48,7 @@ object TiedanGame : KotlinPlugin(
         CommandAdmin.unregister()
         CommandBotHelp.unregister()
         CommandTime.unregister()
+        CommandRecall.unregister()
         CommandApply.unregister()
     }
 
@@ -66,12 +67,14 @@ object TiedanGame : KotlinPlugin(
 
     private fun regEvent() {
         GlobalEventChannel.registerListenerHost(Events)
+        GlobalEventChannel.registerListenerHost(MessageRecorder)
     }
 
     private fun regCommand() {
         CommandAdmin.register()
         CommandBotHelp.register()
         CommandTime.register()
+        CommandRecall.register()
         CommandApply.register()
 //        Commandkanxi.register()
 //        Commandgkx.register()
