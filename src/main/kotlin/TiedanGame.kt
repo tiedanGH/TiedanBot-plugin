@@ -27,7 +27,7 @@ object TiedanGame : KotlinPlugin(
     JvmPluginDescription(
         id = "com.tiedan.TiedanGame",
         name = "TiedanGame",
-        version = "1.2.0",
+        version = "1.2.1",
     ) {
         author("tiedan")
         info("""TiedanGame Plugin""")
@@ -50,6 +50,7 @@ object TiedanGame : KotlinPlugin(
         CommandTime.unregister()
         CommandRecall.unregister()
         CommandApply.unregister()
+        CommandRank.unregister()
     }
 
     fun rdConfig() {
@@ -63,6 +64,7 @@ object TiedanGame : KotlinPlugin(
         BotInfoData.reload()
         ApplyData.reload()
         BlackListData.reload()
+        RankData.reload()
     }
 
     private fun regEvent() {
@@ -76,6 +78,7 @@ object TiedanGame : KotlinPlugin(
         CommandTime.register()
         CommandRecall.register()
         CommandApply.register()
+        CommandRank.register()
 //        Commandkanxi.register()
 //        Commandgkx.register()
 //        CommandNewGame.register()
