@@ -18,6 +18,12 @@ class AutoUpdateDailyData(private val logger: MiraiLogger) : TimerTask(){
     }
 }
 
+//class AutoDailySign(private val logger: MiraiLogger) : TimerTask(){
+//    override fun run() {
+//        Bot.getInstanceOrNull(2373664833)?.getGroupOrFail(541402580)?.sendMessage("/g sign")
+//    }
+//}
+
 class DateTime {
     companion object{
         fun getCal(hour: Int, minute: Int, second: Int, millisecond: Int): Date {

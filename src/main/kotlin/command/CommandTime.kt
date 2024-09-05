@@ -3,7 +3,6 @@ package com.tiedan.command
 import com.tiedan.TiedanGame
 import com.tiedan.TiedanGame.logger
 import com.tiedan.TiedanGame.sendQuoteReply
-import com.tiedan.TiedanGame.thread
 import com.tiedan.config.BotConfig
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -26,6 +25,8 @@ object CommandTime : RawCommand(
     description = "计时器相关指令",
     usage = "${commandPrefix}time help"
 ){
+    private var THREAD : Int = 0
+
     override suspend fun CommandContext.onCommand(args: MessageChain) {
 
         try {
@@ -66,13 +67,13 @@ object CommandTime : RawCommand(
                         sendQuoteReply(sender, originalMessage, "倒计时仅支持1 ~ 3600")
                         return
                     }
-                    if (thread >= 3) {
-                        sendQuoteReply(sender, originalMessage, "计时器无法启动，因为已经有 $thread 个进程正在运行")
+                    if (THREAD >= 3) {
+                        sendQuoteReply(sender, originalMessage, "计时器无法启动，因为已经有 $THREAD 个进程正在运行")
                         return
                     }
                     sendQuoteReply(sender, originalMessage, "倒计时开始")
                     var remainingTime = second
-                    thread++
+                    THREAD++
                     CoroutineScope(Dispatchers.IO).launch {
                         while (remainingTime >= 0) {
                             when (remainingTime) {
@@ -99,7 +100,7 @@ object CommandTime : RawCommand(
                                 }
                                 0 -> {
                                     sendQuoteReply(sender, originalMessage, "${name}时间到！")
-                                    thread--
+                                    THREAD--
                                 }
                             }
                             remainingTime--

@@ -265,7 +265,7 @@ object CommandAdmin : RawCommand(
                     BotConfig.save()
                 }
 
-                "addWhiteList", "添加白名单"-> {   // 添加白名单
+                "addWhiteList", "addwhitelist", "添加白名单"-> {   // 添加白名单
                     val group: Long = try {
                         args[1].content.toLong()
                     } catch (ex: NumberFormatException) {
@@ -288,7 +288,7 @@ object CommandAdmin : RawCommand(
                     BotConfig.save()
                 }
 
-                "delWhiteList", "移除白名单"-> {   // 移除白名单
+                "delWhiteList", "delwhitelist", "移除白名单"-> {   // 移除白名单
                     val group: Long = try {
                         args[1].content.toLong()
                     } catch (ex: NumberFormatException) {

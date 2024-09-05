@@ -33,8 +33,6 @@ object TiedanGame : KotlinPlugin(
         info("""TiedanGame Plugin""")
     }
 ) {
-    var thread : Int = 0
-
     override fun onEnable() {
         rdConfig()
         rdData()

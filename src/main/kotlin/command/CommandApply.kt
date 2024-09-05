@@ -251,8 +251,8 @@ object CommandApply : RawCommand(
                             sender.bot?.getFriendOrFail(BotConfig.master)?.sendMessage(notice)   // 抄送结果至bot所有者
                         }
                     } catch (ex: Exception) {
-                        logger.warning {"error: ${ex.message}"}
-                        sender.sendMessage("出现错误：${ex}")
+                        logger.warning(ex)
+                        sender.sendMessage("出现错误：${ex.message}")
                     }
                     ApplyData.WhiteListApplication.remove(handleQQ)
                     ApplyData.AdminApplication.remove(handleQQ)
