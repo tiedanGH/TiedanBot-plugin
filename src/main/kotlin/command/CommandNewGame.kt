@@ -6,7 +6,7 @@ import net.mamoe.mirai.console.command.CommandContext
 import net.mamoe.mirai.console.command.CompositeCommand
 import net.mamoe.mirai.console.util.ConsoleExperimentalApi
 
-// TODO CommandNewGame
+@Deprecated("已废弃")
 @OptIn(ConsoleExperimentalApi::class)
 object CommandNewGame : CompositeCommand(
     owner = TiedanGame,

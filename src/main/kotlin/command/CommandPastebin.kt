@@ -16,7 +16,8 @@ import net.mamoe.mirai.utils.warning
 /**
  * ### 此部分不再使用，已迁移至 [mirai-console-jcc-plugin](https://github.com/tiedanGH/mirai-console-jcc-plugin/blob/master/src/main/kotlin/PastebinCommand.kt)
  */
-object PastebinCommand : RawCommand(
+@Deprecated("此部分不再使用，已迁移")
+object CommandPastebin : RawCommand(
     owner = TiedanGame,
     primaryName = "pastebin",
     secondaryNames = arrayOf("pb", "代码"),
