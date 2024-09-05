@@ -10,19 +10,22 @@ import com.tiedan.plugindata.BotInfoData
 import com.tiedan.plugindata.WhiteListData
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
+import net.mamoe.mirai.console.command.CommandManager
 import net.mamoe.mirai.contact.Friend
+import net.mamoe.mirai.contact.getMember
 import net.mamoe.mirai.event.EventHandler
 import net.mamoe.mirai.event.EventPriority
 import net.mamoe.mirai.event.ExceptionInEventHandlerException
 import net.mamoe.mirai.event.SimpleListenerHost
 import net.mamoe.mirai.event.events.*
-import net.mamoe.mirai.message.data.Image
+import net.mamoe.mirai.message.data.*
 import net.mamoe.mirai.utils.MiraiExperimentalApi
 import net.mamoe.mirai.utils.MiraiInternalApi
 import net.mamoe.mirai.utils.error
 import net.mamoe.mirai.utils.warning
 import kotlin.coroutines.CoroutineContext
 import kotlin.io.path.inputStream
+import kotlin.random.Random.Default.nextInt
 
 object Events : SimpleListenerHost() {
 
@@ -49,6 +52,18 @@ object Events : SimpleListenerHost() {
 //                        "如有疑问，请联系管理员")
 //        }
 //    }
+
+    /**
+     * 拦截临时会话消息
+     */
+    @EventHandler(priority = EventPriority.HIGH)
+    internal fun GroupTempMessagePreSendEvent.check() {
+        intercept()
+    }
+    @EventHandler(priority = EventPriority.HIGH)
+    internal fun StrangerMessagePreSendEvent.check() {
+        intercept()
+    }
 
     /**
      * 黑名单检测
@@ -81,9 +96,9 @@ object Events : SimpleListenerHost() {
      * 监测bot新好友
      */
     @EventHandler(priority = EventPriority.MONITOR)
-    internal suspend fun NewFriendRequestEvent.newFriend() {
+    internal suspend fun NewFriendRequestEvent.newFriendRequest() {
         val notice: String =
-                "【机器人添加新好友】\n" +
+                "【机器人收到新好友请求】\n" +
                 "eventId：$eventId\n" +
                 "好友：$fromNick\n" +
                 "QQ号：$fromId\n" +
@@ -101,7 +116,7 @@ object Events : SimpleListenerHost() {
      */
     @EventHandler(priority = EventPriority.MONITOR)
     internal suspend fun BotInvitedJoinGroupRequestEvent.newGroup() {
-        val notice: String =
+        var notice: String =
                 "【机器人被邀请加群】\n" +
                 "eventId：$eventId\n" +
                 "邀请进群：$groupName\n" +
@@ -109,8 +124,16 @@ object Events : SimpleListenerHost() {
                 "邀请人：$invitorNick\n" +
                 "QQ号：$invitorId"
         try {
+            if (BotConfig.WhiteList_enable) {
+                notice += if (WhiteListData.WhiteList.containsKey(groupId)) {
+                    this.accept()
+                    "\n目标群在白名单中，已自动同意邀请"
+                } else {
+                    invitor?.sendMessage("【重要提醒】机器人在被拉群后需要白名单才能正常使用，请先联系机器人管理员申请白名单，或尝试使用「${CommandManager.commandPrefix}apply white <群号> <原因>」指令发送白名单申请")
+                    "\n目标群并不在白名单中，已发送私信提醒邀请人"
+                }
+            }
             bot.getFriendOrFail(BotConfig.master).sendMessage(notice)
-            // invitor?.sendMessage("")
         } catch (ex: Exception) {
             logger.warning(ex)
         }
@@ -121,11 +144,20 @@ object Events : SimpleListenerHost() {
      */
     @EventHandler(priority = EventPriority.MONITOR)
     internal suspend fun BotJoinGroupEvent.joinGroup() {
-        val notice: String =
+        var notice: String =
                     "【机器人加入新群聊】\n" +
                     "群名称：${group.name}\n" +
                     "群号：${groupId}"
         try {
+            if (BotConfig.WhiteList_enable && group.getMember(BotConfig.master) == null) {
+                notice += if (WhiteListData.WhiteList.containsKey(groupId)) {
+                    "\n目标群在白名单中"
+                } else {
+                    group.sendMessage("【重要提醒】本群 $groupId 并不在机器人的白名单中，需要白名单才能正常使用，请先联系机器人管理员申请白名单，或尝试使用「${CommandManager.commandPrefix}apply white <群号> <原因>」指令发送白名单申请。" +
+                            "\n目前机器人正在使用非开源的私密签名服务，可能会导致本群*聊天记录的泄露*，请勿在此群中发送任何包含个人隐私或其他重要内容的信息，如果担心类似的安全问题，请将此机器人移出群聊")
+                    "\n目标群并不在白名单中，已发送群消息提醒目标群聊"
+                }
+            }
             bot.getFriendOrFail(BotConfig.master).sendMessage(notice)
         } catch (ex: Exception) {
             logger.warning(ex)
@@ -158,6 +190,26 @@ object Events : SimpleListenerHost() {
             } catch (ex: Exception) {
                 logger.warning(ex)
             }
+        }
+    }
+
+    /**
+     * “看戏”关键词回复
+     */
+    @EventHandler(priority = EventPriority.NORMAL)
+    internal suspend fun GroupMessageEvent.kx() {
+        val kxReply = mutableListOf(
+            "还在看戏，还不赶紧加入！",
+            "看什么戏，还不快in！",
+            "in，为什么不in！",
+            "都看了多久戏了，为什么还不in！",
+            "看戏，看戏！为什么不加入！",
+            "你看看这都几点了，还不打算加入！",
+            "别让等待成为遗憾，加入，现在就开",
+            "理论不如实践，看戏不如行动",
+        )
+        if (message.content == "看戏" || message.content.endsWith("g 看戏")) {
+            group.sendMessage(messageChainOf(At(sender.id),PlainText(" "), PlainText(kxReply[nextInt(kxReply.size)])))
         }
     }
 
