@@ -63,6 +63,8 @@ object CommandAdmin : RawCommand(
                                 "${commandPrefix}admin addWhiteList [group] [desc]\n" +
                                 "-> 移除白名单\n" +
                                 "${commandPrefix}admin delWhiteList [group]\n" +
+                                "-> 群聊相关操作\n" +
+                                "${commandPrefix}admin group <操作>\n" +
                                 "-> 消息发送\n" +
                                 "${commandPrefix}admin send <qq> [message]"
                     if (sender.user?.id == BotConfig.master || sender.isConsole()) {
@@ -98,6 +100,8 @@ object CommandAdmin : RawCommand(
                                 "${commandPrefix}管理 添加白名单 [群号] [描述]\n" +
                                 "-> 移除白名单\n" +
                                 "${commandPrefix}管理 移除白名单 [群号]\n" +
+                                "-> 群聊相关操作\n" +
+                                "${commandPrefix}管理 群聊 <操作>\n" +
                                 "-> 消息发送\n" +
                                 "${commandPrefix}管理 发送 <QQ号> [消息]"
                     if (sender.user?.id == BotConfig.master || sender.isConsole()) {
@@ -334,6 +338,75 @@ object CommandAdmin : RawCommand(
                                 "***专注模式 [已启用]***\nbot将专注于群聊 ${BotConfig.focus_to} 进行服务")
                         } catch (ex: NumberFormatException) {
                             sendQuoteReply(sender, originalMessage, "参数转换错误，请检查指令")
+                        }
+                    }
+                }
+
+                "group", "Group", "群聊"-> {
+                    val groups = sender.bot?.groups
+                    if (groups == null) {
+                        sendQuoteReply(sender, originalMessage, "错误：获取群列表失败或群列表为空")
+                        return
+                    }
+                    when (args[1].content) {
+                        "info", "信息"-> {
+                            val type = args.getOrElse(2) { "inactive" }.toString()
+                            var activeCount = 0
+                            var activeInfo = "【激活群聊信息】"
+                            var inactiveInfo = "【未激活群聊信息】"
+                            for (group in groups) {
+                                if (group.id in WhiteListData.WhiteList) {
+                                    activeCount++
+                                    activeInfo += "\n${group.name}(${group.id}) [人数：${group.members.size + 1}]"
+                                } else {
+                                    inactiveInfo += "\n${group.name}(${group.id}) [人数：${group.members.size + 1}]"
+                                }
+                            }
+                            val groupInfo = "白名单功能：$whiteEnable\n" +
+                                            "群聊总数：${groups.size}\n" +
+                                            "白名单总数：${WhiteListData.WhiteList.size}\n" +
+                                            "激活群聊数：$activeCount\n" +
+                                            "未知群聊数：${groups.size - activeCount}"
+                            val forward = buildForwardMessage(sender.subject!!) {
+                                displayStrategy = object : ForwardMessage.DisplayStrategy {
+                                    override fun generateTitle(forward: RawForwardMessage): String = "群聊信息查询"
+                                    override fun generateBrief(forward: RawForwardMessage): String = "[群聊信息]"
+                                    override fun generatePreview(forward: RawForwardMessage): List<String> =
+                                        listOf("白名单总数：${WhiteListData.WhiteList.size}", "激活群聊数：$activeCount", "未知群聊数：${groups.size - activeCount}")
+                                    override fun generateSummary(forward: RawForwardMessage): String = "白名单功能：$whiteEnable"
+                                }
+                                sender.subject!!.bot says groupInfo
+                                if (type == "active" || type == "all" || type == "激活" || type == "全部")
+                                    sender.subject!!.bot says activeInfo
+                                if (type == "inactive" || type == "all" || type == "未知" || type == "全部")
+                                    sender.subject!!.bot says inactiveInfo
+                            }
+                            sender.sendMessage(forward)
+                        }
+                        "quit", "退群"-> {
+                            masterOnly(sender)
+                            val id = args[2].content.toLong()
+                            if (id in groups) {
+                                sender.bot?.getGroup(id)?.quit()
+                                sendQuoteReply(sender, originalMessage, "退出群 $id 成功")
+                            } else {
+                                sendQuoteReply(sender, originalMessage, "错误：此群号不在群列表中")
+                            }
+                        }
+                        "autoQuit", "自动退群"-> {
+                            masterOnly(sender)
+                            var count = 0
+                            for (group in groups) {
+                                if ((group.id in WhiteListData.WhiteList).not()) {
+                                    group.sendMessage("【管理员操作自动退群】本群不在机器人白名单中，请联系机器人管理员申请白名单，或使用「${CommandManager.commandPrefix}apply white <群号> <原因>」指令发送白名单申请")
+                                    group.quit()
+                                    count++
+                                }
+                            }
+                            sendQuoteReply(sender, originalMessage, "自动退出未知群聊 $count 个")
+                        }
+                        else-> {
+                            sendQuoteReply(sender, originalMessage, "Group指令：未知的操作")
                         }
                     }
                 }
