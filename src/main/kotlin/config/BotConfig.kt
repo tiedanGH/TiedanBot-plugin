@@ -15,6 +15,9 @@ object BotConfig : AutoSavePluginConfig("BotConfig") {
     @ValueDescription("启用白名单功能")
     var WhiteList_enable: Boolean by value(false)
 
+    @ValueDescription("增强安全模式（0关闭1启用2最高级）")
+    var SecureMode: Int by value(2)
+
     @ValueDescription("时区")
     var TimeZone : MutableList<String> by value(mutableListOf("Asia/Shanghai", "北京"))
 

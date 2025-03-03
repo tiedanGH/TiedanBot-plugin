@@ -54,15 +54,19 @@ object Events : SimpleListenerHost() {
 //    }
 
     /**
-     * 拦截临时会话消息
+     * 拦截机器人发送临时会话和陌生人消息（增强安全模式）
      */
     @EventHandler(priority = EventPriority.HIGH)
     internal fun GroupTempMessagePreSendEvent.check() {
-        intercept()
+        if (BotConfig.SecureMode > 0) cancel()
     }
     @EventHandler(priority = EventPriority.HIGH)
     internal fun StrangerMessagePreSendEvent.check() {
-        intercept()
+        if (BotConfig.SecureMode > 0) cancel()
+    }
+    @EventHandler(priority = EventPriority.HIGH)
+    internal fun UserMessagePreSendEvent.check() {
+        if (BotConfig.SecureMode > 0 && bot.containsFriend(target.id).not()) cancel()
     }
 
     /**
@@ -126,8 +130,13 @@ object Events : SimpleListenerHost() {
         try {
             if (BotConfig.WhiteList_enable) {
                 notice += if (WhiteListData.WhiteList.containsKey(groupId)) {
-                    this.accept()
-                    "\n目标群在白名单中，已自动同意邀请"
+                    if (BotConfig.SecureMode == 2) {
+                        invitor?.sendMessage("【提醒】目标群在白名单中，但因机器人处于增强安全模式，仍需手动同意申请，请您联系账号所有者")
+                        "\n目标群在白名单中，但仍需手动同意邀请，已发送私信提醒邀请人"
+                    } else {
+                        this.accept()
+                        "\n目标群在白名单中，已自动同意邀请"
+                    }
                 } else {
                     invitor?.sendMessage("【重要提醒】机器人在被拉群后需要白名单才能正常使用，请先联系机器人管理员申请白名单，或尝试使用「${CommandManager.commandPrefix}apply white <群号> <原因>」指令发送白名单申请")
                     "\n目标群并不在白名单中，已发送私信提醒邀请人"
