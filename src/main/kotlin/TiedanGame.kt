@@ -6,6 +6,10 @@ import com.tiedan.config.MailConfig
 import com.tiedan.plugindata.*
 import com.tiedan.timer.AutoUpdateDailyData
 import com.tiedan.timer.DateTime
+import com.tiedan.timer.calculateNextSignDelay
+import com.tiedan.timer.executeDailySign
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 import net.mamoe.mirai.console.command.CommandManager.INSTANCE.register
 import net.mamoe.mirai.console.command.CommandManager.INSTANCE.unregister
 import net.mamoe.mirai.console.command.CommandSender
@@ -85,10 +89,20 @@ object TiedanGame : KotlinPlugin(
 
     private fun startTimer() {
         val periodDay: Long = 24 * 60 * 60 * 1000
-        val dailyUpdate = AutoUpdateDailyData(logger)
-        val updateDate = DateTime.getCal(23, 59, 59,500)
+        val dailyUpdate = AutoUpdateDailyData()
+        val updateDate = Date(DateTime.getCal(23, 59, 59,500).timeInMillis)
         Timer().schedule(dailyUpdate, updateDate, periodDay)
-        TiedanGame.logger.info { "已启用定时任务，每天0点自动更新统计数据" }
+        logger.info { "已启用定时任务，每日0点自动更新统计数据" }
+        // bot自动签到
+        launch {
+            var success = true
+            while (true) {
+                val delayTime = calculateNextSignDelay(success)
+                logger.info { "已重新加载协程，下次签到剩余时间 ${delayTime / 1000} 秒" }
+                delay(delayTime)
+                success = executeDailySign()
+            }
+        }
     }
 
     suspend fun sendQuoteReply(sender: CommandSender, originalMessage: MessageChain, msgToSend: String) {
