@@ -17,7 +17,10 @@ import net.mamoe.mirai.console.command.isConsole
 import net.mamoe.mirai.console.command.isNotConsole
 import net.mamoe.mirai.console.plugin.jvm.JvmPluginDescription
 import net.mamoe.mirai.console.plugin.jvm.KotlinPlugin
+import net.mamoe.mirai.contact.Group
 import net.mamoe.mirai.contact.PermissionDeniedException
+import net.mamoe.mirai.contact.getMember
+import net.mamoe.mirai.contact.nameCardOrNick
 import net.mamoe.mirai.event.GlobalEventChannel
 import net.mamoe.mirai.message.data.MessageChain
 import net.mamoe.mirai.message.data.PlainText
@@ -52,7 +55,9 @@ object TiedanGame : KotlinPlugin(
         CommandTime.unregister()
         CommandRecall.unregister()
         CommandApply.unregister()
+        CommandPoint.unregister()
         CommandRank.unregister()
+        Commandkx.unregister()
     }
 
     fun rdConfig() {
@@ -65,6 +70,7 @@ object TiedanGame : KotlinPlugin(
         WhiteListData.reload()
         BotInfoData.reload()
         ApplyData.reload()
+        PointData.reload()
         BlackListData.reload()
         RankData.reload()
     }
@@ -80,11 +86,12 @@ object TiedanGame : KotlinPlugin(
         CommandTime.register()
         CommandRecall.register()
         CommandApply.register()
+        CommandPoint.register()
         CommandRank.register()
+        Commandkx.register()
 //        Commandkanxi.register()
 //        Commandgkx.register()
 //        CommandNewGame.register()
-//        CommandPoint.register()
     }
 
     private fun startTimer() {
@@ -114,6 +121,18 @@ object TiedanGame : KotlinPlugin(
                 +PlainText(msgToSend)
             })
         }
+    }
+
+    fun getNickname(sender: CommandSender, qq: Long): String {
+        val subject = sender.subject
+        var nickname: String? = null
+        if (subject is Group) {
+            nickname = subject.getMember(qq)?.nameCardOrNick
+        }
+        if (nickname == null) {
+            nickname = sender.bot?.getFriend(qq)?.nameCardOrNick
+        }
+        return nickname ?: "[获取昵称失败]"
     }
 
     fun masterOnly(sender: CommandSender) {

@@ -2,6 +2,7 @@ package com.tiedan
 
 import com.tiedan.TiedanGame.logger
 import com.tiedan.TiedanGame.save
+import com.tiedan.command.CommandPoint.savePointChange
 import com.tiedan.config.BotConfig
 import com.tiedan.config.MailConfig
 import com.tiedan.plugindata.AdminListData
@@ -196,29 +197,9 @@ object Events : SimpleListenerHost() {
             BotConfig.save()
             try {
                 bot.getFriendOrFail(BotConfig.master).sendMessage(notice)
-            } catch (ex: Exception) {
-                logger.warning(ex)
+            } catch (e: Exception) {
+                logger.warning(e)
             }
-        }
-    }
-
-    /**
-     * “看戏”关键词回复
-     */
-    @EventHandler(priority = EventPriority.NORMAL)
-    internal suspend fun GroupMessageEvent.kx() {
-        val kxReply = mutableListOf(
-            "还在看戏，还不赶紧加入！",
-            "看什么戏，还不快in！",
-            "in，为什么不in！",
-            "都看了多久戏了，为什么还不in！",
-            "看戏，看戏！为什么不加入！",
-            "你看看这都几点了，还不打算加入！",
-            "别让等待成为遗憾，加入，现在就开",
-            "理论不如实践，看戏不如行动",
-        )
-        if (message.content == "看戏" || message.content.endsWith("g 看戏")) {
-            group.sendMessage(messageChainOf(At(sender.id),PlainText(" "), PlainText(kxReply[nextInt(kxReply.size)])))
         }
     }
 
@@ -239,6 +220,26 @@ object Events : SimpleListenerHost() {
             BotInfoData.todayMsgNum++
         }
         BotInfoData.save()
+        if (message.content.startsWith("新游戏积分已记录")) {
+            try {
+                val lines = message.content.lines()
+                for (line in lines.drop(1)) {
+                    val trimmed = line.trim()
+                    if (trimmed.isEmpty() || trimmed.startsWith("「")) continue
+                    val parts = trimmed.split("\\s+".toRegex())
+                    if (parts.size >= 2) {
+                        val qq = parts[0].toLong()
+                        val point = parts[1].toLong()
+                        savePointChange(qq, point)
+                    }
+                }
+                PointData.save()
+            } catch (e: Exception) {
+                logger.warning(e)
+                target.sendMessage("[错误] 积分自动记录出现错误，请联系铁蛋查看后台")
+            }
+        }
+
     }
 
     /**
