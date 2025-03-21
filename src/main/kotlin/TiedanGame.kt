@@ -34,7 +34,7 @@ object TiedanGame : KotlinPlugin(
     JvmPluginDescription(
         id = "com.tiedan.TiedanGame",
         name = "TiedanGame",
-        version = "1.2.1",
+        version = "1.3.0-beta",
     ) {
         author("tiedan")
         info("""TiedanGame Plugin""")
@@ -46,6 +46,7 @@ object TiedanGame : KotlinPlugin(
         regEvent()
         regCommand()
         startTimer()
+        BotInfoData.startTime = System.currentTimeMillis()
         logger.info { "TiedanGame Plugin loaded!" }
     }
 

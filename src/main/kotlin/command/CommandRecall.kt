@@ -42,9 +42,9 @@ object CommandRecall : SimpleCommand(
             } else {
                 "${contact?.render().orEmpty()}未找到消息"
             }
-        } catch (ex: Exception) {
-            logger.warning(ex)
-            "出现错误：${ex.message}"
+        } catch (e: Exception) {
+            logger.warning(e)
+            "出现错误：${e.message}"
         }
         sendMessage(message)
     }

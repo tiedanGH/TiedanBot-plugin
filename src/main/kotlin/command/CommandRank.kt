@@ -22,7 +22,6 @@ import net.mamoe.mirai.console.command.isConsole
 import net.mamoe.mirai.contact.PermissionDeniedException
 import net.mamoe.mirai.message.data.MessageChain
 import net.mamoe.mirai.message.data.content
-import net.mamoe.mirai.utils.warning
 import java.io.File
 import java.io.FileOutputStream
 import java.io.IOException
@@ -173,9 +172,9 @@ object CommandRank : RawCommand(
                                 outputStream.write(fileContent.toByteArray())
                             }
                         }
-                    } catch (ex: IOException) {
-                        logger.warning(ex)
-                        sendQuoteReply(sender, originalMessage, "导出数据失败：${ex.message}")
+                    } catch (e: IOException) {
+                        logger.warning(e)
+                        sendQuoteReply(sender, originalMessage, "导出数据失败：${e.message}")
                         return
                     }
                     val address: String = args[1].content
@@ -201,7 +200,7 @@ object CommandRank : RawCommand(
                         jakarta.mail.Transport.send(mail)
                         sendQuoteReply(sender, originalMessage, "数据导出成功，且邮件成功发送")
                     } catch (cause: jakarta.mail.MessagingException) {
-                        sendQuoteReply(sender, originalMessage, "数据导出成功，但邮件发送失败, cause: ${cause.message}")
+                        sendQuoteReply(sender, originalMessage, "数据导出成功，但邮件发送失败, 原因: ${cause.message}")
                     } finally {
                         current.contextClassLoader = oc
                     }
@@ -211,11 +210,13 @@ object CommandRank : RawCommand(
                     sendQuoteReply(sender, originalMessage, "[参数不匹配]\n请使用「${CommandManager.commandPrefix}rank help」来查看指令帮助")
                 }
             }
-        } catch (ex: PermissionDeniedException) {
-            sendQuoteReply(sender, originalMessage, "[操作无效] ${ex.message}")
-        } catch (ex: Exception) {
-            logger.warning {"error: ${ex.message}"}
-            sendQuoteReply(sender, originalMessage, "[参数不足]\n请使用「${CommandManager.commandPrefix}rank help」来查看指令帮助")
+        } catch (e: PermissionDeniedException) {
+            sendQuoteReply(sender, originalMessage, "[操作无效] ${e.message}")
+        } catch (e: IndexOutOfBoundsException) {
+            sendQuoteReply(sender, originalMessage, "[参数不足]\n请使用「${commandPrefix}rank help」来查看指令帮助")
+        } catch (e: Exception) {
+            logger.warning(e)
+            sendQuoteReply(sender, originalMessage, "[指令执行未知错误]\n可能由于bot发消息出错，请联系铁蛋查看后台：${e::class.simpleName}(${e.message})")
         }
     }
 }

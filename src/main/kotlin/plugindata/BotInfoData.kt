@@ -26,6 +26,9 @@ internal object BotInfoData : AutoSavePluginData("BotInfoData") {
     var todayImageNum: Int by value(0)
 
     @ValueName("今日私信图片")
-    var todayFriendImageNum: Int by value(0)
+    var todayPrivateImageNum: Int by value(0)
+
+    @ValueName("启动时间")
+    var startTime: Long by value(0L)
 
 }

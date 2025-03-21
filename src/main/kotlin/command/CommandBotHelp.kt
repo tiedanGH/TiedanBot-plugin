@@ -3,16 +3,13 @@ package com.tiedan.command
 import com.tiedan.TiedanGame
 import com.tiedan.TiedanGame.logger
 import com.tiedan.TiedanGame.sendQuoteReply
-import com.tiedan.config.BotConfig
 import com.tiedan.plugindata.BotInfoData
 import net.mamoe.mirai.console.command.BuiltInCommands
 import net.mamoe.mirai.console.command.CommandContext
 import net.mamoe.mirai.console.command.CommandManager.INSTANCE.commandPrefix
 import net.mamoe.mirai.console.command.RawCommand
-import net.mamoe.mirai.console.plugin.version
 import net.mamoe.mirai.message.data.MessageChain
 import net.mamoe.mirai.message.data.content
-import net.mamoe.mirai.utils.warning
 
 object CommandBotHelp : RawCommand(
     owner = TiedanGame,
@@ -41,6 +38,8 @@ object CommandBotHelp : RawCommand(
                                 "\n" +
                                 "-> 查看和添加pastebin代码\n" +
                                 "${commandPrefix}pastebin help\n" +
+                                "-> 游戏积分相关指令\n" +
+                                "${commandPrefix}point help\n" +
                                 "-> 提交权限申请相关指令\n" +
                                 "${commandPrefix}apply help\n" +
                                 "\n" +
@@ -63,6 +62,8 @@ object CommandBotHelp : RawCommand(
                             "\n" +
                             "-> 查看和添加pastebin代码\n" +
                             "${commandPrefix}代码 帮助\n" +
+                            "-> 游戏积分相关指令\n" +
+                            "${commandPrefix}积分 帮助\n" +
                             "-> 提交权限申请相关指令\n" +
                             "${commandPrefix}申请 帮助\n" +
                             "\n" +
@@ -71,7 +72,7 @@ object CommandBotHelp : RawCommand(
                 }
 
                 "info", "信息"-> {   // 查看bot信息
-                    val whiteEnable: String = if (BotConfig.WhiteList_enable) {"已启用"} else {"未启用"}
+//                    val whiteEnable: String = if (BotConfig.WhiteList_enable) {"已启用"} else {"未启用"}
 //                    val limit: String =
 //                        if (BotInfoData.todayFriendImageNum < BotConfig.dailyLimit * 0.85) {
 //                            "未达"
@@ -80,9 +81,16 @@ object CommandBotHelp : RawCommand(
 //                        } else {
 //                            "*已达*"
 //                        }
-                    val reply = "Plugin version：v${TiedanGame.version}\n" +
-                                "白名单功能：$whiteEnable\n" +
-                                "  ·bot数据统计\n" +
+                    val seconds = (System.currentTimeMillis() - BotInfoData.startTime) / 1000
+                    val days = seconds / (24 * 3600)
+                    val hours = (seconds % (24 * 3600)) / 3600
+                    val minutes = (seconds % 3600) / 60
+                    val reply = "运行时间：${days}天${hours}小时${minutes}分钟\n" +
+//                                "Plugin version：v${TiedanGame.version}\n" +
+//                                "白名单功能：$whiteEnable\n" +
+                                "群聊数量：${sender.bot?.groups?.size}\n" +
+                                "好友数量：${sender.bot?.friends?.size}\n" +
+                                "  ·消息数据统计\n" +
                                 "总计发送消息：${BotInfoData.totalMsgNum}\n" +
                                 "总计发送图片：${BotInfoData.totalImageNum}\n" +
                                 "昨日发送消息：${BotInfoData.yesterdayMsgNum}\n" +
@@ -90,7 +98,7 @@ object CommandBotHelp : RawCommand(
                                 "  ·今日数据统计\n" +
                                 "今日发送消息：${BotInfoData.todayMsgNum}\n" +
                                 "今日发送图片：${BotInfoData.todayImageNum}\n" +
-                                "今日私信图片：${BotInfoData.todayFriendImageNum}"
+                                "今日私信图片：${BotInfoData.todayPrivateImageNum}"
 //                                "今日私信图片${limit}上限：\n" +
 //                                "       ${BotInfoData.todayFriendImageNum} / ${BotConfig.dailyLimit}"
                     sendQuoteReply(sender, originalMessage, reply)
@@ -204,9 +212,11 @@ object CommandBotHelp : RawCommand(
                     sendQuoteReply(sender, originalMessage, "[参数不匹配]\n请使用「${commandPrefix}bot help」来查看指令帮助")
                 }
             }
-        } catch (ex: Exception) {
-            logger.warning {"error: ${ex.message}"}
+        } catch (e: IndexOutOfBoundsException) {
             sendQuoteReply(sender, originalMessage, "[参数不足]\n请使用「${commandPrefix}bot help」来查看指令帮助")
+        } catch (e: Exception) {
+            logger.warning(e)
+            sendQuoteReply(sender, originalMessage, "[指令执行未知错误]\n可能由于bot发消息出错，请联系铁蛋查看后台：${e::class.simpleName}(${e.message})")
         }
     }
 

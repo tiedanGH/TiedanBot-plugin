@@ -5,28 +5,27 @@ import com.tiedan.TiedanGame.save
 import com.tiedan.command.CommandPoint.savePointChange
 import com.tiedan.config.BotConfig
 import com.tiedan.config.MailConfig
-import com.tiedan.plugindata.AdminListData
-import com.tiedan.plugindata.BlackListData
-import com.tiedan.plugindata.BotInfoData
-import com.tiedan.plugindata.WhiteListData
+import com.tiedan.plugindata.*
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 import net.mamoe.mirai.console.command.CommandManager
 import net.mamoe.mirai.contact.Friend
+import net.mamoe.mirai.contact.Group
 import net.mamoe.mirai.contact.getMember
+import net.mamoe.mirai.containsFriend
 import net.mamoe.mirai.event.EventHandler
 import net.mamoe.mirai.event.EventPriority
 import net.mamoe.mirai.event.ExceptionInEventHandlerException
 import net.mamoe.mirai.event.SimpleListenerHost
 import net.mamoe.mirai.event.events.*
-import net.mamoe.mirai.message.data.*
+import net.mamoe.mirai.message.data.Image
+import net.mamoe.mirai.message.data.content
 import net.mamoe.mirai.utils.MiraiExperimentalApi
 import net.mamoe.mirai.utils.MiraiInternalApi
 import net.mamoe.mirai.utils.error
 import net.mamoe.mirai.utils.warning
 import kotlin.coroutines.CoroutineContext
 import kotlin.io.path.inputStream
-import kotlin.random.Random.Default.nextInt
 
 object Events : SimpleListenerHost() {
 
@@ -40,19 +39,6 @@ object Events : SimpleListenerHost() {
             }
         }
     }
-
-//    // TODO 专注模式事件
-//    @EventHandler
-//    internal fun MessagePreSendEvent.check() {
-//        if (BotConfig.focus_enable && ((target is Group && BotConfig.focus_to != target.id) ||
-//            (target is Friend && BotConfig.focus_to.(target.id))) &&
-//            ) {
-//            message = PlainText(
-//                "***专注模式运行中***\n" +
-//                        "bot正在专注于群聊 ${BotConfig.focus_to} 进行服务，可能正在进行比赛或其他重要事项，暂时不支持其他服务\n" +
-//                        "如有疑问，请联系管理员")
-//        }
-//    }
 
     /**
      * 拦截机器人发送临时会话和陌生人消息（增强安全模式）
@@ -70,16 +56,18 @@ object Events : SimpleListenerHost() {
         if (BotConfig.SecureMode > 0 && bot.containsFriend(target.id).not()) cancel()
     }
 
-    /**
-     * 黑名单检测
-     */
     @EventHandler(priority = EventPriority.HIGH)
     internal fun MessageEvent.check() {
-        for (black in BlackListData.BlackList) {
-            if (sender.id == black && sender.id != BotConfig.master) {
-                intercept()
-                break
-            }
+        // 黑名单检测
+        if (BlackListData.BlackList.contains(sender.id)) {
+            intercept()
+        }
+        // 专注模式
+        if (BotConfig.focus_enable && ((subject is Group && BotConfig.focus_to != subject.id) ||
+            (subject is Friend && bot.getGroup(BotConfig.focus_to)?.getMember(sender.id) == null)) &&
+            AdminListData.AdminList.contains(sender.id).not() && sender.id != BotConfig.master)
+        {
+            intercept()
         }
     }
 
@@ -92,6 +80,15 @@ object Events : SimpleListenerHost() {
             WhiteListData.WhiteList.containsKey(group.id).not() &&
             AdminListData.AdminList.contains(sender.id).not() &&
             sender.id != BotConfig.master
+            ) {
+            intercept()
+        }
+    }
+    @EventHandler(priority = EventPriority.HIGH)
+    internal fun NudgeEvent.check() {
+        if (BotConfig.WhiteList_enable &&
+            WhiteListData.WhiteList.containsKey(target.id).not() &&
+            target is Group
             ) {
             intercept()
         }
@@ -111,8 +108,8 @@ object Events : SimpleListenerHost() {
                 "申请消息：$message"
         try {
             bot.getFriendOrFail(BotConfig.master).sendMessage(notice)
-        } catch (ex: Exception) {
-            logger.warning(ex)
+        } catch (e: Exception) {
+            logger.warning(e)
         }
     }
 
@@ -144,8 +141,8 @@ object Events : SimpleListenerHost() {
                 }
             }
             bot.getFriendOrFail(BotConfig.master).sendMessage(notice)
-        } catch (ex: Exception) {
-            logger.warning(ex)
+        } catch (e: Exception) {
+            logger.warning(e)
         }
     }
 
@@ -169,8 +166,8 @@ object Events : SimpleListenerHost() {
                 }
             }
             bot.getFriendOrFail(BotConfig.master).sendMessage(notice)
-        } catch (ex: Exception) {
-            logger.warning(ex)
+        } catch (e: Exception) {
+            logger.warning(e)
         }
     }
 
@@ -207,10 +204,10 @@ object Events : SimpleListenerHost() {
      * bot数据统计
      */
     @EventHandler(priority = EventPriority.MONITOR)
-    internal fun MessagePostSendEvent<*>.count() {
+    internal suspend fun MessagePostSendEvent<*>.count() {
         if (message.contains(Image)) {
-            if (target is Friend) {
-                BotInfoData.todayFriendImageNum++
+            if (target !is Group) {
+                BotInfoData.todayPrivateImageNum++
             }
             BotInfoData.totalImageNum++
             BotInfoData.todayImageNum++

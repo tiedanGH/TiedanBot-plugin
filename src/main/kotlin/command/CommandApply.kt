@@ -15,7 +15,6 @@ import net.mamoe.mirai.console.command.CommandManager.INSTANCE.commandPrefix
 import net.mamoe.mirai.contact.PermissionDeniedException
 import net.mamoe.mirai.message.data.MessageChain
 import net.mamoe.mirai.message.data.content
-import net.mamoe.mirai.utils.warning
 
 object CommandApply : RawCommand(
     owner = TiedanGame,
@@ -88,7 +87,7 @@ object CommandApply : RawCommand(
                     if (applyLock(sender, originalMessage)) return
                     val group = try {
                         args[1].content.toLong()
-                    } catch (ex: NumberFormatException) {
+                    } catch (e: NumberFormatException) {
                         sendQuoteReply(sender, originalMessage, "数字转换错误，请检查指令")
                         return
                     }
@@ -98,7 +97,7 @@ object CommandApply : RawCommand(
                             return
                         }
                         args[2].content
-                    } catch (ex: Exception) {
+                    } catch (e: Exception) {
                         sendQuoteReply(sender, originalMessage, "reason为必填项")
                         return
                     }
@@ -120,8 +119,8 @@ object CommandApply : RawCommand(
                             "原因：$reason"
                     try {
                         sender.bot?.getFriendOrFail(BotConfig.master)?.sendMessage(notice)   // 抄送至bot所有者
-                    } catch (ex: Exception) {
-                        logger.warning(ex)
+                    } catch (e: Exception) {
+                        logger.warning(e)
                     }
                 }
 
@@ -134,7 +133,7 @@ object CommandApply : RawCommand(
                             return
                         }
                         "申请人：$name\n原因：${content}"
-                    } catch (ex: Exception) {
+                    } catch (e: Exception) {
                         sendQuoteReply(sender, originalMessage, "reason为必填项")
                         return
                     }
@@ -149,8 +148,8 @@ object CommandApply : RawCommand(
                             reason
                     try {
                         sender.bot?.getFriendOrFail(BotConfig.master)?.sendMessage(notice)   // 抄送至bot所有者
-                    } catch (ex: Exception) {
-                        logger.warning(ex)
+                    } catch (e: Exception) {
+                        logger.warning(e)
                     }
                 }
 
@@ -194,7 +193,7 @@ object CommandApply : RawCommand(
                     adminOnly(sender)
                     val handleQQ = try {
                         args[1].content.toLong()
-                    } catch (ex: NumberFormatException) {
+                    } catch (e: NumberFormatException) {
                         sendQuoteReply(sender, originalMessage, "数字转换错误，请检查指令")
                         return
                     }
@@ -250,9 +249,9 @@ object CommandApply : RawCommand(
                                       "备注：$remark"
                             sender.bot?.getFriendOrFail(BotConfig.master)?.sendMessage(notice)   // 抄送结果至bot所有者
                         }
-                    } catch (ex: Exception) {
-                        logger.warning(ex)
-                        sender.sendMessage("出现错误：${ex.message}")
+                    } catch (e: Exception) {
+                        logger.warning(e)
+                        sender.sendMessage("出现错误：${e.message}")
                     }
                     ApplyData.WhiteListApplication.remove(handleQQ)
                     ApplyData.AdminApplication.remove(handleQQ)
@@ -320,9 +319,9 @@ object CommandApply : RawCommand(
                             handleCount += ApplyData.AdminApplication.size
                             ApplyData.AdminApplication.clear()
                         }
-                    } catch (ex: Exception) {
-                        logger.warning {"error: ${ex.message}"}
-                        sender.sendMessage("出现错误：${ex}")
+                    } catch (e: Exception) {
+                        logger.warning(e)
+                        sender.sendMessage("出现错误：${e.message}")
                     }
                     BotConfig.save()
                     ApplyData.save()
@@ -334,11 +333,13 @@ object CommandApply : RawCommand(
                     sendQuoteReply(sender, originalMessage, "[参数不匹配]\n请使用「${commandPrefix}apply help」来查看指令帮助")
                 }
             }
-        } catch (ex: PermissionDeniedException) {
-            sendQuoteReply(sender, originalMessage, "[操作无效] ${ex.message}")
-        } catch (ex: Exception) {
-            logger.warning {"error: ${ex.message}"}
+        } catch (e: PermissionDeniedException) {
+            sendQuoteReply(sender, originalMessage, "[操作无效] ${e.message}")
+        } catch (e: IndexOutOfBoundsException) {
             sendQuoteReply(sender, originalMessage, "[参数不足]\n请使用「${commandPrefix}apply help」来查看指令帮助")
+        } catch (e: Exception) {
+            logger.warning(e)
+            sendQuoteReply(sender, originalMessage, "[指令执行未知错误]\n可能由于bot发消息出错，请联系铁蛋查看后台：${e::class.simpleName}(${e.message})")
         }
     }
 

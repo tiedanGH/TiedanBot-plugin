@@ -13,7 +13,6 @@ import net.mamoe.mirai.console.command.CommandManager.INSTANCE.commandPrefix
 import net.mamoe.mirai.console.command.RawCommand
 import net.mamoe.mirai.message.data.MessageChain
 import net.mamoe.mirai.message.data.content
-import net.mamoe.mirai.utils.warning
 import java.time.ZoneId
 import java.time.ZonedDateTime
 import java.time.format.DateTimeFormatter
@@ -57,7 +56,7 @@ object CommandTime : RawCommand(
                 "count", "倒计时"-> {
                     val second = try {
                         args[1].content.toInt()
-                    } catch (ex: Exception) {
+                    } catch (e: Exception) {
                         sendQuoteReply(sender, originalMessage, "数字转换错误，时间必须为Int型整数")
                         return
                     }
@@ -67,7 +66,7 @@ object CommandTime : RawCommand(
                         sendQuoteReply(sender, originalMessage, "倒计时仅支持1 ~ 3600")
                         return
                     }
-                    if (THREAD >= 3) {
+                    if (THREAD >= 5) {
                         sendQuoteReply(sender, originalMessage, "计时器无法启动，因为已经有 $THREAD 个进程正在运行")
                         return
                     }
@@ -99,8 +98,8 @@ object CommandTime : RawCommand(
                                     if (second != 10) sendQuoteReply(sender, originalMessage, "倒计时${name}还剩10秒")
                                 }
                                 0 -> {
-                                    sendQuoteReply(sender, originalMessage, "${name}时间到！")
                                     THREAD--
+                                    sendQuoteReply(sender, originalMessage, "${name}时间到！")
                                 }
                             }
                             remainingTime--
@@ -127,9 +126,11 @@ object CommandTime : RawCommand(
                     sendQuoteReply(sender, originalMessage, "[参数不匹配]\n请使用「${commandPrefix}t help」来查看指令帮助")
                 }
             }
-        } catch (ex: Exception) {
-            logger.warning {"error: ${ex.message}"}
+        } catch (e: IndexOutOfBoundsException) {
             sendQuoteReply(sender, originalMessage, "[参数不足]\n请使用「${commandPrefix}t help」来查看指令帮助")
+        } catch (e: Exception) {
+            logger.warning(e)
+            sendQuoteReply(sender, originalMessage, "[指令执行未知错误]\n可能由于bot发消息出错，请联系铁蛋查看后台：${e::class.simpleName}(${e.message})")
         }
     }
 

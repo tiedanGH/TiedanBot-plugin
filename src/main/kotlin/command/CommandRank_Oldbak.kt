@@ -17,7 +17,6 @@ import net.mamoe.mirai.console.command.isConsole
 import net.mamoe.mirai.contact.PermissionDeniedException
 import net.mamoe.mirai.message.data.MessageChain
 import net.mamoe.mirai.message.data.content
-import net.mamoe.mirai.utils.warning
 import java.io.FileOutputStream
 import java.io.IOException
 
@@ -162,9 +161,9 @@ object CommandRank_Oldbak : RawCommand(
                             }
                         }
                         sendQuoteReply(sender, originalMessage, "导出txt文件成功")
-                    } catch (ex: IOException) {
-                        logger.warning(ex)
-                        sendQuoteReply(sender, originalMessage, "导出数据失败：${ex.message}")
+                    } catch (e: IOException) {
+                        logger.warning(e)
+                        sendQuoteReply(sender, originalMessage, "导出数据失败：${e.message}")
                     }
                 }
 
@@ -172,11 +171,13 @@ object CommandRank_Oldbak : RawCommand(
                     sendQuoteReply(sender, originalMessage, "[参数不匹配]\n请使用「${CommandManager.commandPrefix}rank help」来查看指令帮助")
                 }
             }
-        } catch (ex: PermissionDeniedException) {
-            sendQuoteReply(sender, originalMessage, "[操作无效] ${ex.message}")
-        } catch (ex: Exception) {
-            logger.warning {"error: ${ex.message}"}
-            sendQuoteReply(sender, originalMessage, "[参数不足]\n请使用「${CommandManager.commandPrefix}rank help」来查看指令帮助")
+        } catch (e: PermissionDeniedException) {
+            sendQuoteReply(sender, originalMessage, "[操作无效] ${e.message}")
+        } catch (e: IndexOutOfBoundsException) {
+            sendQuoteReply(sender, originalMessage, "[参数不足]\n请使用「${commandPrefix}rank help」来查看指令帮助")
+        } catch (e: Exception) {
+            logger.warning(e)
+            sendQuoteReply(sender, originalMessage, "[指令执行未知错误]\n可能由于bot发消息出错，请联系铁蛋查看后台：${e::class.simpleName}(${e.message})")
         }
     }
 }
@@ -203,7 +204,7 @@ object CommandRank_Oldbak : RawCommand(
 //                    innerMap["points"] = sortedInnerPointsList.toMutableList()
 //                }
 //                RankData.save()
-//            } catch (ex: Exception) {
-//                logger.warning(ex)
+//            } catch (e: Exception) {
+//                logger.warning(e)
 //            }
 //        }

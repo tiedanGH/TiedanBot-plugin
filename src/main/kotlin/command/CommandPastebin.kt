@@ -1,11 +1,11 @@
 package com.tiedan.command
 
 import PastebinConfig
-import PastebinData
 import com.tiedan.TiedanGame
 import com.tiedan.TiedanGame.logger
 import com.tiedan.TiedanGame.reload
 import com.tiedan.TiedanGame.save
+import com.tiedan.plugindata.PastebinData
 import net.mamoe.mirai.console.command.CommandContext
 import net.mamoe.mirai.console.command.CommandManager.INSTANCE.commandPrefix
 import net.mamoe.mirai.console.command.CommandSender
@@ -94,7 +94,7 @@ object CommandPastebin : RawCommand(
                     val showType = args.getOrElse(1) { "default" }.toString()
                     val page = try {
                         showType.toInt()
-                    } catch (ex: Exception) {
+                    } catch (e: Exception) {
                         if (PastebinConfig.enable_ForwardMessage) { 0 } else { 1 }
                     }
                     if (page > pageLimit) {
@@ -359,8 +359,8 @@ object CommandPastebin : RawCommand(
                                             "备注：$remark"
                             sender.bot?.getFriendOrFail(PastebinData.pastebin[name]!!["userID"]!!.toLong())!!.sendMessage(noticeApply)   // 抄送结果至申请人
                             "已将结果发送至申请人"
-                        } catch (ex: Exception) {
-                            logger.warning(ex)
+                        } catch (e: Exception) {
+                            logger.warning(e)
                             "发送消息至申请人时出现错误，可能因为机器人权限不足或未找到对象，详细信息请查看后台"
                         }
                     if (option == "拒绝") {
@@ -378,9 +378,9 @@ object CommandPastebin : RawCommand(
                         PastebinConfig.reload()
                         PastebinData.reload()
                         sendQuoteReply(sender, originalMessage, "数据重载成功")
-                    } catch (ex: Exception) {
-                        logger.warning(ex)
-                        sendQuoteReply(sender, originalMessage, "出现错误：${ex.message}")
+                    } catch (e: Exception) {
+                        logger.warning(e)
+                        sendQuoteReply(sender, originalMessage, "出现错误：${e.message}")
                     }
                 }
 
@@ -388,8 +388,8 @@ object CommandPastebin : RawCommand(
                     sendQuoteReply(sender, originalMessage, "[参数不匹配]\n请使用「${commandPrefix}pb help」来查看指令帮助")
                 }
             }
-        } catch (ex: Exception) {
-            logger.warning {"error: ${ex.message}"}
+        } catch (e: Exception) {
+            logger.warning {"error: ${e.message}"}
             sendQuoteReply(sender, originalMessage, "[参数不足]\n请使用「${commandPrefix}pb help」来查看指令帮助")
         }
     }
