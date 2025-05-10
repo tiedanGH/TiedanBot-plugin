@@ -30,6 +30,9 @@ object BotConfig : AutoSavePluginConfig("BotConfig") {
     @ValueDescription("专注功能服务对象")
     var focus_to: Long by value()
 
+    @ValueDescription("图床上传API")
+    var Image_API: String by value()
+
 //    @ValueDescription("设置每日图片上限检测标准")
 //    var dailyLimit: Int by value(2000)
 

@@ -10,54 +10,62 @@ import net.mamoe.mirai.event.events.MessageEvent
 import net.mamoe.mirai.event.events.MessagePostSendEvent
 import net.mamoe.mirai.event.events.MessageRecallEvent
 import net.mamoe.mirai.event.events.source
+import net.mamoe.mirai.message.data.MessageChain
 import net.mamoe.mirai.message.data.MessageSource
 import net.mamoe.mirai.message.data.QuoteReply
 import net.mamoe.mirai.message.data.findIsInstance
 
 internal object MessageRecorder : SimpleListenerHost() {
 
-    private val records: MutableMap<Long, MutableList<MessageSource>> = HashMap()
+    private val records: MutableMap<Long, MutableList<Pair<MessageSource, MessageChain>>> = HashMap()
 
     @EventHandler(priority = EventPriority.HIGHEST)
     fun MessageEvent.mark() {
         val record = records.getOrPut(subject.id, ::mutableListOf)
-        if (record.size == BotConfig.recordLimit) {
+        if (record.size >= BotConfig.recordLimit) {
             record.removeFirst()
         }
-        record.add(source)
+        record.add(Pair(source, message))
     }
 
     @EventHandler(priority = EventPriority.HIGHEST)
     fun MessagePostSendEvent<*>.mark() {
         val record = records.getOrPut(target.id, ::mutableListOf)
-        if (record.size == BotConfig.recordLimit) {
+        if (record.size >= BotConfig.recordLimit) {
             record.removeFirst()
         }
-        record.add(source ?: return)
+        record.add(Pair(source ?: return, message))
     }
 
     @EventHandler(priority = EventPriority.HIGHEST)
     fun MessageRecallEvent.mark() {
         when (this) {
             is MessageRecallEvent.FriendRecall -> records[author.id]?.removeIf {
-                it.ids.contentEquals(messageIds) && it.internalIds.contentEquals(messageInternalIds)
+                it.first.ids.contentEquals(messageIds) && it.first.internalIds.contentEquals(messageInternalIds)
             }
             is MessageRecallEvent.GroupRecall -> records[group.id]?.removeIf {
-                it.ids.contentEquals(messageIds) && it.internalIds.contentEquals(messageInternalIds)
+                it.first.ids.contentEquals(messageIds) && it.first.internalIds.contentEquals(messageInternalIds)
             }
         }
     }
 
     fun from(member: Member): MessageSource? {
-        return records[member.group.id]?.findLast { it.fromId == member.id }
+        return records[member.group.id]?.findLast { it.first.fromId == member.id }?.first
     }
 
     fun target(contact: Contact): MessageSource? {
-        return records[contact.id]?.findLast { it.fromId == contact.bot.id }
+        return records[contact.id]?.findLast { it.first.fromId == contact.bot.id }?.first
     }
 
     fun quote(event: MessageEvent): MessageSource? {
         return event.message.findIsInstance<QuoteReply>()?.source
-            ?: records[event.subject.id]?.findLast { it.fromId != event.source.fromId }
+            ?: records[event.subject.id]?.findLast { it.first.fromId != event.source.fromId }?.first
+    }
+
+    fun quoteMessage(event: MessageEvent): MessageChain? {
+        val quote = event.message.findIsInstance<QuoteReply>() ?: return null
+        val recordList = records[event.subject.id] ?: return null
+        val sourceIds = quote.source.ids
+        return recordList.asReversed().firstOrNull { rec -> rec.first.ids.any { it in sourceIds } }?.second
     }
 }
