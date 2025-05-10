@@ -9,6 +9,9 @@ object BotConfig : AutoSavePluginConfig("BotConfig") {
     @ValueDescription("MASTER")
     var master: Long by value(114514L)
 
+    @ValueDescription("Bot的qq号")
+    var BotId: Long by value(1919810L)
+
     @ValueDescription("启用引用回复")
     var quote_enable: Boolean by value(true)
 

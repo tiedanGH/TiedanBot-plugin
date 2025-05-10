@@ -88,7 +88,7 @@ object Events : SimpleListenerHost() {
     internal fun NudgeEvent.check() {
         if (BotConfig.WhiteList_enable &&
             WhiteListData.WhiteList.containsKey(target.id).not() &&
-            target is Group
+            subject is Group
             ) {
             intercept()
         }

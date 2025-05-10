@@ -187,7 +187,7 @@ object CommandBotHelp : RawCommand(
                                 "run <language> <code>\n" +
                                 "run <language> <pastebinUrl> [stdin]\n" +
                                 "引用消息: run <language> [stdin]\n" +
-                                "·仓库地址：https://github.com/jie65535/mirai-console-jcc-plugin\n" +
+                                "·仓库地址：https://github.com/tiedanGH/mirai-console-jcc-plugin\n" +
                                 "·其它指令：\n" +
                                 "${commandPrefix}jcc help    查看jcc帮助\n" +
                                 "${commandPrefix}jcc list    列出所有支持的编程语言\n" +

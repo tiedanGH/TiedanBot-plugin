@@ -2,6 +2,7 @@ package com.tiedan.timer
 
 import com.tiedan.TiedanGame.logger
 import com.tiedan.TiedanGame.save
+import com.tiedan.config.BotConfig
 import com.tiedan.plugindata.BotInfoData
 import net.mamoe.mirai.Bot
 import net.mamoe.mirai.utils.info
@@ -46,8 +47,7 @@ fun calculateNextSignDelay(success: Boolean): Long {
 
 suspend fun executeDailySign(): Boolean {
     try {
-//        Bot.getInstanceOrNull(2373664833)!!.getGroup(541402580)!!.sendMessage("/g sign")
-        Bot.getInstanceOrNull(2074193230)!!.getGroup(541402580)!!.sendMessage("/g sign")
+        Bot.getInstanceOrNull(BotConfig.BotId)!!.getGroup(541402580)!!.sendMessage("/g sign")
         return true
     } catch (e: NullPointerException) {
         logger.warning(e)

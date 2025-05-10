@@ -43,7 +43,7 @@ object CommandPoint : RawCommand(
                             "${commandPrefix}pt rank [页码] 查看排行和数据\n" +
                             "${commandPrefix}pt transfer <QQ号/@目标> <数额> 向指定目标转账\n" +
                             "\n" +
-                            "【请注意】在提款前请务必确保虞姬在线！实际到账积分会受到虞姬月卡等级和每日积分限制等影响，单日内多次提款可能会亏损积分\n" +
+                            "【请注意】在提款前请务必确保虞姬在线！实际到账积分会受到虞姬月卡等级和每日积分获取限制等影响，单日大量提款会亏损积分，建议提款额为3000以内\n" +
                             "【获取来源】大海战BOSS战、开放蜂巢、漫漫长夜、面包危机、爆金币"
                     if (sender.user?.id == BotConfig.master || sender.isConsole()) {
                         reply += "\n ·master管理指令：\n" +
@@ -60,7 +60,7 @@ object CommandPoint : RawCommand(
                             "${commandPrefix}积分 排行 [页码] 查看排行和数据\n" +
                             "${commandPrefix}积分 转账 <QQ号/@目标> <数额> 向指定目标转账\n" +
                             "\n" +
-                            "【请注意】在提款前请务必确保虞姬在线！实际到账积分会受到虞姬月卡等级和每日积分限制等影响，单日内多次提款可能会亏损积分\n" +
+                            "【请注意】在提款前请务必确保虞姬在线！实际到账积分会受到虞姬月卡等级和每日积分获取限制等影响，单日大量提款会亏损积分，建议提款额为3000以内\n" +
                             "【获取来源】大海战BOSS战、开放蜂巢、漫漫长夜、面包危机、爆金币"
                     if (sender.user?.id == BotConfig.master || sender.isConsole()) {
                         reply += "\n ·master管理指令：\n" +
@@ -112,12 +112,12 @@ object CommandPoint : RawCommand(
                         return
                     }
                     if (point > 10000L) {
-                        sendQuoteReply(sender, originalMessage, "[提款失败] 单次提款不能超过10000积分\n【注意】提款积分计算在虞姬每日积分总收益中，单日内多次提款可能会亏损积分")
+                        sendQuoteReply(sender, originalMessage, "[提款失败] 单次提款不能超过10000积分\n【注意】提款积分计算在虞姬每日积分总收益中，单日建议提款额为3000以内")
                         return
                     }
                     sender.sendMessage("/pt tiedan $qq $point")
                     savePointChange(qq, -point)
-                    sendQuoteReply(sender, originalMessage, "游戏积分扣除：$point\n【注意】实际到账积分会受到虞姬月卡等级和每日积分限制等影响，单日内多次提款可能会亏损积分")
+                    sendQuoteReply(sender, originalMessage, "游戏积分扣除：$point\n【注意】实际到账积分会受到虞姬月卡等级和每日积分获取限制等影响，单日建议提款额为3000以内")
                 }
 
                 "transfer", "转账"-> {   // 向指定目标转账
