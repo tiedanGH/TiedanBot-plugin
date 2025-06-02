@@ -51,6 +51,8 @@ object CommandAdmin : RawCommand(
                                 "${commandPrefix}admin list\n" +
                                 "-> 查看黑名单列表\n" +
                                 "${commandPrefix}admin BlackList\n" +
+                                "-> 添加/移除黑名单\n" +
+                                "${commandPrefix}admin black <qq>\n" +
                                 "-> 查看白名单列表\n" +
                                 "${commandPrefix}admin WhiteList [info]\n" +
                                 "-> 设置白名单开关状态\n" +
@@ -68,8 +70,6 @@ object CommandAdmin : RawCommand(
                                 " ·master管理指令：\n" +
                                 "-> 添加/移除管理员\n" +
                                 "${commandPrefix}admin op/deop <qq>\n" +
-                                "-> 添加/移除黑名单\n" +
-                                "${commandPrefix}admin black <qq>\n" +
                                 "-> 机器人关机\n" +
                                 "${commandPrefix}admin shutdown\n" +
                                 "-> 积分转账\n" +
@@ -88,6 +88,8 @@ object CommandAdmin : RawCommand(
                                 "${commandPrefix}管理 列表\n" +
                                 "-> 查看黑名单列表\n" +
                                 "${commandPrefix}管理 黑名单\n" +
+                                "-> 添加/移除黑名单\n" +
+                                "${commandPrefix}管理 黑名单 <QQ号>\n" +
                                 "-> 查看白名单列表\n" +
                                 "${commandPrefix}管理 白名单 [信息]\n" +
                                 "-> 设置白名单开关状态\n" +
@@ -105,8 +107,6 @@ object CommandAdmin : RawCommand(
                                 " ·master管理指令：\n" +
                                 "-> 添加/移除管理员\n" +
                                 "${commandPrefix}管理 添加/移除管理员 <QQ号>\n" +
-                                "-> 添加/移除黑名单\n" +
-                                "${commandPrefix}管理 黑名单 <QQ号>\n" +
                                 "-> 机器人关机\n" +
                                 "${commandPrefix}管理 关机\n" +
                                 "-> 积分转账\n" +
@@ -177,11 +177,14 @@ object CommandAdmin : RawCommand(
                 }
 
                 "black", "添加黑名单"-> {   // 添加/移除黑名单
-                    masterOnly(sender)
                     try {
-                        val qq = args[1].content.toLong()
+                        val qq = args[1].content.replace("@", "").toLong()
                         if (qq == BotConfig.master) {
                             sendQuoteReply(sender, originalMessage, "操作保护：Master不能被移入黑名单")
+                            return
+                        }
+                        if (qq == sender.user?.id) {
+                            sendQuoteReply(sender, originalMessage, "操作保护：不能把自己移入黑名单")
                             return
                         }
                         if (BlackListData.BlackList.contains(qq)) {
