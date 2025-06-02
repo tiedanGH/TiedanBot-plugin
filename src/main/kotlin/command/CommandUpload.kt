@@ -22,15 +22,20 @@ import java.net.HttpURLConnection
 import java.net.URL
 import java.util.concurrent.TimeUnit
 
+/**
+ * ### 此部分不再使用，已迁移至 [imgloc-uploader](https://github.com/tiedanGH/imgloc-uploader)
+ */
+@Deprecated("此部分不再使用，已迁移")
 object CommandUpload : RawCommand(
     owner = TiedanGame,
     primaryName = "upload",
     secondaryNames = arrayOf("上传", "图床"),
     description = "上传图片至图床，获取图片链接"
 ) {
+    private var Image_API: String = "属性已弃用"
     private val uploadLock = Mutex()
     private const val HELP =
-        "本功能用于将自定义图片上传至图床。上传成功时，您将获得图片链接。\n" +
+        "\uD83D\uDDBC\uFE0F 本功能用于将自定义图片上传至图床。上传成功时，您将获得图片链接。\n" +
         "使用 https://imgloc.com/ 提供的上传接口，使用方法如下：\n" +
         "#upload <引用图片>\n" +
         "#upload <图片> [图片] [图片]...\n" +
@@ -151,7 +156,7 @@ object CommandUpload : RawCommand(
             "--fail-with-body",
             "-s",
             "-X", "POST",
-            "-H", "X-API-Key: ${BotConfig.Image_API}",
+            "-H", "X-API-Key: $Image_API",
             "-H", "Content-Type: multipart/form-data",
             "-F", "source=@${tempFile.absolutePath}",
             "https://imgloc.com/api/1/upload"

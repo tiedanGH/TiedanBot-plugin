@@ -55,7 +55,6 @@ object TiedanGame : KotlinPlugin(
         CommandBotHelp.unregister()
         CommandTime.unregister()
         CommandRecall.unregister()
-        CommandUpload.unregister()
         CommandApply.unregister()
         CommandPoint.unregister()
         CommandRank.unregister()
@@ -87,14 +86,10 @@ object TiedanGame : KotlinPlugin(
         CommandBotHelp.register()
         CommandTime.register()
         CommandRecall.register()
-        CommandUpload.register()
         CommandApply.register()
         CommandPoint.register()
         CommandRank.register()
         Commandkx.register()
-//        Commandkanxi.register()
-//        Commandgkx.register()
-//        CommandNewGame.register()
     }
 
     private fun startTimer() {
