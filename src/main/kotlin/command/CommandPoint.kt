@@ -45,9 +45,10 @@ object CommandPoint : RawCommand(
                             "\n" +
                             "【请注意】在提款前请务必确保虞姬在线！实际到账积分会受到虞姬月卡等级和每日积分获取限制等影响，单日大量提款会亏损积分，建议提款额为3000以内\n" +
                             "【获取来源】大海战BOSS战、开放蜂巢、漫漫长夜、面包危机、爆金币"
-                    if (sender.user?.id == BotConfig.master || sender.isConsole()) {
+                    if (args.getOrNull(1)?.content == "all" && (sender.user?.id == BotConfig.master || sender.isConsole())) {
                         reply += "\n ·master管理指令：\n" +
-                                "${commandPrefix}pt TransferEnable <on/off> 配置转账功能状态\n" +
+                                "${commandPrefix}pt ExchangeFunction <on/off> 配置提款功能状态\n" +
+                                "${commandPrefix}pt TransferFunction <on/off> 配置转账功能状态\n" +
                                 "${commandPrefix}pt add <QQ> <数额> 为指定账户增加积分"
                     }
                     sendQuoteReply(sender, originalMessage, reply)
@@ -62,8 +63,9 @@ object CommandPoint : RawCommand(
                             "\n" +
                             "【请注意】在提款前请务必确保虞姬在线！实际到账积分会受到虞姬月卡等级和每日积分获取限制等影响，单日大量提款会亏损积分，建议提款额为3000以内\n" +
                             "【获取来源】大海战BOSS战、开放蜂巢、漫漫长夜、面包危机、爆金币"
-                    if (sender.user?.id == BotConfig.master || sender.isConsole()) {
+                    if (args.getOrNull(1)?.content == "all" && (sender.user?.id == BotConfig.master || sender.isConsole())) {
                         reply += "\n ·master管理指令：\n" +
+                                "${commandPrefix}积分 提款功能 <开启/关闭> 配置提款功能状态\n" +
                                 "${commandPrefix}积分 转账功能 <开启/关闭> 配置转账功能状态\n" +
                                 "${commandPrefix}积分 添加 <QQ> <数额> 为指定账户增加积分"
                     }
@@ -89,6 +91,10 @@ object CommandPoint : RawCommand(
                 }
 
                 "exchange", "提款"-> {   // 提款至虞姬积分
+                    if (PointData.ExchangeFunction.not()) {
+                        sendQuoteReply(sender, originalMessage, "提款功能被临时关闭")
+                        return
+                    }
                     if (sender.subject !is Group) {
                         sendQuoteReply(sender, originalMessage, "此指令只能在群聊中执行，在提款前请务必确保虞姬在线！")
                         return
@@ -190,7 +196,24 @@ object CommandPoint : RawCommand(
                 }
 
                 // master操作
-                "TransferEnable", "转账功能"-> {   // 配置转账功能状态
+                "ExchangeFunction", "提款功能"-> {   // 配置提款功能状态
+                    masterOnly(sender)
+                    val enable: List<String> = arrayListOf("enable","on","true","开启")
+                    val disable: List<String> = arrayListOf("disable","off","false","关闭")
+                    when {
+                        enable.contains(args[1].content) -> {
+                            PointData.ExchangeFunction = true
+                            sendQuoteReply(sender, originalMessage, "已启用提款功能")
+                        }
+                        disable.contains(args[1].content) -> {
+                            PointData.ExchangeFunction = false
+                            sendQuoteReply(sender, originalMessage, "已关闭提款功能")
+                        }
+                    }
+                    PointData.save()
+                }
+
+                "TransferFunction", "转账功能"-> {   // 配置转账功能状态
                     masterOnly(sender)
                     val enable: List<String> = arrayListOf("enable","on","true","开启")
                     val disable: List<String> = arrayListOf("disable","off","false","关闭")
