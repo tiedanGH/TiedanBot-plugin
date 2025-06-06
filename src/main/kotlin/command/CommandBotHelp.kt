@@ -5,8 +5,8 @@ import com.tiedan.TiedanGame.logger
 import com.tiedan.TiedanGame.sendQuoteReply
 import com.tiedan.plugindata.BotInfoData
 import net.mamoe.mirai.console.command.BuiltInCommands
-import net.mamoe.mirai.console.command.CommandContext
 import net.mamoe.mirai.console.command.CommandManager.INSTANCE.commandPrefix
+import net.mamoe.mirai.console.command.CommandSender
 import net.mamoe.mirai.console.command.RawCommand
 import net.mamoe.mirai.message.data.MessageChain
 import net.mamoe.mirai.message.data.content
@@ -18,7 +18,7 @@ object CommandBotHelp : RawCommand(
     description = "查看bot相关帮助",
     usage = "${commandPrefix}bot help"
 ){
-    override suspend fun CommandContext.onCommand(args: MessageChain) {
+    override suspend fun CommandSender.onCommand(args: MessageChain) {
 
         try {
             when (args[0].content) {
@@ -48,7 +48,7 @@ object CommandBotHelp : RawCommand(
                             "${commandPrefix}apply help\n" +
                             "\n" +
                             "如bot使用出现任何问题可直接在群内联系铁蛋"
-                    sendQuoteReply(sender, originalMessage, reply)
+                    sendQuoteReply(reply)
                 }
 
                 "帮助"-> {   // 查看bot帮助（帮助）
@@ -76,7 +76,7 @@ object CommandBotHelp : RawCommand(
                             "${commandPrefix}申请 帮助\n" +
                             "\n" +
                             "如bot使用出现任何问题可直接在群内联系铁蛋"
-                    sendQuoteReply(sender, originalMessage, reply)
+                    sendQuoteReply(reply)
                 }
 
                 "info", "信息"-> {   // 查看bot信息
@@ -96,8 +96,8 @@ object CommandBotHelp : RawCommand(
                     val reply = "运行时间：${days}天${hours}小时${minutes}分钟\n" +
 //                                "Plugin version：v${TiedanGame.version}\n" +
 //                                "白名单功能：$whiteEnable\n" +
-                                "群聊数量：${sender.bot?.groups?.size}\n" +
-                                "好友数量：${sender.bot?.friends?.size}\n" +
+                                "群聊数量：${bot?.groups?.size}\n" +
+                                "好友数量：${bot?.friends?.size}\n" +
                                 "  ·消息数据统计\n" +
                                 "总计发送消息：${BotInfoData.totalMsgNum}\n" +
                                 "总计发送图片：${BotInfoData.totalImageNum}\n" +
@@ -109,12 +109,12 @@ object CommandBotHelp : RawCommand(
                                 "今日私信图片：${BotInfoData.todayPrivateImageNum}"
 //                                "今日私信图片${limit}上限：\n" +
 //                                "       ${BotInfoData.todayFriendImageNum} / ${BotConfig.dailyLimit}"
-                    sendQuoteReply(sender, originalMessage, reply)
+                    sendQuoteReply(reply)
                 }
 
                 "status", "状态"-> {   // 查看mirai状态
                     BuiltInCommands.StatusCommand.runCatching {
-                        sender.handle()
+                        handle()
                     }
                 }
 
@@ -130,7 +130,7 @@ object CommandBotHelp : RawCommand(
                                 "·发送信息：\n" +
                                 "<@此bot> #帮助\n" +
                                 "·来查看LGTBot相关帮助"
-                    sendQuoteReply(sender, originalMessage, reply)
+                    sendQuoteReply(reply)
                 }
 
                 "cloud", "词云"-> {   // 词云帮助
@@ -144,7 +144,7 @@ object CommandBotHelp : RawCommand(
 //                                "用户昨日词云 + <用户名>\n" +
 //                                "用户本月词云 + <用户名>\n" +
 //                                "获取用户词云 + <用户名> <from> <to>"
-                    sendQuoteReply(sender, originalMessage, reply)
+                    sendQuoteReply(reply)
                 }
 
                 "fly", "飞行棋"-> {   // 飞行棋帮助
@@ -158,7 +158,7 @@ object CommandBotHelp : RawCommand(
                                 "·移动棋子指令：\n" +
                                 "    /1  /2  /3  /4\n" +
                                 " （数字前加“/”）"
-                    sendQuoteReply(sender, originalMessage, reply)
+                    sendQuoteReply(reply)
                 }
 
                 "grass", "生草", "草图"-> {   // 草图相关帮助
@@ -169,7 +169,7 @@ object CommandBotHelp : RawCommand(
                                 "    草图信息\n" +
                                 "·草图官方网站：\n" +
                                 "https://grass.nlrdev.top"
-                    sendQuoteReply(sender, originalMessage, reply)
+                    sendQuoteReply(reply)
                 }
 
                 "pet", "表情"-> {   // 表情包相关帮助
@@ -187,7 +187,7 @@ object CommandBotHelp : RawCommand(
                                 "戳一戳有10%概率生成随机表情\n" +
                                 "\n" +
                                 "·群主或管理员可以使用“pet on/off”开启和关闭此表情包功能（包括戳一戳随机表情）"
-                    sendQuoteReply(sender, originalMessage, reply)
+                    sendQuoteReply(reply)
                 }
 
                 "jcc", "编译器"-> {   // jcc在线编译器相关帮助
@@ -200,7 +200,7 @@ object CommandBotHelp : RawCommand(
                                 "${commandPrefix}jcc help    查看jcc帮助\n" +
                                 "${commandPrefix}jcc list    列出所有支持的编程语言\n" +
                                 "${commandPrefix}jcc template <language>    获取指定语言的模板"
-                   sendQuoteReply(sender, originalMessage, reply)
+                   sendQuoteReply(reply)
                 }
 
                 "mcmod", "MC", "mc"-> {   // MC百科查询帮助
@@ -213,18 +213,18 @@ object CommandBotHelp : RawCommand(
                                 "查询整合包:整合包 <整合包关键词>\n" +
                                 "查询服务器:服务器 <服务器关键词>\n" +
                                 "·资料均来自:mcmod.cn"
-                    sendQuoteReply(sender, originalMessage, reply)
+                    sendQuoteReply(reply)
                 }
 
                 else-> {
-                    sendQuoteReply(sender, originalMessage, "[参数不匹配]\n请使用「${commandPrefix}bot help」来查看指令帮助")
+                    sendQuoteReply("[参数不匹配]\n请使用「${commandPrefix}bot help」来查看指令帮助")
                 }
             }
         } catch (e: IndexOutOfBoundsException) {
-            sendQuoteReply(sender, originalMessage, "[参数不足]\n请使用「${commandPrefix}bot help」来查看指令帮助")
+            sendQuoteReply("[参数不足]\n请使用「${commandPrefix}bot help」来查看指令帮助")
         } catch (e: Exception) {
             logger.warning(e)
-            sendQuoteReply(sender, originalMessage, "[指令执行未知错误]\n可能由于bot发消息出错，请联系铁蛋查看后台：${e::class.simpleName}(${e.message})")
+            sendQuoteReply("[指令执行未知错误]\n可能由于bot发消息出错，请联系铁蛋查看后台：${e::class.simpleName}(${e.message})")
         }
     }
 

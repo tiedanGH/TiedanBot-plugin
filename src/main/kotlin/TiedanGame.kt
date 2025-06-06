@@ -13,7 +13,7 @@ import kotlinx.coroutines.launch
 import net.mamoe.mirai.console.command.CommandManager.INSTANCE.register
 import net.mamoe.mirai.console.command.CommandManager.INSTANCE.unregister
 import net.mamoe.mirai.console.command.CommandSender
-import net.mamoe.mirai.console.command.isConsole
+import net.mamoe.mirai.console.command.CommandSenderOnMessage
 import net.mamoe.mirai.console.command.isNotConsole
 import net.mamoe.mirai.console.plugin.jvm.JvmPluginDescription
 import net.mamoe.mirai.console.plugin.jvm.KotlinPlugin
@@ -22,7 +22,6 @@ import net.mamoe.mirai.contact.PermissionDeniedException
 import net.mamoe.mirai.contact.getMember
 import net.mamoe.mirai.contact.nameCardOrNick
 import net.mamoe.mirai.event.GlobalEventChannel
-import net.mamoe.mirai.message.data.MessageChain
 import net.mamoe.mirai.message.data.PlainText
 import net.mamoe.mirai.message.data.QuoteReply
 import net.mamoe.mirai.message.data.buildMessageChain
@@ -112,14 +111,14 @@ object TiedanGame : KotlinPlugin(
         }
     }
 
-    suspend fun sendQuoteReply(sender: CommandSender, originalMessage: MessageChain, msgToSend: String) {
-        if (sender.isConsole() || !BotConfig.quote_enable) {
-            sender.sendMessage(msgToSend)
-        } else {
-            sender.sendMessage(buildMessageChain {
-                +QuoteReply(originalMessage)
+    suspend fun CommandSender.sendQuoteReply(msgToSend: String) {
+        if (this is CommandSenderOnMessage<*> && BotConfig.quote_enable) {
+            sendMessage(buildMessageChain {
+                +QuoteReply(fromEvent.message)
                 +PlainText(msgToSend)
             })
+        } else {
+            sendMessage(msgToSend)
         }
     }
 

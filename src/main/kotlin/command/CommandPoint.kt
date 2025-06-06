@@ -9,8 +9,8 @@ import com.tiedan.TiedanGame.save
 import com.tiedan.TiedanGame.sendQuoteReply
 import com.tiedan.config.BotConfig
 import com.tiedan.plugindata.PointData
-import net.mamoe.mirai.console.command.CommandContext
 import net.mamoe.mirai.console.command.CommandManager.INSTANCE.commandPrefix
+import net.mamoe.mirai.console.command.CommandSender
 import net.mamoe.mirai.console.command.RawCommand
 import net.mamoe.mirai.console.command.isConsole
 import net.mamoe.mirai.contact.Group
@@ -36,9 +36,9 @@ object CommandPoint : RawCommand(
         Command("pt add <QQ> <数额>", "积分 添加 <QQ> <数额>", "为指定账户增加积分", 2),
     )
 
-    override suspend fun CommandContext.onCommand(args: MessageChain) {
+    override suspend fun CommandSender.onCommand(args: MessageChain) {
 
-        val qq = sender.user?.id ?: 10000
+        val qq = user?.id ?: 10000
         if (PointData.PointData.contains(qq).not()) {
             PointData.PointData[qq] = 0
             PointData.PointData = PointData.PointData.toSortedMap()
@@ -54,11 +54,11 @@ object CommandPoint : RawCommand(
                             "\n" +
                             "【请注意】在提款前请务必确保虞姬在线！实际到账积分会受到虞姬月卡等级和每日积分获取限制等影响，单日大量提款会亏损积分，建议提款额为3000以内\n" +
                             "【获取来源】大海战BOSS战、开放蜂巢、漫漫长夜、面包危机、爆金币\n"
-                    if (args.getOrNull(1)?.content == "all" && (sender.user?.id == BotConfig.master || sender.isConsole())) {
+                    if (args.getOrNull(1)?.content == "all" && (user?.id == BotConfig.master || isConsole())) {
                         reply += "\n ·master管理指令：\n" +
                                 commandList.filter { it.type == 2 }.joinToString("") { "${commandPrefix}${it.usage}　${it.desc}\n" }
                     }
-                    sendQuoteReply(sender, originalMessage, reply)
+                    sendQuoteReply(reply)
                 }
 
                 "帮助" -> {   // 查看point可用帮助（帮助）
@@ -67,103 +67,103 @@ object CommandPoint : RawCommand(
                             "\n" +
                             "【请注意】在提款前请务必确保虞姬在线！实际到账积分会受到虞姬月卡等级和每日积分获取限制等影响，单日大量提款会亏损积分，建议提款额为3000以内\n" +
                             "【获取来源】大海战BOSS战、开放蜂巢、漫漫长夜、面包危机、爆金币\n"
-                    if (args.getOrNull(1)?.content == "all" && (sender.user?.id == BotConfig.master || sender.isConsole())) {
+                    if (args.getOrNull(1)?.content == "all" && (user?.id == BotConfig.master || isConsole())) {
                         reply += "\n ·master管理指令：\n" +
                                 commandList.filter { it.type == 2 }.joinToString("") { "${commandPrefix}${it.usageCN}　${it.desc}\n" }
                     }
-                    sendQuoteReply(sender, originalMessage, reply)
+                    sendQuoteReply(reply)
                 }
 
                 "balance", "余额"-> {   // 查询游戏积分
                     val id = args.getOrNull(1)?.content?.replace("@", "")?.toLong()
                     if (id == null) {
                         if (PointData.PointData[qq] == 0L) {
-                            sendQuoteReply(sender, originalMessage, "您没有待提取的游戏积分")
+                            sendQuoteReply("您没有待提取的游戏积分")
                         } else {
-                            sendQuoteReply(sender, originalMessage, "您的游戏积分余额为：${PointData.PointData[qq]}")
+                            sendQuoteReply("您的游戏积分余额为：${PointData.PointData[qq]}")
                         }
                     } else {
-                        val name = getNickname(sender, id)
+                        val name = getNickname(this, id)
                         if (PointData.PointData.contains(id).not()) {
-                            sendQuoteReply(sender, originalMessage, "${name}没有游戏积分账户")
+                            sendQuoteReply("${name}没有游戏积分账户")
                         } else {
-                            sendQuoteReply(sender, originalMessage, "${name}的游戏积分余额为：${PointData.PointData[id]}")
+                            sendQuoteReply("${name}的游戏积分余额为：${PointData.PointData[id]}")
                         }
                     }
                 }
 
                 "exchange", "提款"-> {   // 提款至虞姬积分
                     if (PointData.ExchangeFunction.not()) {
-                        sendQuoteReply(sender, originalMessage, "提款功能被临时关闭")
+                        sendQuoteReply("提款功能被临时关闭")
                         return
                     }
-                    if (sender.subject !is Group) {
-                        sendQuoteReply(sender, originalMessage, "此指令只能在群聊中执行，在提款前请务必确保虞姬在线！")
+                    if (subject !is Group) {
+                        sendQuoteReply("此指令只能在群聊中执行，在提款前请务必确保虞姬在线！")
                         return
                     }
                     val point = args[1].content.toLong()
                     val balance = PointData.PointData[qq]!!
                     if (balance == 0L) {
-                        sendQuoteReply(sender, originalMessage, "您没有待提取的游戏积分")
+                        sendQuoteReply("您没有待提取的游戏积分")
                         return
                     }
                     if (point < 0L) {
-                        sendQuoteReply(sender, originalMessage, "抢劫是犯法的，罚你云巢癞子后完美块、每回合打top、大海战被BOSS锁头")
+                        sendQuoteReply("抢劫是犯法的，罚你云巢癞子后完美块、每回合打top、大海战被BOSS锁头")
                         return
                     }
                     if (point == 0L) {
-                        sendQuoteReply(sender, originalMessage, "成功将空气从保险柜取出")
+                        sendQuoteReply("成功将空气从保险柜取出")
                         return
                     }
                     if (point > balance) {
-                        sendQuoteReply(sender, originalMessage, "[提款失败] 游戏积分不足，您的余额为：${balance}")
+                        sendQuoteReply("[提款失败] 游戏积分不足，您的余额为：${balance}")
                         return
                     }
                     if (point > 10000L) {
-                        sendQuoteReply(sender, originalMessage, "[提款失败] 单次提款不能超过10000积分\n【注意】提款积分计算在虞姬每日积分总收益中，单日建议提款额为3000以内")
+                        sendQuoteReply("[提款失败] 单次提款不能超过10000积分\n【注意】提款积分计算在虞姬每日积分总收益中，单日建议提款额为3000以内")
                         return
                     }
-                    sender.sendMessage("/pt tiedan $qq $point")
+                    sendMessage("/pt tiedan $qq $point")
                     savePointChange(qq, -point)
-                    sendQuoteReply(sender, originalMessage, "游戏积分扣除：$point\n【注意】实际到账积分会受到虞姬月卡等级和每日积分获取限制等影响，单日建议提款额为3000以内")
+                    sendQuoteReply("游戏积分扣除：$point\n【注意】实际到账积分会受到虞姬月卡等级和每日积分获取限制等影响，单日建议提款额为3000以内")
                 }
 
                 "transfer", "转账"-> {   // 向指定目标转账
                     if (PointData.TransferFunction.not()) {
-                        sendQuoteReply(sender, originalMessage, "转账功能未启用")
+                        sendQuoteReply("转账功能未启用")
                         return
                     }
                     val id = args[1].content.replace("@", "").toLong()
                     val point = args[2].content.toLong()
                     val balance = PointData.PointData[qq]!!
-                    val name = getNickname(sender, id)
+                    val name = getNickname(this, id)
                     if (balance == 0L) {
-                        sendQuoteReply(sender, originalMessage, "您没有待提取的游戏积分")
+                        sendQuoteReply("您没有待提取的游戏积分")
                         return
                     }
                     if (PointData.PointData.contains(id).not()) {
-                        sendQuoteReply(sender, originalMessage, "目标账户不存在，建议提款后使用虞姬操作转账")
+                        sendQuoteReply("目标账户不存在，建议提款后使用虞姬操作转账")
                         return
                     }
                     if (qq == id) {
-                        sendQuoteReply(sender, originalMessage, "不能给自己转账")
+                        sendQuoteReply("不能给自己转账")
                         return
                     }
                     if (point < 0L) {
-                        sendQuoteReply(sender, originalMessage, "抢劫是犯法的，罚你云巢死后完美块、选秀末位312、大海战BOSS2核弹开局爆炸")
+                        sendQuoteReply("抢劫是犯法的，罚你云巢死后完美块、选秀末位312、大海战BOSS2核弹开局爆炸")
                         return
                     }
                     if (point == 0L) {
-                        sendQuoteReply(sender, originalMessage, "空气运输中...运输失败")
+                        sendQuoteReply("空气运输中...运输失败")
                         return
                     }
                     if (point > balance) {
-                        sendQuoteReply(sender, originalMessage, "游戏积分不足，您的余额为：${balance}")
+                        sendQuoteReply("游戏积分不足，您的余额为：${balance}")
                         return
                     }
                     savePointChange(qq, -point)
                     savePointChange(id, point)
-                    sendQuoteReply(sender, originalMessage, "成功向 $name 转账 $point 积分")
+                    sendQuoteReply("成功向 $name 转账 $point 积分")
                 }
 
                 "rank", "排行"-> {   // 查看积分排行榜
@@ -182,7 +182,7 @@ object CommandPoint : RawCommand(
                     output.append("·待提取总积分：$totalPoints\n")
                     if (pageData.isNotEmpty()) {
                         pageData.forEachIndexed { index, (key, value) ->
-                            output.append("${startIndex + index + 1}.${getNickname(sender, key)}($key) - $value\n")
+                            output.append("${startIndex + index + 1}.${getNickname(this, key)}($key) - $value\n")
                         }
                         if (startIndex + 9 < totalUsers) {
                             output.append("...\n")
@@ -194,75 +194,75 @@ object CommandPoint : RawCommand(
                     if (userPoint != null) {
                         output.append("你的游戏积分：$userPoint")
                     }
-                    sendQuoteReply(sender, originalMessage, output.toString())
+                    sendQuoteReply(output.toString())
                 }
 
                 // master操作
                 "ExchangeFunction", "提款功能"-> {   // 配置提款功能状态
-                    masterOnly(sender)
+                    masterOnly(this)
                     val enable: List<String> = arrayListOf("enable","on","true","开启")
                     val disable: List<String> = arrayListOf("disable","off","false","关闭")
                     when {
                         enable.contains(args[1].content) -> {
                             PointData.ExchangeFunction = true
-                            sendQuoteReply(sender, originalMessage, "已启用提款功能")
+                            sendQuoteReply("已启用提款功能")
                         }
                         disable.contains(args[1].content) -> {
                             PointData.ExchangeFunction = false
-                            sendQuoteReply(sender, originalMessage, "已关闭提款功能")
+                            sendQuoteReply("已关闭提款功能")
                         }
                     }
                     PointData.save()
                 }
 
                 "TransferFunction", "转账功能"-> {   // 配置转账功能状态
-                    masterOnly(sender)
+                    masterOnly(this)
                     val enable: List<String> = arrayListOf("enable","on","true","开启")
                     val disable: List<String> = arrayListOf("disable","off","false","关闭")
                     when {
                         enable.contains(args[1].content) -> {
                             PointData.TransferFunction = true
-                            sendQuoteReply(sender, originalMessage, "已启用转账功能")
+                            sendQuoteReply("已启用转账功能")
                         }
                         disable.contains(args[1].content) -> {
                             PointData.TransferFunction = false
-                            sendQuoteReply(sender, originalMessage, "已关闭转账功能")
+                            sendQuoteReply("已关闭转账功能")
                         }
                     }
                     PointData.save()
                 }
 
                 "add", "添加"-> {   // 为指定账户增加积分
-                    masterOnly(sender)
+                    masterOnly(this)
                     val id = args[1].content.replace("@", "").toLong()
                     val point = args[2].content.toLong()
                     val force = args.getOrNull(3)?.content?.let { it == "force" || it == "f" } ?: false
-                    val name = getNickname(sender, id)
+                    val name = getNickname(this, id)
                     if (PointData.PointData.contains(id).not() && name == "[获取昵称失败]" && !force) {
-                        sendQuoteReply(sender, originalMessage, "[警告] 无法获取目标用户信息，请再次确认是否输入正确，或添加参数强制添加")
+                        sendQuoteReply("[警告] 无法获取目标用户信息，请再次确认是否输入正确，或添加参数强制添加")
                         return
                     }
                     savePointChange(id, point)
                     if (point >= 0) {
-                        sendQuoteReply(sender, originalMessage, "为${name}添加 $point 游戏积分")
+                        sendQuoteReply("为${name}添加 $point 游戏积分")
                     } else {
-                        sendQuoteReply(sender, originalMessage, "为${name}扣除 ${-point} 游戏积分")
+                        sendQuoteReply("为${name}扣除 ${-point} 游戏积分")
                     }
                 }
 
                 else-> {
-                    sendQuoteReply(sender, originalMessage, "[参数不匹配]\n请使用「${commandPrefix}pt help」来查看指令帮助")
+                    sendQuoteReply("[参数不匹配]\n请使用「${commandPrefix}pt help」来查看指令帮助")
                 }
             }
         } catch (e: NumberFormatException) {
-            sendQuoteReply(sender, originalMessage, "[操作失败] 数值超出或无法转换为Long类型")
+            sendQuoteReply("[操作失败] 数值超出或无法转换为Long类型")
         } catch (e: PermissionDeniedException) {
-            sendQuoteReply(sender, originalMessage, "[操作无效] ${e.message}")
+            sendQuoteReply("[操作无效] ${e.message}")
         } catch (e: IndexOutOfBoundsException) {
-            sendQuoteReply(sender, originalMessage, "[参数不足]\n请使用「${commandPrefix}pt help」来查看指令帮助")
+            sendQuoteReply("[参数不足]\n请使用「${commandPrefix}pt help」来查看指令帮助")
         } catch (e: Exception) {
             logger.warning(e)
-            sendQuoteReply(sender, originalMessage, "[指令执行未知错误]\n可能由于bot发消息出错，请联系铁蛋查看后台：${e::class.simpleName}(${e.message})")
+            sendQuoteReply("[指令执行未知错误]\n可能由于bot发消息出错，请联系铁蛋查看后台：${e::class.simpleName}(${e.message})")
         }
     }
 

@@ -1,7 +1,7 @@
 package com.tiedan.command
 
 import com.tiedan.TiedanGame
-import net.mamoe.mirai.console.command.CommandContext
+import net.mamoe.mirai.console.command.CommandSender
 import net.mamoe.mirai.console.command.RawCommand
 import net.mamoe.mirai.console.command.isConsole
 import net.mamoe.mirai.contact.Friend
@@ -21,7 +21,7 @@ object Commandkx : RawCommand(
     usage = "kanxi",
     prefixOptional = true){
 
-    override suspend fun CommandContext.onCommand(args: MessageChain) {
+    override suspend fun CommandSender.onCommand(args: MessageChain) {
         val formatted = LocalDateTime.now().format(DateTimeFormatter.ofPattern("HH:mm:ss"))
         val kxReply = mutableListOf(
             "还在看戏，还不赶紧加入！",
@@ -35,12 +35,12 @@ object Commandkx : RawCommand(
             "看戏虽好，但亲自上场才会更有乐趣",
             "机会稍纵即逝，现在加入，不要错过享受游戏的机会！",
         )
-        if (sender.isConsole() || sender.subject is Friend) {
-            sender.sendMessage(kxReply[Random.nextInt(kxReply.size)])
+        if (isConsole() || subject is Friend) {
+            sendMessage(kxReply[Random.nextInt(kxReply.size)])
         } else {
-            sender.sendMessage(
+            sendMessage(
                 messageChainOf(
-                    At(sender.user!!.id),
+                    At(user!!.id),
                     PlainText(" "),
                     PlainText(kxReply[Random.nextInt(kxReply.size)])
                 )

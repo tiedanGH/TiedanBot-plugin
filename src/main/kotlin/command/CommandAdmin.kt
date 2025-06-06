@@ -51,12 +51,12 @@ object CommandAdmin : RawCommand(
     )
 
 
-    override suspend fun CommandContext.onCommand(args: MessageChain) {
+    override suspend fun CommandSender.onCommand(args: MessageChain) {
 
         try {
-            adminOnly(sender)
+            adminOnly(this)
         } catch (e: PermissionDeniedException) {
-            sendQuoteReply(sender, originalMessage, "${e.message}")
+            sendQuoteReply("${e.message}")
             return
         }
 
@@ -68,21 +68,21 @@ object CommandAdmin : RawCommand(
                 "help"-> {   // 查看admin可用帮助（help）
                     var reply = " ·🔧 admin可用帮助：\n" +
                             commandList.filter { it.type == 1 }.joinToString("") { "-> ${it.desc}\n${commandPrefix}${it.usage}\n" }
-                    if (sender.user?.id == BotConfig.master || sender.isConsole()) {
+                    if (user?.id == BotConfig.master || isConsole()) {
                         reply += " ·👑 master管理指令：\n" +
                             commandList.filter { it.type == 2 }.joinToString("") { "-> ${it.desc}\n${commandPrefix}${it.usage}\n" }
                     }
-                    sendQuoteReply(sender, originalMessage, reply)
+                    sendQuoteReply(reply)
                 }
 
                 "帮助"-> {   // 查看admin可用帮助（帮助）
                     var reply = " ·🔧 admin可用帮助：\n" +
                             commandList.filter { it.type == 1 }.joinToString("") { "-> ${commandPrefix}${it.usageCN}　${it.desc}\n" }
-                    if (sender.user?.id == BotConfig.master || sender.isConsole()) {
+                    if (user?.id == BotConfig.master || isConsole()) {
                         reply += " ·👑 master管理指令：\n" +
                             commandList.filter { it.type == 2 }.joinToString("") { "-> ${commandPrefix}${it.usageCN}　${it.desc}\n" }
                     }
-                    sendQuoteReply(sender, originalMessage, reply)
+                    sendQuoteReply(reply)
                 }
 
                 "list", "列表"-> {   // 查看管理员列表
@@ -90,11 +90,11 @@ object CommandAdmin : RawCommand(
                     for (admin in AdminListData.AdminList) {
                         adminListInfo += "\n$admin"
                     }
-                    sendQuoteReply(sender, originalMessage, adminListInfo)
+                    sendQuoteReply(adminListInfo)
                 }
 
                 "op", "添加管理员"-> {   // 添加管理员
-                    masterOnly(sender)
+                    masterOnly(this)
                     try {
                         val qq = args[1].content.toLong()
                         val result = AdminListData.AdminList.add(qq)
@@ -102,35 +102,35 @@ object CommandAdmin : RawCommand(
                             AdminListData.AdminList = AdminListData.AdminList.toSortedSet()
                             BotConfig.save()
                             if (qq == 0.toLong()) {   // 0视为all
-                                sendQuoteReply(sender, originalMessage, "已解除管理员权限限制")
+                                sendQuoteReply("已解除管理员权限限制")
                             } else {
-                                sendQuoteReply(sender, originalMessage, "已将 $qq 设为管理员")
+                                sendQuoteReply("已将 $qq 设为管理员")
                             }
                         } else {
-                            sendQuoteReply(sender, originalMessage, "管理员已存在 $qq")
+                            sendQuoteReply("管理员已存在 $qq")
                         }
                     } catch (e: NumberFormatException) {
-                        sendQuoteReply(sender, originalMessage, "数字转换错误，请检查指令")
+                        sendQuoteReply("数字转换错误，请检查指令")
                     }
                 }
 
                 "deop", "移除管理员"-> {   // 移除管理员
-                    masterOnly(sender)
+                    masterOnly(this)
                     try {
                         val qq = args[1].content.toLong()
                         val result = AdminListData.AdminList.remove(qq)
                         if (result) {
                             BotConfig.save()
                             if (qq == 0.toLong()) {   // 0视为all
-                                sendQuoteReply(sender, originalMessage, "已恢复管理员权限限制")
+                                sendQuoteReply("已恢复管理员权限限制")
                             } else {
-                                sendQuoteReply(sender, originalMessage, "已将 $qq 移除管理员")
+                                sendQuoteReply("已将 $qq 移除管理员")
                             }
                         } else {
-                            sendQuoteReply(sender, originalMessage, "不存在管理员 $qq")
+                            sendQuoteReply("不存在管理员 $qq")
                         }
                     } catch (e: NumberFormatException) {
-                        sendQuoteReply(sender, originalMessage, "数字转换错误，请检查指令")
+                        sendQuoteReply("数字转换错误，请检查指令")
                     }
                 }
 
@@ -139,36 +139,36 @@ object CommandAdmin : RawCommand(
                     for (black in BlackListData.BlackList) {
                         blackListInfo += "\n$black"
                     }
-                    sendQuoteReply(sender, originalMessage, blackListInfo)
+                    sendQuoteReply(blackListInfo)
                 }
 
                 "black", "添加黑名单"-> {   // 添加/移除黑名单
                     try {
                         val qq = args[1].content.replace("@", "").toLong()
                         if (qq == BotConfig.master) {
-                            sendQuoteReply(sender, originalMessage, "操作保护：Master不能被移入黑名单")
+                            sendQuoteReply("操作保护：Master不能被移入黑名单")
                             return
                         }
-                        if (qq == sender.user?.id) {
-                            sendQuoteReply(sender, originalMessage, "操作保护：不能把自己移入黑名单")
+                        if (qq == user?.id) {
+                            sendQuoteReply("操作保护：不能把自己移入黑名单")
                             return
                         }
                         if (BlackListData.BlackList.contains(qq)) {
                             BlackListData.BlackList.remove(qq)
-                            sendQuoteReply(sender, originalMessage, "已将 $qq 移出黑名单")
+                            sendQuoteReply("已将 $qq 移出黑名单")
                         } else {
                             BlackListData.BlackList.add(qq)
-                            sendQuoteReply(sender, originalMessage, "已将 $qq 移入黑名单")
+                            sendQuoteReply("已将 $qq 移入黑名单")
                         }
                         BlackListData.save()
                     } catch (e: NumberFormatException) {
-                        sendQuoteReply(sender, originalMessage, "数字转换错误，请检查指令")
+                        sendQuoteReply("数字转换错误，请检查指令")
                     }
                 }
 
                 "shutdown", "关机"-> {   // 关机指令
-                    masterOnly(sender)
-                    sendQuoteReply(sender, originalMessage, "机器人正在关机······")
+                    masterOnly(this)
+                    sendQuoteReply("机器人正在关机······")
                     withContext(Dispatchers.IO) {
                         TimeUnit.SECONDS.sleep(1)
                     }
@@ -178,10 +178,10 @@ object CommandAdmin : RawCommand(
                 }
 
                 "transfer", "转账"-> {   // bot积分转账
-                    masterOnly(sender)
+                    masterOnly(this)
                     val qq = args[1].content.replace("@", "")
                     val point = args[2]
-                    sender.sendMessage("/pt transfer $qq $point")
+                    sendMessage("/pt transfer $qq $point")
                 }
 
                 "send", "发送"-> {   // bot消息发送
@@ -195,16 +195,16 @@ object CommandAdmin : RawCommand(
                         messages = messageChainOf(PlainText(" "))
                     }
                     if (qq == 0.toLong()) {
-                        masterOnly(sender)
-                        sender.sendMessage(messages)
+                        masterOnly(this)
+                        sendMessage(messages)
                     } else {
-                        messages = messageChainOf(PlainText("${sender.name}(${sender.user?.id})给您发送了一条私信：\n") + messages)
+                        messages = messageChainOf(PlainText("${name}(${user?.id})给您发送了一条私信：\n") + messages)
                         try {
-                            sender.bot?.getFriendOrFail(qq)!!.sendMessage(messages)
-                            sender.sendMessage("发送私信成功")
+                            bot?.getFriendOrFail(qq)!!.sendMessage(messages)
+                            sendMessage("发送私信成功")
                         } catch (e: Exception) {
                             logger.warning(e)
-                            sender.sendMessage("出现错误：${e}")
+                            sendMessage("出现错误：${e}")
                         }
                     }
                 }
@@ -218,7 +218,7 @@ object CommandAdmin : RawCommand(
                             whiteListInfo += " ${WhiteListData.WhiteList[key]}"
                         }
                     }
-                    sendQuoteReply(sender, originalMessage, whiteListInfo)
+                    sendQuoteReply(whiteListInfo)
                 }
 
                 "setWhiteList", "setwhitelist", "设置白名单"-> {   // 设置白名单功能状态
@@ -228,11 +228,11 @@ object CommandAdmin : RawCommand(
                     when {
                         enable.contains(option) -> {
                             BotConfig.WhiteList_enable = true
-                            sendQuoteReply(sender, originalMessage, "已启用bot白名单功能")
+                            sendQuoteReply("已启用bot白名单功能")
                         }
                         disable.contains(option) -> {
                             BotConfig.WhiteList_enable = false
-                            sendQuoteReply(sender, originalMessage, "已关闭bot白名单功能")
+                            sendQuoteReply("已关闭bot白名单功能")
                         }
                     }
                     BotConfig.save()
@@ -242,21 +242,21 @@ object CommandAdmin : RawCommand(
                     val group: Long = try {
                         args[1].content.toLong()
                     } catch (e: NumberFormatException) {
-                        sendQuoteReply(sender, originalMessage, "数字转换错误，请检查指令")
+                        sendQuoteReply("数字转换错误，请检查指令")
                         return
                     } catch (e: Exception) {
-                        if (sender.subject is Friend || sender.isConsole()) {
+                        if (subject is Friend || isConsole()) {
                             throw PermissionDeniedException("Group only")
                         }
-                        sender.subject!!.id
+                        subject!!.id
                     }
                     val desc = args.getOrElse(2) { "no_desc" }.toString()
                     val result = WhiteListData.WhiteList.put(group, desc)
                     if (result == null) {
                         WhiteListData.WhiteList = WhiteListData.WhiteList.toSortedMap()
-                        sendQuoteReply(sender, originalMessage, "已将 $group 添加进白名单列表")
+                        sendQuoteReply("已将 $group 添加进白名单列表")
                     } else {
-                        sendQuoteReply(sender, originalMessage, "$group 已存在，更新描述成功：$desc")
+                        sendQuoteReply("$group 已存在，更新描述成功：$desc")
                     }
                     BotConfig.save()
                 }
@@ -265,57 +265,55 @@ object CommandAdmin : RawCommand(
                     val group: Long = try {
                         args[1].content.toLong()
                     } catch (e: NumberFormatException) {
-                        sendQuoteReply(sender, originalMessage, "数字转换错误，请检查指令")
+                        sendQuoteReply("数字转换错误，请检查指令")
                         return
                     } catch (e: Exception) {
-                        if (sender.subject is Friend || sender.isConsole()) {
+                        if (subject is Friend || isConsole()) {
                             throw PermissionDeniedException("Group only")
                         }
-                        sender.subject!!.id
+                        subject!!.id
                     }
                     val result = WhiteListData.WhiteList.remove(group)
                     if (result != null) {
                         BotConfig.save()
-                        sendQuoteReply(sender, originalMessage, "已将 $group 移除白名单列表")
+                        sendQuoteReply("已将 $group 移除白名单列表")
                     } else {
-                        sendQuoteReply(sender, originalMessage, "白名单列表不存在群聊 $group")
+                        sendQuoteReply("白名单列表不存在群聊 $group")
                     }
                 }
 
                 "timezone", "时区"-> {   // 修改时区显示
-                    masterOnly(sender)
+                    masterOnly(this)
                     val zone = args[1].content
                     val zoneName = args[2].content
                     BotConfig.TimeZone = mutableListOf(zone, zoneName)
                     BotConfig.save()
-                    sendQuoteReply(sender, originalMessage, "时区显示已修改：${BotConfig.TimeZone[0]}（${BotConfig.TimeZone[1]}时间）")
+                    sendQuoteReply("时区显示已修改：${BotConfig.TimeZone[0]}（${BotConfig.TimeZone[1]}时间）")
                 }
 
                 "focus", "专注"-> {   // 专注模式
-                    masterOnly(sender)
+                    masterOnly(this)
                     val option = args[1].content
                     if (option == "disable") {
                         BotConfig.focus_enable = false
                         BotConfig.focus_to = 0
                         BotConfig.save()
-                        sendQuoteReply(sender, originalMessage,
-                            "***专注模式 [已关闭]***\n已清除专注模式配置")
+                        sendQuoteReply("***专注模式 [已关闭]***\n已清除专注模式配置")
                     } else {
                         try {
                             BotConfig.focus_to = option.toLong()
                             BotConfig.save()
-                            sendQuoteReply(sender, originalMessage,
-                                "***专注模式 [已启用]***\nbot将专注于群聊 ${BotConfig.focus_to} 进行服务")
+                            sendQuoteReply("***专注模式 [已启用]***\nbot将专注于群聊 ${BotConfig.focus_to} 进行服务")
                         } catch (e: NumberFormatException) {
-                            sendQuoteReply(sender, originalMessage, "参数转换错误，请检查指令")
+                            sendQuoteReply("参数转换错误，请检查指令")
                         }
                     }
                 }
 
                 "group", "Group", "群聊"-> {
-                    val groups = sender.bot?.groups
+                    val groups = bot?.groups
                     if (groups == null) {
-                        sendQuoteReply(sender, originalMessage, "错误：获取群列表失败或群列表为空")
+                        sendQuoteReply("错误：获取群列表失败或群列表为空")
                         return
                     }
                     when (args[1].content) {
@@ -337,7 +335,7 @@ object CommandAdmin : RawCommand(
                                             "白名单总数：${WhiteListData.WhiteList.size}\n" +
                                             "激活群聊数：$activeCount\n" +
                                             "未知群聊数：${groups.size - activeCount}"
-                            val forward = buildForwardMessage(sender.subject!!) {
+                            val forward = buildForwardMessage(subject!!) {
                                 displayStrategy = object : ForwardMessage.DisplayStrategy {
                                     override fun generateTitle(forward: RawForwardMessage): String = "群聊信息查询"
                                     override fun generateBrief(forward: RawForwardMessage): String = "[群聊信息]"
@@ -345,26 +343,26 @@ object CommandAdmin : RawCommand(
                                         listOf("白名单总数：${WhiteListData.WhiteList.size}", "激活群聊数：$activeCount", "未知群聊数：${groups.size - activeCount}")
                                     override fun generateSummary(forward: RawForwardMessage): String = "白名单功能：$whiteEnable"
                                 }
-                                sender.subject!!.bot says groupInfo
+                                subject!!.bot says groupInfo
                                 if (type == "active" || type == "all" || type == "激活" || type == "全部")
-                                    sender.subject!!.bot says activeInfo
+                                    subject!!.bot says activeInfo
                                 if (type == "inactive" || type == "all" || type == "未知" || type == "全部")
-                                    sender.subject!!.bot says inactiveInfo
+                                    subject!!.bot says inactiveInfo
                             }
-                            sender.sendMessage(forward)
+                            sendMessage(forward)
                         }
                         "quit", "退群"-> {
-                            masterOnly(sender)
+                            masterOnly(this)
                             val id = args[2].content.toLong()
                             if (id in groups) {
-                                sender.bot?.getGroup(id)?.quit()
-                                sendQuoteReply(sender, originalMessage, "退出群 $id 成功")
+                                bot?.getGroup(id)?.quit()
+                                sendQuoteReply("退出群 $id 成功")
                             } else {
-                                sendQuoteReply(sender, originalMessage, "错误：此群号不在群列表中")
+                                sendQuoteReply("错误：此群号不在群列表中")
                             }
                         }
                         "autoQuit", "自动退群"-> {
-                            masterOnly(sender)
+                            masterOnly(this)
                             var count = 0
                             for (group in groups) {
                                 if ((group.id in WhiteListData.WhiteList).not()) {
@@ -373,28 +371,28 @@ object CommandAdmin : RawCommand(
                                     count++
                                 }
                             }
-                            sendQuoteReply(sender, originalMessage, "自动退出未知群聊 $count 个")
+                            sendQuoteReply("自动退出未知群聊 $count 个")
                         }
                         else-> {
-                            sendQuoteReply(sender, originalMessage, "Group指令：未知的操作")
+                            sendQuoteReply("Group指令：未知的操作")
                         }
                     }
                 }
 
                 "reload", "重载"-> {   // 重载配置及数据
-                    masterOnly(sender)
+                    masterOnly(this)
                     try {
                         TiedanGame.rdConfig()
                         TiedanGame.rdData()
-                        sendQuoteReply(sender, originalMessage, "配置及数据已重载")
+                        sendQuoteReply("配置及数据已重载")
                     } catch (e: Exception) {
                         logger.warning(e)
-                        sendQuoteReply(sender, originalMessage, "出现错误：${e.message}")
+                        sendQuoteReply("出现错误：${e.message}")
                     }
                 }
 
                 "sendmail", "发送邮件"-> {
-                    masterOnly(sender)
+                    masterOnly(this)
                     val address: String = try {
                         args[1].content
                     } catch (e: Exception) {
@@ -428,7 +426,7 @@ object CommandAdmin : RawCommand(
                             logs.listFiles()?.maxByOrNull { it.lastModified() }
                         }
                         file("network.log") {
-                            val logs = File("bots/${sender.bot?.id}/logs")
+                            val logs = File("bots/${bot?.id}/logs")
                             logs.listFiles()?.maxByOrNull { it.lastModified() }
                         }
                     }
@@ -438,25 +436,25 @@ object CommandAdmin : RawCommand(
                     try {
                         current.contextClassLoader = MailConfig::class.java.classLoader
                         jakarta.mail.Transport.send(mail)
-                        sendQuoteReply(sender, originalMessage, "邮件发送成功")
+                        sendQuoteReply("邮件发送成功")
                     } catch (cause: jakarta.mail.MessagingException) {
-                        sendQuoteReply(sender, originalMessage, "邮件发送失败, cause: ${cause.message}")
+                        sendQuoteReply("邮件发送失败, cause: ${cause.message}")
                     } finally {
                         current.contextClassLoader = oc
                     }
                 }
 
                 else-> {
-                    sendQuoteReply(sender, originalMessage, "[操作无效] 请检查指令")
+                    sendQuoteReply("[操作无效] 请检查指令")
                 }
             }
         } catch (e: PermissionDeniedException) {
-            sendQuoteReply(sender, originalMessage, "[操作无效] ${e.message}")
+            sendQuoteReply("[操作无效] ${e.message}")
         } catch (e: IndexOutOfBoundsException) {
-            sendQuoteReply(sender, originalMessage, "[操作无效] 未知的参数")
+            sendQuoteReply("[操作无效] 未知的参数")
         } catch (e: Exception) {
             logger.warning(e)
-            sendQuoteReply(sender, originalMessage, "[指令执行未知错误]\n可能由于bot发消息出错，请联系铁蛋查看后台：${e::class.simpleName}(${e.message})")
+            sendQuoteReply("[指令执行未知错误]\n可能由于bot发消息出错，请联系铁蛋查看后台：${e::class.simpleName}(${e.message})")
         }
     }
 

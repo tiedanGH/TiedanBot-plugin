@@ -15,9 +15,9 @@ import com.tiedan.plugindata.AdminListData
 import com.tiedan.plugindata.RankData
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
-import net.mamoe.mirai.console.command.CommandContext
 import net.mamoe.mirai.console.command.CommandManager
 import net.mamoe.mirai.console.command.CommandManager.INSTANCE.commandPrefix
+import net.mamoe.mirai.console.command.CommandSender
 import net.mamoe.mirai.console.command.RawCommand
 import net.mamoe.mirai.console.command.isConsole
 import net.mamoe.mirai.contact.PermissionDeniedException
@@ -46,7 +46,7 @@ object CommandRank : RawCommand(
     )
 
 
-    override suspend fun CommandContext.onCommand(args: MessageChain) {
+    override suspend fun CommandSender.onCommand(args: MessageChain) {
 
         val sortedData = RankData.rankData.entries.sortedByDescending { (_, innerMap)->
             innerMap["points"]?.take(3)?.sum() ?: 0
@@ -58,29 +58,29 @@ object CommandRank : RawCommand(
                 "help" -> {
                     var reply = " ·🏆 比赛排行指令帮助：\n" +
                             commandList.filter { it.type == 1 }.joinToString("") { "${it.desc}\n${commandPrefix}${it.usage}\n" }
-                    if (AdminListData.AdminList.contains(sender.user?.id) || sender.user?.id == BotConfig.master || sender.isConsole()) {
+                    if (AdminListData.AdminList.contains(user?.id) || user?.id == BotConfig.master || isConsole()) {
                         reply += "\n ·🛠️ admin管理指令：\n" +
                                 commandList.filter { it.type == 2 }.joinToString("") { "${it.desc}\n${commandPrefix}${it.usage}\n" }
                     }
-                    if (sender.user?.id == BotConfig.master || sender.isConsole()) {
+                    if (user?.id == BotConfig.master || isConsole()) {
                         reply += "\n ·👑 master管理指令：\n"+
                                 commandList.filter { it.type == 3 }.joinToString("") { "${it.desc}\n${commandPrefix}${it.usage}\n" }
                     }
-                    sendQuoteReply(sender, originalMessage, reply)
+                    sendQuoteReply(reply)
                 }
 
                 "帮助" -> {
                     var reply = " ·🏆 比赛排行指令帮助：\n" +
                             commandList.filter { it.type == 1 }.joinToString("") { "${it.desc}\n${commandPrefix}${it.usageCN}\n" }
-                    if (AdminListData.AdminList.contains(sender.user?.id) || sender.user?.id == BotConfig.master || sender.isConsole()) {
+                    if (AdminListData.AdminList.contains(user?.id) || user?.id == BotConfig.master || isConsole()) {
                         reply += "\n ·🛠️ admin管理指令：\n" +
                                 commandList.filter { it.type == 2 }.joinToString("") { "${it.desc}\n${commandPrefix}${it.usageCN}\n" }
                     }
-                    if (sender.user?.id == BotConfig.master || sender.isConsole()) {
+                    if (user?.id == BotConfig.master || isConsole()) {
                         reply += "\n ·👑 master管理指令：\n" +
                                 commandList.filter { it.type == 3 }.joinToString("") { "${it.desc}\n${commandPrefix}${it.usageCN}\n" }
                     }
-                    sendQuoteReply(sender, originalMessage, reply)
+                    sendQuoteReply(reply)
                 }
 
                 "rank", "info", "排名", "信息" -> {
@@ -105,15 +105,15 @@ object CommandRank : RawCommand(
                             }
                         }
                     }
-                    sendQuoteReply(sender, originalMessage, message)
+                    sendQuoteReply(message)
                 }
 
                 "mine", "我", "查询" -> {
                     var message =
                         "→ 活动详情和完整排行：${RankData.URL}👤 您的当前个人数据：\n"
-                    if (sortedData.containsKey(sender.user?.id)) {
+                    if (sortedData.containsKey(user?.id)) {
                         sortedData.keys.forEachIndexed { index, key ->
-                            if (key == sender.user?.id) {
+                            if (key == user?.id) {
                                 val innerMap = RankData.rankData[key] ?: return
                                 val innerPointsList = innerMap["points"] ?: return
                                 message += " ·ID：$key\n" +
@@ -125,36 +125,36 @@ object CommandRank : RawCommand(
                             }
                         }
                     } else {
-                        message += "[未找到您的排行数据] ${sender.user?.id}"
+                        message += "[未找到您的排行数据] ${user?.id}"
                     }
-                    sendQuoteReply(sender, originalMessage, message)
+                    sendQuoteReply(message)
                 }
 
                 "clear", "清空"-> {
-                    masterOnly(sender)
+                    masterOnly(this)
                     RankData.rankData = mutableMapOf()
-                    sendQuoteReply(sender, originalMessage, "已清空全部数据")
+                    sendQuoteReply("已清空全部数据")
                 }
 
                 "record", "记录"-> {
-                    adminOnly(sender)
+                    adminOnly(this)
                     val enable: List<String> = arrayListOf("enable","on","true","开启")
                     val disable: List<String> = arrayListOf("disable","off","false","关闭")
                     when {
                         enable.contains(args[1].content) -> {
                             RankData.enable_record = true
-                            sendQuoteReply(sender, originalMessage, "已启用分数记录功能")
+                            sendQuoteReply("已启用分数记录功能")
                         }
                         disable.contains(args[1].content) -> {
                             RankData.enable_record = false
-                            sendQuoteReply(sender, originalMessage, "已关闭分数记录功能")
+                            sendQuoteReply("已关闭分数记录功能")
                         }
                     }
                     RankData.save()
                 }
 
                 "export", "导出"-> {
-                    adminOnly(sender)
+                    adminOnly(this)
                     var fileContent = ""
                     sortedData.keys.forEachIndexed { _, key ->
                         fileContent += "${key}\t${RankData.rankData[key]?.get("count")?.get(0)}\t${RankData.rankData[key]?.get("count")?.get(1)}"
@@ -173,7 +173,7 @@ object CommandRank : RawCommand(
                         }
                     } catch (e: IOException) {
                         logger.warning(e)
-                        sendQuoteReply(sender, originalMessage, "导出数据失败：${e.message}")
+                        sendQuoteReply("导出数据失败：${e.message}")
                         return
                     }
                     val address: String = args[1].content
@@ -197,25 +197,25 @@ object CommandRank : RawCommand(
                     try {
                         current.contextClassLoader = MailConfig::class.java.classLoader
                         jakarta.mail.Transport.send(mail)
-                        sendQuoteReply(sender, originalMessage, "数据导出成功，且邮件成功发送")
+                        sendQuoteReply("数据导出成功，且邮件成功发送")
                     } catch (cause: jakarta.mail.MessagingException) {
-                        sendQuoteReply(sender, originalMessage, "数据导出成功，但邮件发送失败, 原因: ${cause.message}")
+                        sendQuoteReply("数据导出成功，但邮件发送失败, 原因: ${cause.message}")
                     } finally {
                         current.contextClassLoader = oc
                     }
                 }
 
                 else-> {
-                    sendQuoteReply(sender, originalMessage, "[参数不匹配]\n请使用「${CommandManager.commandPrefix}rank help」来查看指令帮助")
+                    sendQuoteReply("[参数不匹配]\n请使用「${CommandManager.commandPrefix}rank help」来查看指令帮助")
                 }
             }
         } catch (e: PermissionDeniedException) {
-            sendQuoteReply(sender, originalMessage, "[操作无效] ${e.message}")
+            sendQuoteReply("[操作无效] ${e.message}")
         } catch (e: IndexOutOfBoundsException) {
-            sendQuoteReply(sender, originalMessage, "[参数不足]\n请使用「${commandPrefix}rank help」来查看指令帮助")
+            sendQuoteReply("[参数不足]\n请使用「${commandPrefix}rank help」来查看指令帮助")
         } catch (e: Exception) {
             logger.warning(e)
-            sendQuoteReply(sender, originalMessage, "[指令执行未知错误]\n可能由于bot发消息出错，请联系铁蛋查看后台：${e::class.simpleName}(${e.message})")
+            sendQuoteReply("[指令执行未知错误]\n可能由于bot发消息出错，请联系铁蛋查看后台：${e::class.simpleName}(${e.message})")
         }
     }
 }
