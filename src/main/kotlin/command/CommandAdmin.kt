@@ -1,6 +1,7 @@
 package com.tiedan.command
 
 import com.tiedan.TiedanGame
+import com.tiedan.TiedanGame.Command
 import com.tiedan.TiedanGame.adminOnly
 import com.tiedan.TiedanGame.logger
 import com.tiedan.TiedanGame.masterOnly
@@ -31,6 +32,25 @@ object CommandAdmin : RawCommand(
     description = "管理员相关指令",
     usage = "${commandPrefix}admin help"
 ){
+    private val commandList = listOf(
+        Command("admin list", "管理 列表", "查看管理员列表", 1),
+        Command("admin BlackList", "管理 黑名单", "查看黑名单列表", 1),
+        Command("admin black <qq>", "管理 黑名单 <QQ号>", "添加/移除黑名单", 1),
+        Command("admin WhiteList [info]", "管理 白名单 [信息]", "查看白名单列表", 1),
+        Command("admin setWhiteList <开启/关闭>", "管理 设置白名单 <开启/关闭>", "设置白名单开关状态", 1),
+        Command("admin addWhiteList [group] [desc]", "管理 添加白名单 [群号] [描述]", "添加白名单", 1),
+        Command("admin delWhiteList [group]", "管理 移除白名单 [群号]", "移除白名单", 1),
+        Command("admin group <操作>", "管理 群聊 <操作>", "群聊相关操作", 1),
+        Command("admin send <qq> [message]", "管理 发送 <QQ号> [消息]", "消息发送", 1),
+
+        Command("admin op/deop <qq>", "管理 添加/移除管理员 <QQ号>", "添加/移除管理员", 2),
+        Command("admin shutdown", "管理 关机", "机器人关机", 2),
+        Command("admin transfer <qq> <point>", "管理 转账 <QQ号> <积分>", "积分转账", 2),
+        Command("admin reload", "管理 重载", "配置及数据重载", 2),
+        Command("admin sendmail [address]", "管理 发送邮件 [邮件地址]", "发送邮件备份日志", 2),
+    )
+
+
     override suspend fun CommandContext.onCommand(args: MessageChain) {
 
         try {
@@ -46,75 +66,21 @@ object CommandAdmin : RawCommand(
             when (args[0].content) {
 
                 "help"-> {   // 查看admin可用帮助（help）
-                    var reply = " ·admin可用帮助：\n" +
-                                "-> 查看管理员列表\n" +
-                                "${commandPrefix}admin list\n" +
-                                "-> 查看黑名单列表\n" +
-                                "${commandPrefix}admin BlackList\n" +
-                                "-> 添加/移除黑名单\n" +
-                                "${commandPrefix}admin black <qq>\n" +
-                                "-> 查看白名单列表\n" +
-                                "${commandPrefix}admin WhiteList [info]\n" +
-                                "-> 设置白名单开关状态\n" +
-                                "${commandPrefix}admin setWhiteList <开启/关闭>\n" +
-                                "-> 添加白名单\n" +
-                                "${commandPrefix}admin addWhiteList [group] [desc]\n" +
-                                "-> 移除白名单\n" +
-                                "${commandPrefix}admin delWhiteList [group]\n" +
-                                "-> 群聊相关操作\n" +
-                                "${commandPrefix}admin group <操作>\n" +
-                                "-> 消息发送\n" +
-                                "${commandPrefix}admin send <qq> [message]"
+                    var reply = " ·🔧 admin可用帮助：\n" +
+                            commandList.filter { it.type == 1 }.joinToString("") { "-> ${it.desc}\n${commandPrefix}${it.usage}\n" }
                     if (sender.user?.id == BotConfig.master || sender.isConsole()) {
-                        reply += "\n" +
-                                " ·master管理指令：\n" +
-                                "-> 添加/移除管理员\n" +
-                                "${commandPrefix}admin op/deop <qq>\n" +
-                                "-> 机器人关机\n" +
-                                "${commandPrefix}admin shutdown\n" +
-                                "-> 积分转账\n" +
-                                "${commandPrefix}admin transfer <qq> <point>\n" +
-                                "-> 配置及数据重载\n" +
-                                "${commandPrefix}admin reload\n" +
-                                "-> 发送邮件备份日志\n" +
-                                "${commandPrefix}admin sendmail [address]"
+                        reply += " ·👑 master管理指令：\n" +
+                            commandList.filter { it.type == 2 }.joinToString("") { "-> ${it.desc}\n${commandPrefix}${it.usage}\n" }
                     }
                     sendQuoteReply(sender, originalMessage, reply)
                 }
 
                 "帮助"-> {   // 查看admin可用帮助（帮助）
-                    var reply = " ·admin可用帮助：\n" +
-                                "-> 查看管理员列表\n" +
-                                "${commandPrefix}管理 列表\n" +
-                                "-> 查看黑名单列表\n" +
-                                "${commandPrefix}管理 黑名单\n" +
-                                "-> 添加/移除黑名单\n" +
-                                "${commandPrefix}管理 黑名单 <QQ号>\n" +
-                                "-> 查看白名单列表\n" +
-                                "${commandPrefix}管理 白名单 [信息]\n" +
-                                "-> 设置白名单开关状态\n" +
-                                "${commandPrefix}管理 设置白名单 <开启/关闭>\n" +
-                                "-> 添加白名单\n" +
-                                "${commandPrefix}管理 添加白名单 [群号] [描述]\n" +
-                                "-> 移除白名单\n" +
-                                "${commandPrefix}管理 移除白名单 [群号]\n" +
-                                "-> 群聊相关操作\n" +
-                                "${commandPrefix}管理 群聊 <操作>\n" +
-                                "-> 消息发送\n" +
-                                "${commandPrefix}管理 发送 <QQ号> [消息]"
+                    var reply = " ·🔧 admin可用帮助：\n" +
+                            commandList.filter { it.type == 1 }.joinToString("") { "-> ${commandPrefix}${it.usageCN}　${it.desc}\n" }
                     if (sender.user?.id == BotConfig.master || sender.isConsole()) {
-                        reply += "\n" +
-                                " ·master管理指令：\n" +
-                                "-> 添加/移除管理员\n" +
-                                "${commandPrefix}管理 添加/移除管理员 <QQ号>\n" +
-                                "-> 机器人关机\n" +
-                                "${commandPrefix}管理 关机\n" +
-                                "-> 积分转账\n" +
-                                "${commandPrefix}管理 转账 <QQ号> <积分>\n" +
-                                "-> 配置及数据重载\n" +
-                                "${commandPrefix}管理 重载\n" +
-                                "-> 发送邮件备份日志\n" +
-                                "${commandPrefix}管理 发送邮件 [邮件地址]"
+                        reply += " ·👑 master管理指令：\n" +
+                            commandList.filter { it.type == 2 }.joinToString("") { "-> ${commandPrefix}${it.usageCN}　${it.desc}\n" }
                     }
                     sendQuoteReply(sender, originalMessage, reply)
                 }
@@ -361,9 +327,9 @@ object CommandAdmin : RawCommand(
                             for (group in groups) {
                                 if (group.id in WhiteListData.WhiteList) {
                                     activeCount++
-                                    activeInfo += "\n${group.name}(${group.id}) [人数：${group.members.size + 1}]"
+                                    activeInfo += "\n${group.name}(${group.id}) [人数：${group.members.size}]"
                                 } else {
-                                    inactiveInfo += "\n${group.name}(${group.id}) [人数：${group.members.size + 1}]"
+                                    inactiveInfo += "\n${group.name}(${group.id}) [人数：${group.members.size}]"
                                 }
                             }
                             val groupInfo = "白名单功能：$whiteEnable\n" +

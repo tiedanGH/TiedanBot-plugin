@@ -1,6 +1,7 @@
 package com.tiedan.command
 
 import com.tiedan.TiedanGame
+import com.tiedan.TiedanGame.Command
 import com.tiedan.TiedanGame.getNickname
 import com.tiedan.TiedanGame.logger
 import com.tiedan.TiedanGame.masterOnly
@@ -24,6 +25,17 @@ object CommandPoint : RawCommand(
     description = "铁蛋积分指令",
     usage = "${commandPrefix}pt help"
 ) {
+    private val commandList = listOf(
+        Command("pt balance [QQ号]", "积分 余额 [QQ号]", "查询游戏积分", 1),
+        Command("pt exchange <数额>", "积分 提款 <数额>", "提款至虞姬积分", 1),
+        Command("pt rank [页码]", "积分 排行 [页码]", "查看排行和数据", 1),
+        Command("pt transfer <QQ号/@目标> <数额>", "积分 转账 <QQ号/@目标> <数额>", "向指定目标转账", 1),
+
+        Command("pt ExchangeFunction <on/off>", "积分 提款功能 <开启/关闭>", "配置提款功能状态", 2),
+        Command("pt TransferFunction <on/off>", "积分 转账功能 <开启/关闭>", "配置转账功能状态", 2),
+        Command("pt add <QQ> <数额>", "积分 添加 <QQ> <数额>", "为指定账户增加积分", 2),
+    )
+
     override suspend fun CommandContext.onCommand(args: MessageChain) {
 
         val qq = sender.user?.id ?: 10000
@@ -38,36 +50,26 @@ object CommandPoint : RawCommand(
 
                 "help" -> {   // 查看point可用帮助（help）
                     var reply = " ·游戏积分指令帮助：\n" +
-                            "${commandPrefix}pt balance [QQ号] 查询游戏积分\n" +
-                            "${commandPrefix}pt exchange <数额> 提款至虞姬积分\n" +
-                            "${commandPrefix}pt rank [页码] 查看排行和数据\n" +
-                            "${commandPrefix}pt transfer <QQ号/@目标> <数额> 向指定目标转账\n" +
+                            commandList.filter { it.type == 1 }.joinToString("") { "${commandPrefix}${it.usage}　${it.desc}\n" } +
                             "\n" +
                             "【请注意】在提款前请务必确保虞姬在线！实际到账积分会受到虞姬月卡等级和每日积分获取限制等影响，单日大量提款会亏损积分，建议提款额为3000以内\n" +
-                            "【获取来源】大海战BOSS战、开放蜂巢、漫漫长夜、面包危机、爆金币"
+                            "【获取来源】大海战BOSS战、开放蜂巢、漫漫长夜、面包危机、爆金币\n"
                     if (args.getOrNull(1)?.content == "all" && (sender.user?.id == BotConfig.master || sender.isConsole())) {
                         reply += "\n ·master管理指令：\n" +
-                                "${commandPrefix}pt ExchangeFunction <on/off> 配置提款功能状态\n" +
-                                "${commandPrefix}pt TransferFunction <on/off> 配置转账功能状态\n" +
-                                "${commandPrefix}pt add <QQ> <数额> 为指定账户增加积分"
+                                commandList.filter { it.type == 2 }.joinToString("") { "${commandPrefix}${it.usage}　${it.desc}\n" }
                     }
                     sendQuoteReply(sender, originalMessage, reply)
                 }
 
                 "帮助" -> {   // 查看point可用帮助（帮助）
                     var reply = " ·游戏积分指令帮助：\n" +
-                            "${commandPrefix}积分 余额 [QQ号] 查询游戏积分\n" +
-                            "${commandPrefix}积分 提款 <数额> 提款至虞姬积分\n" +
-                            "${commandPrefix}积分 排行 [页码] 查看排行和数据\n" +
-                            "${commandPrefix}积分 转账 <QQ号/@目标> <数额> 向指定目标转账\n" +
+                            commandList.filter { it.type == 1 }.joinToString("") { "${commandPrefix}${it.usageCN}　${it.desc}\n" } +
                             "\n" +
                             "【请注意】在提款前请务必确保虞姬在线！实际到账积分会受到虞姬月卡等级和每日积分获取限制等影响，单日大量提款会亏损积分，建议提款额为3000以内\n" +
-                            "【获取来源】大海战BOSS战、开放蜂巢、漫漫长夜、面包危机、爆金币"
+                            "【获取来源】大海战BOSS战、开放蜂巢、漫漫长夜、面包危机、爆金币\n"
                     if (args.getOrNull(1)?.content == "all" && (sender.user?.id == BotConfig.master || sender.isConsole())) {
                         reply += "\n ·master管理指令：\n" +
-                                "${commandPrefix}积分 提款功能 <开启/关闭> 配置提款功能状态\n" +
-                                "${commandPrefix}积分 转账功能 <开启/关闭> 配置转账功能状态\n" +
-                                "${commandPrefix}积分 添加 <QQ> <数额> 为指定账户增加积分"
+                                commandList.filter { it.type == 2 }.joinToString("") { "${commandPrefix}${it.usageCN}　${it.desc}\n" }
                     }
                     sendQuoteReply(sender, originalMessage, reply)
                 }

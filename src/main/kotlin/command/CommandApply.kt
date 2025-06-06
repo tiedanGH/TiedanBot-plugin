@@ -1,6 +1,7 @@
 package com.tiedan.command
 
 import com.tiedan.TiedanGame
+import com.tiedan.TiedanGame.Command
 import com.tiedan.TiedanGame.adminOnly
 import com.tiedan.TiedanGame.logger
 import com.tiedan.TiedanGame.masterOnly
@@ -23,63 +24,60 @@ object CommandApply : RawCommand(
     description = "申请操作指令",
     usage = "${commandPrefix}apply help"
 ){
+    private val commandList = listOf(
+        Command("apply white <group> <reason>", "申请 白名单 <群号> <原因>", "📌 申请群聊白名单", 1),
+        Command("apply admin <reason>", "申请 管理员 <原因>", "🔑 申请管理员权限", 1),
+        Command("apply cancel", "申请 取消", "❎ 取消个人申请", 1),
+
+        Command("apply list [type]", "申请 列表 [申请种类]", "📋 查看申请列表", 2),
+        Command("apply handle <qq> <同意/拒绝> [备注]", "申请 处理 <申请人> <同意/拒绝> [备注]", "📝 处理申请", 2),
+
+        Command("apply handleAll <type> <同意/拒绝/忽略>", "申请 批量处理 <申请种类> <同意/拒绝/忽略>", "📦 批量处理申请", 3)
+    )
+
     private const val MAX_LENGTH = 150
 
     override suspend fun CommandContext.onCommand(args: MessageChain) {
 
         val qq = sender.user?.id ?: 10000
         val name = sender.name
+        val isAdmin = AdminListData.AdminList.contains(sender.user?.id) || sender.user?.id == BotConfig.master || sender.isConsole()
+        val isMaster = sender.user?.id == BotConfig.master || sender.isConsole()
 
         try {
             when (args[0].content) {
 
                 "help"-> {   // 查看apply帮助（help）
-                    var reply = " ·apply指令帮助：\n" +
-                                "-> 申请群聊白名单\n" +
-                                "${commandPrefix}apply white <group> <reason>\n" +
-                                "-> 申请admin权限\n" +
-                                "${commandPrefix}apply admin <reason>\n" +
-                                "-> 取消个人申请\n" +
-                                "${commandPrefix}apply cancel\n"
-                    if (AdminListData.AdminList.contains(sender.user?.id) || sender.user?.id == BotConfig.master || sender.isConsole()) {
-                        reply += "\n" +
-                                 " ·admin管理指令：\n" +
-                                 "-> 查看申请列表\n" +
-                                 "${commandPrefix}apply list [type]\n" +
-                                 "-> 处理申请\n" +
-                                 "${commandPrefix}apply handle <qq> <同意/拒绝> [备注]\n"
+                    val reply = buildString {
+                        append(" ·📮 apply指令帮助：\n")
+                        commandList.filter { it.type == 1 }.forEach { append("${it.desc}\n${commandPrefix}${it.usage}\n") }
+                        if (isAdmin) {
+                            append("\n ·🛠️ admin管理指令：\n")
+                            commandList.filter { it.type == 2 }.forEach { append("${it.desc}\n${commandPrefix}${it.usage}\n") }
+                        }
+                        if (isMaster) {
+                            append(" ·👑 master管理指令：\n")
+                            commandList.filter { it.type == 3 }.forEach { append("${it.desc}\n${commandPrefix}${it.usage}\n") }
+                        }
+                        append("\n🔸<group>-群号\n🔸<reason>-申请原因")
                     }
-                    if (sender.user?.id == BotConfig.master || sender.isConsole()) {
-                        reply += " ·master管理指令：\n" +
-                                 "-> 批量处理申请\n" +
-                                 "${commandPrefix}apply handleAll <type> <同意/拒绝/忽略>\n"
-                    }
-                    reply  += "\n<>为必填项，group-群号，reason-申请原因"
                     sendQuoteReply(sender, originalMessage, reply)
                 }
 
                 "帮助"-> {   // 查看apply帮助（帮助）
-                    var reply = " ·apply指令帮助：\n" +
-                                "-> 申请群聊白名单\n" +
-                                "${commandPrefix}申请 白名单 <群号> <原因>\n" +
-                                "-> 申请管理员权限\n" +
-                                "${commandPrefix}申请 管理员 <原因>\n" +
-                                "-> 取消个人申请\n" +
-                                "${commandPrefix}申请 取消"
-                    if (AdminListData.AdminList.contains(sender.user?.id) || sender.user?.id == BotConfig.master || sender.isConsole()) {
-                        reply += "\n\n" +
-                                 " ·admin管理指令：\n" +
-                                 "-> 查看申请列表\n" +
-                                 "${commandPrefix}申请 列表 [申请种类]\n" +
-                                 "-> 处理申请\n" +
-                                 "${commandPrefix}申请 处理 <申请人> <同意/拒绝> [备注]\n"
+                    val reply = buildString {
+                        append(" ·📮 apply指令帮助：\n")
+                        commandList.filter { it.type == 1 }.forEach { append("${it.desc}\n${commandPrefix}${it.usageCN}\n") }
+                        if (isAdmin) {
+                            append("\n ·🛠️ admin管理指令：\n")
+                            commandList.filter { it.type == 2 }.forEach { append("${it.desc}\n${commandPrefix}${it.usageCN}\n") }
+                        }
+                        if (isMaster) {
+                            append(" ·👑 master管理指令：\n")
+                            commandList.filter { it.type == 3 }.forEach { append("${it.desc}\n${commandPrefix}${it.usageCN}\n") }
+                        }
+                        append("\n🔸<原因>-申请原因")
                     }
-                    if (sender.user?.id == BotConfig.master || sender.isConsole()) {
-                        reply += " ·master管理指令：\n" +
-                                 "-> 批量处理申请\n" +
-                                 "${commandPrefix}申请 批量处理 <申请种类> <同意/拒绝/忽略>\n"
-                    }
-                    reply  += "\n<>为必填项，原因-申请原因"
                     sendQuoteReply(sender, originalMessage, reply)
                 }
 

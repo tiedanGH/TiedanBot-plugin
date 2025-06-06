@@ -1,6 +1,7 @@
 package com.tiedan.command
 
 import com.tiedan.TiedanGame
+import com.tiedan.TiedanGame.Command
 import com.tiedan.TiedanGame.adminOnly
 import com.tiedan.TiedanGame.logger
 import com.tiedan.TiedanGame.masterOnly
@@ -34,6 +35,17 @@ object CommandRank : RawCommand(
     description = "比赛排行指令",
     usage = "${commandPrefix}rank help"
 ) {
+    private val commandList = listOf(
+        Command("rank [rank] [desc]", "排行 [排名] [详情]", "📊 查看实时排行", 1),
+        Command("rank mine", "排行 查询", "-> 查询个人数据", 1),
+
+        Command("rank export <address>", "排行 导出 [邮件地址]", "📤 导出排行记录并发送邮件", 2),
+
+        Command("rank record <on/off>", "排行 记录 <开启/关闭>", "⚙️ 设置记录功能", 3),
+        Command("rank clear", "排行 清空", "🗑️ 清除全部数据", 3),
+    )
+
+
     override suspend fun CommandContext.onCommand(args: MessageChain) {
 
         val sortedData = RankData.rankData.entries.sortedByDescending { (_, innerMap)->
@@ -42,44 +54,31 @@ object CommandRank : RawCommand(
 
         try {
             when (args.getOrElse(0) { "rank" }.toString()) {
+
                 "help" -> {
-                    var reply = " ·比赛排行指令帮助：\n" +
-                                "-> 查看实时排行\n" +
-                                "${commandPrefix}rank [rank] [desc]\n" +
-                                "-> 查询个人数据\n" +
-                                "${commandPrefix}rank mine"
+                    var reply = " ·🏆 比赛排行指令帮助：\n" +
+                            commandList.filter { it.type == 1 }.joinToString("") { "${it.desc}\n${commandPrefix}${it.usage}\n" }
                     if (AdminListData.AdminList.contains(sender.user?.id) || sender.user?.id == BotConfig.master || sender.isConsole()) {
-                        reply += "\n ·admin管理指令：\n" +
-                                "-> 导出排行记录并发送邮件\n" +
-                                "${commandPrefix}rank export <address>"
+                        reply += "\n ·🛠️ admin管理指令：\n" +
+                                commandList.filter { it.type == 2 }.joinToString("") { "${it.desc}\n${commandPrefix}${it.usage}\n" }
                     }
                     if (sender.user?.id == BotConfig.master || sender.isConsole()) {
-                        reply += "\n ·master管理指令：\n" +
-                                "-> 设置记录功能\n" +
-                                "${commandPrefix}rank record <on/off>\n" +
-                                "-> 清除全部数据\n" +
-                                "${commandPrefix}rank clear"
+                        reply += "\n ·👑 master管理指令：\n"+
+                                commandList.filter { it.type == 3 }.joinToString("") { "${it.desc}\n${commandPrefix}${it.usage}\n" }
                     }
                     sendQuoteReply(sender, originalMessage, reply)
                 }
 
                 "帮助" -> {
-                    var reply = " ·比赛排行指令帮助：\n" +
-                                "-> 查看实时排行\n" +
-                                "${commandPrefix}排行 [排名] [详情]\n" +
-                                "-> 查询个人数据\n" +
-                                "${commandPrefix}排行 查询"
+                    var reply = " ·🏆 比赛排行指令帮助：\n" +
+                            commandList.filter { it.type == 1 }.joinToString("") { "${it.desc}\n${commandPrefix}${it.usageCN}\n" }
                     if (AdminListData.AdminList.contains(sender.user?.id) || sender.user?.id == BotConfig.master || sender.isConsole()) {
-                        reply += "\n ·admin管理指令：\n" +
-                                "-> 导出排行记录\n" +
-                                "${commandPrefix}排行 导出 [邮件地址]"
+                        reply += "\n ·🛠️ admin管理指令：\n" +
+                                commandList.filter { it.type == 2 }.joinToString("") { "${it.desc}\n${commandPrefix}${it.usageCN}\n" }
                     }
                     if (sender.user?.id == BotConfig.master || sender.isConsole()) {
-                        reply += "\n ·master管理指令：\n" +
-                                "-> 设置记录功能\n" +
-                                "${commandPrefix}排行 记录 <开启/关闭>\n" +
-                                "-> 清空全部数据\n" +
-                                "${commandPrefix}排行 清空"
+                        reply += "\n ·👑 master管理指令：\n" +
+                                commandList.filter { it.type == 3 }.joinToString("") { "${it.desc}\n${commandPrefix}${it.usageCN}\n" }
                     }
                     sendQuoteReply(sender, originalMessage, reply)
                 }
@@ -87,7 +86,7 @@ object CommandRank : RawCommand(
                 "rank", "info", "排名", "信息" -> {
                     val showDesc = args.getOrNull(1)?.content?.let { it == "desc" || it == "详情" } ?: false
                     var message =
-                        "→ 活动详情和完整排行：${RankData.URL}\n→ 前10名实时排行：\n"
+                        "→ 活动详情和完整排行：${RankData.URL}\n🏆 前10名实时排行：\n"
                     sortedData.keys.forEachIndexed { index, key ->
                         if (index < 10) {
                             message += " ·No.${index + 1} $key\n"
@@ -111,7 +110,7 @@ object CommandRank : RawCommand(
 
                 "mine", "我", "查询" -> {
                     var message =
-                        "→ 活动详情和完整排行：${RankData.URL}\n→ 您的当前个人数据：\n"
+                        "→ 活动详情和完整排行：${RankData.URL}👤 您的当前个人数据：\n"
                     if (sortedData.containsKey(sender.user?.id)) {
                         sortedData.keys.forEachIndexed { index, key ->
                             if (key == sender.user?.id) {

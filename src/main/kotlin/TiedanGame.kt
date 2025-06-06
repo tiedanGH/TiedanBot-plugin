@@ -40,6 +40,8 @@ object TiedanGame : KotlinPlugin(
         info("""TiedanGame Plugin""")
     }
 ) {
+    data class Command(val usage: String, val usageCN: String, val desc: String, val type: Int)
+
     override fun onEnable() {
         rdConfig()
         rdData()

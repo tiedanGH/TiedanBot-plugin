@@ -25,46 +25,54 @@ object CommandBotHelp : RawCommand(
 
                 "help"-> {   // 查看bot帮助（help）
                     val reply = " ·bot插件及功能帮助：\n" +
-                                "${commandPrefix}bot info    查看bot信息\n" +
-                                "${commandPrefix}bot status   mirai状态\n" +
-                                "${commandPrefix}bot lgt    LGT相关帮助\n" +
-                                "${commandPrefix}bot cloud    词云帮助\n" +
-                                "${commandPrefix}bot fly    飞行棋帮助\n" +
-                                "${commandPrefix}bot grass   草图相关帮助\n" +
-                                "${commandPrefix}bot pet    表情相关帮助\n" +
-                                "${commandPrefix}bot jcc    在线编译器帮助\n" +
+                            "${commandPrefix}bot info    查看bot数据📊\n" +
+                            "${commandPrefix}bot status   mirai状态📶\n" +
+                            "${commandPrefix}bot lgt    LGT相关帮助🤖\n" +
+                            "${commandPrefix}bot cloud    词云帮助☁️\n" +
+                            "${commandPrefix}bot fly    飞行棋帮助✈️\n" +
+                            "${commandPrefix}bot grass   草图相关帮助🌿\n" +
+                            "${commandPrefix}bot pet    表情相关帮助🐸\n" +
+                            "${commandPrefix}bot jcc    在线编译器帮助💻\n" +
 //                                "${commandPrefix}bot mcmod    MC百科查询帮助\n" +
 //                                "${commandPrefix}抽卡    原神抽卡插件菜单\n" +
-                                "\n" +
-                                "-> 查看和添加pastebin代码\n" +
-                                "${commandPrefix}pastebin help\n" +
-                                "-> 游戏积分相关指令\n" +
-                                "${commandPrefix}point help\n" +
-                                "-> 提交权限申请相关指令\n" +
-                                "${commandPrefix}apply help\n" +
-                                "\n" +
-                                "如bot使用出现任何问题可直接在群内联系铁蛋"
+                            "\n" +
+                            "📋 查看和添加pastebin代码\n" +
+                            "${commandPrefix}pb help\n" +
+                            "🖼️ 上传图片至图床\n" +
+                            "${commandPrefix}upload help\n" +
+                            "⏱️ 计时器指令帮助\n" +
+                            "${commandPrefix}time help\n" +
+                            "🎮 游戏积分相关指令\n" +
+                            "${commandPrefix}point help\n" +
+                            "📮 提交权限申请相关指令\n" +
+                            "${commandPrefix}apply help\n" +
+                            "\n" +
+                            "如bot使用出现任何问题可直接在群内联系铁蛋"
                     sendQuoteReply(sender, originalMessage, reply)
                 }
 
                 "帮助"-> {   // 查看bot帮助（帮助）
                     val reply = " ·bot插件及功能帮助：\n" +
-                            "${commandPrefix}b 信息    查看bot信息\n" +
-                            "${commandPrefix}b 状态   mirai状态\n" +
-                            "${commandPrefix}b LGT    LGT相关帮助\n" +
-                            "${commandPrefix}b 词云    词云帮助\n" +
-                            "${commandPrefix}b 飞行棋    飞行棋帮助\n" +
-                            "${commandPrefix}b 生草   草图相关帮助\n" +
-                            "${commandPrefix}b 表情    表情相关帮助\n" +
-                            "${commandPrefix}b 编译器    在线编译器帮助\n" +
+                            "${commandPrefix}b 信息    查看bot数据📊\n" +
+                            "${commandPrefix}b 状态   mirai状态📶\n" +
+                            "${commandPrefix}b LGT    LGT相关帮助🤖\n" +
+                            "${commandPrefix}b 词云    词云帮助☁️\n" +
+                            "${commandPrefix}b 飞行棋    飞行棋帮助✈️\n" +
+                            "${commandPrefix}b 生草   草图相关帮助🌿\n" +
+                            "${commandPrefix}b 表情    表情相关帮助🐸\n" +
+                            "${commandPrefix}b 编译器    在线编译器帮助💻\n" +
 //                            "${commandPrefix}b MC    MC百科查询帮助\n" +
 //                            "${commandPrefix}抽卡    原神抽卡插件菜单\n" +
                             "\n" +
-                            "-> 查看和添加pastebin代码\n" +
+                            "📋 查看和添加pastebin代码\n" +
                             "${commandPrefix}代码 帮助\n" +
-                            "-> 游戏积分相关指令\n" +
+                            "🖼️ 上传图片至图床\n" +
+                            "${commandPrefix}上传 帮助\n" +
+                            "⏱️ 计时器指令帮助\n" +
+                            "${commandPrefix}时间 帮助\n" +
+                            "🎮 游戏积分相关指令\n" +
                             "${commandPrefix}积分 帮助\n" +
-                            "-> 提交权限申请相关指令\n" +
+                            "📮 提交权限申请相关指令\n" +
                             "${commandPrefix}申请 帮助\n" +
                             "\n" +
                             "如bot使用出现任何问题可直接在群内联系铁蛋"
@@ -105,7 +113,7 @@ object CommandBotHelp : RawCommand(
                 }
 
                 "status", "状态"-> {   // 查看mirai状态
-                    BuiltInCommands.StatusCommand.run {
+                    BuiltInCommands.StatusCommand.runCatching {
                         sender.handle()
                     }
                 }
@@ -126,12 +134,12 @@ object CommandBotHelp : RawCommand(
                 }
 
                 "cloud", "词云"-> {   // 词云帮助
-                    val reply = "·词云指令列表：\n" +
-                                "本日词云\n" +
-                                "昨日词云\n" +
-                                "本月词云\n" +
-                                "获取词云 <from> <to>\n" +
-                                "·请注意：词云功能比较消耗性能，请尽量在没有游戏房间运行时使用"
+                    val reply = "☁\uFE0F 词云指令列表：\n" +
+                                "·本日词云\n" +
+                                "·昨日词云\n" +
+                                "·本月词云\n" +
+                                "·获取词云 <from> <to>\n" +
+                                "请注意：词云功能比较消耗性能，请尽量在没有游戏房间运行时使用"
 //                                "用户本日词云 + <用户名>\n" +
 //                                "用户昨日词云 + <用户名>\n" +
 //                                "用户本月词云 + <用户名>\n" +
@@ -140,7 +148,7 @@ object CommandBotHelp : RawCommand(
                 }
 
                 "fly", "飞行棋"-> {   // 飞行棋帮助
-                    val reply = "飞行棋插件相关帮助：\n" +
+                    val reply = "✈\uFE0F飞行棋插件相关帮助：\n" +
                                 "·创建游戏指令：\n" +
                                 "    创建飞行棋\n" +
                                 "·加入游戏指令：\n" +
@@ -154,7 +162,7 @@ object CommandBotHelp : RawCommand(
                 }
 
                 "grass", "生草", "草图"-> {   // 草图相关帮助
-                    val reply = "草图插件相关帮助：\n" +
+                    val reply = "\uD83C\uDF3F 草图插件相关帮助：\n" +
                                 "·获取草图指令：\n" +
                                 "    生草\n" +
                                 "·查看插件数据：\n" +
@@ -165,7 +173,7 @@ object CommandBotHelp : RawCommand(
                 }
 
                 "pet", "表情"-> {   // 表情包相关帮助
-                    val reply = "表情包生成帮助：\n" +
+                    val reply = "\uD83D\uDC38 表情包生成帮助：\n" +
                                 "·触发格式：\n" +
                                 "#关键字 + @对象/QQ昵称/QQ号\n" +
                                 "#关键字 + <回复消息/发送图片>\n" +
@@ -183,7 +191,7 @@ object CommandBotHelp : RawCommand(
                 }
 
                 "jcc", "编译器"-> {   // jcc在线编译器相关帮助
-                   val reply = "·在线运行代码指令:\n" +
+                   val reply = "·\uD83D\uDCBB 在线运行代码指令:\n" +
                                 "run <language> <code>\n" +
                                 "run <language> <pastebinUrl> [stdin]\n" +
                                 "引用消息: run <language> [stdin]\n" +
