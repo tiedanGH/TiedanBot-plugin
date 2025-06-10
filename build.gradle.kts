@@ -16,7 +16,7 @@ repositories {
 
 dependencies {
     api("jakarta.mail:jakarta.mail-api:2.1.3")
-    implementation("org.eclipse.angus:angus-mail:2.0.2")
+    implementation("org.eclipse.angus:angus-mail:2.0.3")
 }
 
 mirai {
