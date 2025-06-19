@@ -1,11 +1,8 @@
-package com.tiedan
-
-import com.tiedan.TiedanGame.logger
-import com.tiedan.TiedanGame.save
-import com.tiedan.command.CommandPoint.savePointChange
-import com.tiedan.config.BotConfig
-import com.tiedan.config.MailConfig
-import com.tiedan.plugindata.*
+import TiedanGame.logger
+import TiedanGame.save
+import command.CommandPoint.savePointChange
+import config.BotConfig
+import config.MailConfig
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 import net.mamoe.mirai.console.command.CommandManager
@@ -24,6 +21,7 @@ import net.mamoe.mirai.utils.MiraiExperimentalApi
 import net.mamoe.mirai.utils.MiraiInternalApi
 import net.mamoe.mirai.utils.error
 import net.mamoe.mirai.utils.warning
+import plugindata.*
 import kotlin.coroutines.CoroutineContext
 import kotlin.io.path.inputStream
 

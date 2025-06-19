@@ -1,15 +1,15 @@
-package com.tiedan.command
+package command
 
-import com.tiedan.TiedanGame
-import com.tiedan.TiedanGame.logger
-import com.tiedan.TiedanGame.sendQuoteReply
-import com.tiedan.plugindata.BotInfoData
+import TiedanGame
+import TiedanGame.logger
+import TiedanGame.sendQuoteReply
 import net.mamoe.mirai.console.command.BuiltInCommands
 import net.mamoe.mirai.console.command.CommandManager.INSTANCE.commandPrefix
 import net.mamoe.mirai.console.command.CommandSender
 import net.mamoe.mirai.console.command.RawCommand
 import net.mamoe.mirai.message.data.MessageChain
 import net.mamoe.mirai.message.data.content
+import plugindata.BotInfoData
 
 object CommandBotHelp : RawCommand(
     owner = TiedanGame,

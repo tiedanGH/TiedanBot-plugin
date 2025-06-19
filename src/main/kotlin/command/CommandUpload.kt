@@ -1,9 +1,9 @@
-package com.tiedan.command
+package command
 
-import com.tiedan.MessageRecorder.quoteMessage
-import com.tiedan.TiedanGame
-import com.tiedan.TiedanGame.logger
-import com.tiedan.config.BotConfig
+import MessageRecorder.quoteMessage
+import TiedanGame
+import TiedanGame.logger
+import config.BotConfig
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock

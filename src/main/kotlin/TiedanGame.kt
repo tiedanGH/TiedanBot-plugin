@@ -1,13 +1,6 @@
-package com.tiedan
-
-import com.tiedan.command.*
-import com.tiedan.config.BotConfig
-import com.tiedan.config.MailConfig
-import com.tiedan.plugindata.*
-import com.tiedan.timer.AutoUpdateDailyData
-import com.tiedan.timer.DateTime
-import com.tiedan.timer.calculateNextSignDelay
-import com.tiedan.timer.executeDailySign
+import command.*
+import config.BotConfig
+import config.MailConfig
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import net.mamoe.mirai.console.command.CommandManager.INSTANCE.register
@@ -26,6 +19,11 @@ import net.mamoe.mirai.message.data.PlainText
 import net.mamoe.mirai.message.data.QuoteReply
 import net.mamoe.mirai.message.data.buildMessageChain
 import net.mamoe.mirai.utils.info
+import plugindata.*
+import timer.AutoUpdateDailyData
+import timer.DateTime
+import timer.calculateNextSignDelay
+import timer.executeDailySign
 import java.util.*
 
 

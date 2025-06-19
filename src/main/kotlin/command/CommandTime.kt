@@ -1,10 +1,10 @@
-package com.tiedan.command
+package command
 
-import com.tiedan.TiedanGame
-import com.tiedan.TiedanGame.Command
-import com.tiedan.TiedanGame.logger
-import com.tiedan.TiedanGame.sendQuoteReply
-import com.tiedan.config.BotConfig
+import TiedanGame
+import TiedanGame.Command
+import TiedanGame.logger
+import TiedanGame.sendQuoteReply
+import config.BotConfig
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay

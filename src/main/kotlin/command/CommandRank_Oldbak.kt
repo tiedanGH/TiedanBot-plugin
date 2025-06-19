@@ -1,12 +1,11 @@
-package com.tiedan.command
+package command
 
-import com.tiedan.TiedanGame
-import com.tiedan.TiedanGame.logger
-import com.tiedan.TiedanGame.masterOnly
-import com.tiedan.TiedanGame.save
-import com.tiedan.TiedanGame.sendQuoteReply
-import com.tiedan.config.BotConfig
-import com.tiedan.plugindata.RankData
+import TiedanGame
+import TiedanGame.logger
+import TiedanGame.masterOnly
+import TiedanGame.save
+import TiedanGame.sendQuoteReply
+import config.BotConfig
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import net.mamoe.mirai.console.command.CommandManager
@@ -17,6 +16,7 @@ import net.mamoe.mirai.console.command.isConsole
 import net.mamoe.mirai.contact.PermissionDeniedException
 import net.mamoe.mirai.message.data.MessageChain
 import net.mamoe.mirai.message.data.content
+import plugindata.RankData
 import java.io.FileOutputStream
 import java.io.IOException
 

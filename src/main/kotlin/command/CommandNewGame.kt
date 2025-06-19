@@ -1,7 +1,7 @@
-package com.tiedan.command
+package command
 
-import com.tiedan.TiedanGame
-import com.tiedan.TiedanGame.sendQuoteReply
+import TiedanGame
+import TiedanGame.sendQuoteReply
 import net.mamoe.mirai.console.command.CommandSender
 import net.mamoe.mirai.console.command.CompositeCommand
 import net.mamoe.mirai.console.util.ConsoleExperimentalApi

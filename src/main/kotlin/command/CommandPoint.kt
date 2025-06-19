@@ -1,14 +1,13 @@
-package com.tiedan.command
+package command
 
-import com.tiedan.TiedanGame
-import com.tiedan.TiedanGame.Command
-import com.tiedan.TiedanGame.getNickname
-import com.tiedan.TiedanGame.logger
-import com.tiedan.TiedanGame.masterOnly
-import com.tiedan.TiedanGame.save
-import com.tiedan.TiedanGame.sendQuoteReply
-import com.tiedan.config.BotConfig
-import com.tiedan.plugindata.PointData
+import TiedanGame
+import TiedanGame.Command
+import TiedanGame.getNickname
+import TiedanGame.logger
+import TiedanGame.masterOnly
+import TiedanGame.save
+import TiedanGame.sendQuoteReply
+import config.BotConfig
 import net.mamoe.mirai.console.command.CommandManager.INSTANCE.commandPrefix
 import net.mamoe.mirai.console.command.CommandSender
 import net.mamoe.mirai.console.command.RawCommand
@@ -17,6 +16,7 @@ import net.mamoe.mirai.contact.Group
 import net.mamoe.mirai.contact.PermissionDeniedException
 import net.mamoe.mirai.message.data.MessageChain
 import net.mamoe.mirai.message.data.content
+import plugindata.PointData
 
 object CommandPoint : RawCommand(
     owner = TiedanGame,

@@ -1,6 +1,4 @@
-package com.tiedan
-
-import com.tiedan.config.BotConfig
+import config.BotConfig
 import net.mamoe.mirai.contact.Contact
 import net.mamoe.mirai.contact.Member
 import net.mamoe.mirai.event.EventHandler

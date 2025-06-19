@@ -1,6 +1,6 @@
-package com.tiedan.command
+package command
 
-import com.tiedan.TiedanGame
+import TiedanGame
 import net.mamoe.mirai.console.command.CommandSender
 import net.mamoe.mirai.console.command.RawCommand
 import net.mamoe.mirai.console.command.isConsole

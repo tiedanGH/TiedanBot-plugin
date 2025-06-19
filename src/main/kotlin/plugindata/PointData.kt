@@ -1,4 +1,4 @@
-package com.tiedan.plugindata
+package plugindata
 
 import net.mamoe.mirai.console.data.AutoSavePluginData
 import net.mamoe.mirai.console.data.ValueDescription

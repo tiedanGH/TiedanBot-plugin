@@ -1,11 +1,10 @@
-package com.tiedan.command
+package command
 
 import PastebinConfig
-import com.tiedan.TiedanGame
-import com.tiedan.TiedanGame.logger
-import com.tiedan.TiedanGame.reload
-import com.tiedan.TiedanGame.save
-import com.tiedan.plugindata.PastebinData
+import TiedanGame
+import TiedanGame.logger
+import TiedanGame.reload
+import TiedanGame.save
 import net.mamoe.mirai.console.command.CommandContext
 import net.mamoe.mirai.console.command.CommandManager.INSTANCE.commandPrefix
 import net.mamoe.mirai.console.command.CommandSender
@@ -13,6 +12,7 @@ import net.mamoe.mirai.console.command.RawCommand
 import net.mamoe.mirai.console.command.isConsole
 import net.mamoe.mirai.message.data.*
 import net.mamoe.mirai.utils.warning
+import plugindata.PastebinData
 import kotlin.math.ceil
 
 /**

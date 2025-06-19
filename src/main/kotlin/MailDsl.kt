@@ -1,10 +1,14 @@
-package com.tiedan
-
-import jakarta.activation.*
-import jakarta.mail.*
-import jakarta.mail.internet.*
-import java.io.*
-import java.nio.file.*
+import jakarta.activation.DataHandler
+import jakarta.activation.DataSource
+import jakarta.activation.FileDataSource
+import jakarta.mail.Authenticator
+import jakarta.mail.PasswordAuthentication
+import jakarta.mail.Session
+import jakarta.mail.internet.MimeBodyPart
+import jakarta.mail.internet.MimeMessage
+import jakarta.mail.internet.MimeMultipart
+import java.io.File
+import java.nio.file.Path
 import java.util.*
 
 /**

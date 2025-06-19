@@ -1,12 +1,11 @@
-package com.tiedan.command
+package command
 
-import com.tiedan.MessageRecorder.from
-import com.tiedan.MessageRecorder.quote
-import com.tiedan.MessageRecorder.target
-import com.tiedan.TiedanGame
-import com.tiedan.TiedanGame.logger
-import com.tiedan.config.BotConfig
-import com.tiedan.plugindata.AdminListData
+import MessageRecorder.from
+import MessageRecorder.quote
+import MessageRecorder.target
+import TiedanGame
+import TiedanGame.logger
+import config.BotConfig
 import net.mamoe.mirai.console.command.CommandSender
 import net.mamoe.mirai.console.command.CommandSenderOnMessage
 import net.mamoe.mirai.console.command.IllegalCommandArgumentException
@@ -16,6 +15,7 @@ import net.mamoe.mirai.console.util.ContactUtils.render
 import net.mamoe.mirai.contact.Contact
 import net.mamoe.mirai.contact.Member
 import net.mamoe.mirai.message.data.MessageSource.Key.recall
+import plugindata.AdminListData
 
 object CommandRecall : SimpleCommand(
     owner = TiedanGame,

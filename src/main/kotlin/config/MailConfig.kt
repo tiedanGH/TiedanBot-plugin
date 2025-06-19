@@ -1,4 +1,4 @@
-package com.tiedan.config
+package config
 
 import net.mamoe.mirai.console.data.*
 import net.mamoe.mirai.console.plugin.jvm.JvmPlugin

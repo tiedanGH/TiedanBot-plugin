@@ -1,11 +1,11 @@
-package com.tiedan.timer
+package timer
 
-import com.tiedan.TiedanGame.logger
-import com.tiedan.TiedanGame.save
-import com.tiedan.config.BotConfig
-import com.tiedan.plugindata.BotInfoData
+import TiedanGame.logger
+import TiedanGame.save
+import config.BotConfig
 import net.mamoe.mirai.Bot
 import net.mamoe.mirai.utils.info
+import plugindata.BotInfoData
 import java.util.*
 
 class AutoUpdateDailyData : TimerTask() {
