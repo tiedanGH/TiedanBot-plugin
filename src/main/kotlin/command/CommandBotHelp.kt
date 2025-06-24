@@ -32,7 +32,7 @@ object CommandBotHelp : RawCommand(
                             "${commandPrefix}bot fly    飞行棋帮助✈️\n" +
                             "${commandPrefix}bot grass   草图相关帮助🌿\n" +
                             "${commandPrefix}bot pet    表情相关帮助🐸\n" +
-                            "${commandPrefix}bot jcc    在线编译器帮助💻\n" +
+                            "${commandPrefix}bot glot    在线编译器帮助🚀\n" +
 //                                "${commandPrefix}bot mcmod    MC百科查询帮助\n" +
 //                                "${commandPrefix}抽卡    原神抽卡插件菜单\n" +
                             "\n" +
@@ -115,6 +115,8 @@ object CommandBotHelp : RawCommand(
                 "status", "状态"-> {   // 查看mirai状态
                     BuiltInCommands.StatusCommand.runCatching {
                         handle()
+                    }.getOrElse {
+                        sendQuoteReply("当前mirai状态不可用")
                     }
                 }
 
@@ -134,7 +136,7 @@ object CommandBotHelp : RawCommand(
                 }
 
                 "cloud", "词云"-> {   // 词云帮助
-                    val reply = "☁\uFE0F 词云指令列表：\n" +
+                    val reply = "☁️ 词云指令列表：\n" +
                                 "·本日词云\n" +
                                 "·昨日词云\n" +
                                 "·本月词云\n" +
@@ -148,7 +150,7 @@ object CommandBotHelp : RawCommand(
                 }
 
                 "fly", "飞行棋"-> {   // 飞行棋帮助
-                    val reply = "✈\uFE0F飞行棋插件相关帮助：\n" +
+                    val reply = "✈️飞行棋插件相关帮助：\n" +
                                 "·创建游戏指令：\n" +
                                 "    创建飞行棋\n" +
                                 "·加入游戏指令：\n" +
@@ -162,7 +164,7 @@ object CommandBotHelp : RawCommand(
                 }
 
                 "grass", "生草", "草图"-> {   // 草图相关帮助
-                    val reply = "\uD83C\uDF3F 草图插件相关帮助：\n" +
+                    val reply = "🌿 草图插件相关帮助：\n" +
                                 "·获取草图指令：\n" +
                                 "    生草\n" +
                                 "·查看插件数据：\n" +
@@ -173,7 +175,7 @@ object CommandBotHelp : RawCommand(
                 }
 
                 "pet", "表情"-> {   // 表情包相关帮助
-                    val reply = "\uD83D\uDC38 表情包生成帮助：\n" +
+                    val reply = "🐸 表情包生成帮助：\n" +
                                 "·触发格式：\n" +
                                 "#关键字 + @对象/QQ昵称/QQ号\n" +
                                 "#关键字 + <回复消息/发送图片>\n" +
@@ -190,16 +192,19 @@ object CommandBotHelp : RawCommand(
                     sendQuoteReply(reply)
                 }
 
-                "jcc", "编译器"-> {   // jcc在线编译器相关帮助
-                   val reply = "·\uD83D\uDCBB 在线运行代码指令:\n" +
+                "glot", "jcc", "编译器"-> {   // jcc在线编译器相关帮助
+                   val reply =  " ·🚀 在线运行代码指令：\n" +
                                 "run <language> <code>\n" +
-                                "run <language> <pastebinUrl> [stdin]\n" +
-                                "引用消息: run <language> [stdin]\n" +
-                                "·仓库地址：https://github.com/tiedanGH/mirai-console-jcc-plugin\n" +
-                                "·其它指令：\n" +
-                                "${commandPrefix}jcc help    查看jcc帮助\n" +
-                                "${commandPrefix}jcc list    列出所有支持的编程语言\n" +
-                                "${commandPrefix}jcc template <language>    获取指定语言的模板"
+                                "run <language> <源代码URL> [stdin]\n" +
+                                "[引用消息] run <language> [stdin]\n" +
+                                "📦 仓库地址：\n" +
+                                "https://github.com/tiedanGH/mirai-compiler-framework/\n" +
+                                "📚 完整指令帮助：\n" +
+                                "${commandPrefix}glot help    查看jcc帮助\n" +
+                                "${commandPrefix}glot list    列出所有支持的编程语言\n" +
+                                "${commandPrefix}glot template <language>    获取指定语言的模板\n" +
+                                "${commandPrefix}pb help    查看和添加pastebin代码\n" +
+                                "${commandPrefix}run <名称> [输入]    运行pastebin中的代码"
                    sendQuoteReply(reply)
                 }
 

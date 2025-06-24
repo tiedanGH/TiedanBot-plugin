@@ -110,12 +110,10 @@ object CommandTime : RawCommand(
                 }
 
                 "star", "星星"-> {
-//                    val zoneId = ZoneId.of("America/Los_Angeles")
-                    val zoneId = ZoneId.of("Asia/Shanghai")
+                    val zoneId = ZoneId.of("America/Los_Angeles")
                     val now = ZonedDateTime.now(zoneId)
                     val formatted = now.format(DateTimeFormatter.ofPattern("HH:mm:ss   Z"))
-//                    sendQuoteReply("星星现在的时间为：\n$formatted\n（太平洋标准时间）")
-                    sendQuoteReply("星星现在的时间为：\n$formatted\n（北京时间）")
+                    sendQuoteReply("星星现在的时间为：\n$formatted\n（太平洋标准时间）")
                 }
 
                 "tiedan", "铁蛋"-> {
