@@ -161,8 +161,7 @@ object Events : SimpleListenerHost() {
                 notice += if (WhiteListData.WhiteList.containsKey(groupId)) {
                     "\n目标群在白名单中"
                 } else {
-                    group.sendMessage("【重要提醒】本群 $groupId 并不在机器人的白名单中，需要白名单才能正常使用，请先联系机器人管理员申请白名单，或尝试使用「${CommandManager.commandPrefix}apply white <群号> <原因>」指令发送白名单申请。" +
-                            "\n目前机器人正在使用非开源的私密签名服务，可能会导致本群*聊天记录的泄露*，请勿在此群中发送任何包含个人隐私或其他重要内容的信息，如果担心类似的安全问题，请将此机器人移出群聊")
+                    group.sendMessage("【重要提醒】本群 $groupId 并不在机器人的白名单中，需要白名单才能正常使用，请先联系机器人管理员申请白名单，或尝试使用「${CommandManager.commandPrefix}apply white <群号> <原因>」指令发送白名单申请。")
                     "\n目标群并不在白名单中，已发送群消息提醒目标群聊"
                 }
             }
@@ -236,7 +235,6 @@ object Events : SimpleListenerHost() {
                 target.sendMessage("[错误] 积分自动记录出现错误，请联系铁蛋查看后台")
             }
         }
-
     }
 
     /**

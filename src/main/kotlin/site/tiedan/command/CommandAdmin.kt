@@ -109,7 +109,7 @@ object CommandAdmin : RawCommand(
                         } else {
                             sendQuoteReply("管理员已存在 $qq")
                         }
-                    } catch (e: NumberFormatException) {
+                    } catch (_: NumberFormatException) {
                         sendQuoteReply("数字转换错误，请检查指令")
                     }
                 }
@@ -129,7 +129,7 @@ object CommandAdmin : RawCommand(
                         } else {
                             sendQuoteReply("不存在管理员 $qq")
                         }
-                    } catch (e: NumberFormatException) {
+                    } catch (_: NumberFormatException) {
                         sendQuoteReply("数字转换错误，请检查指令")
                     }
                 }
@@ -161,7 +161,7 @@ object CommandAdmin : RawCommand(
                             sendQuoteReply("已将 $qq 移入黑名单")
                         }
                         BlackListData.save()
-                    } catch (e: NumberFormatException) {
+                    } catch (_: NumberFormatException) {
                         sendQuoteReply("数字转换错误，请检查指令")
                     }
                 }
@@ -210,7 +210,7 @@ object CommandAdmin : RawCommand(
                 }
 
                 "WhiteList", "whitelist", "白名单"-> {   // 查看白名单列表
-                    val showDesc = args.getOrNull(1)?.content?.let { it == "info" || it == "信息" } ?: false
+                    val showDesc = args.getOrNull(1)?.content?.let { it == "info" || it == "信息" } == true
                     var whiteListInfo = "白名单功能：$whiteEnable\n白名单总数：${WhiteListData.WhiteList.size}\n·白名单列表："
                     for (key in WhiteListData.WhiteList.keys) {
                         whiteListInfo += "\n$key"
@@ -241,10 +241,10 @@ object CommandAdmin : RawCommand(
                 "addWhiteList", "addwhitelist", "添加白名单"-> {   // 添加白名单
                     val group: Long = try {
                         args[1].content.toLong()
-                    } catch (e: NumberFormatException) {
+                    } catch (_: NumberFormatException) {
                         sendQuoteReply("数字转换错误，请检查指令")
                         return
-                    } catch (e: Exception) {
+                    } catch (_: Exception) {
                         if (subject is Friend || isConsole()) {
                             throw PermissionDeniedException("Group only")
                         }
@@ -264,10 +264,10 @@ object CommandAdmin : RawCommand(
                 "delWhiteList", "delwhitelist", "移除白名单"-> {   // 移除白名单
                     val group: Long = try {
                         args[1].content.toLong()
-                    } catch (e: NumberFormatException) {
+                    } catch (_: NumberFormatException) {
                         sendQuoteReply("数字转换错误，请检查指令")
                         return
-                    } catch (e: Exception) {
+                    } catch (_: Exception) {
                         if (subject is Friend || isConsole()) {
                             throw PermissionDeniedException("Group only")
                         }
@@ -304,7 +304,7 @@ object CommandAdmin : RawCommand(
                             BotConfig.focus_to = option.toLong()
                             BotConfig.save()
                             sendQuoteReply("***专注模式 [已启用]***\nbot将专注于群聊 ${BotConfig.focus_to} 进行服务")
-                        } catch (e: NumberFormatException) {
+                        } catch (_: NumberFormatException) {
                             sendQuoteReply("参数转换错误，请检查指令")
                         }
                     }
@@ -366,7 +366,7 @@ object CommandAdmin : RawCommand(
                             var count = 0
                             for (group in groups) {
                                 if ((group.id in WhiteListData.WhiteList).not()) {
-                                    group.sendMessage("【管理员操作自动退群】本群不在机器人白名单中，请联系机器人管理员申请白名单，或使用「${CommandManager.commandPrefix}apply white <群号> <原因>」指令发送白名单申请")
+                                    group.sendMessage("【管理员操作自动退群】本群不在机器人白名单中，请联系机器人管理员申请白名单，或使用「${commandPrefix}apply white <群号> <原因>」指令发送白名单申请")
                                     group.quit()
                                     count++
                                 }
@@ -395,7 +395,7 @@ object CommandAdmin : RawCommand(
                     masterOnly(this)
                     val address: String = try {
                         args[1].content
-                    } catch (e: Exception) {
+                    } catch (_: Exception) {
                         MailConfig.log_mail
                     }
                     val session = buildMailSession {
@@ -450,7 +450,7 @@ object CommandAdmin : RawCommand(
             }
         } catch (e: PermissionDeniedException) {
             sendQuoteReply("[操作无效] ${e.message}")
-        } catch (e: IndexOutOfBoundsException) {
+        } catch (_: IndexOutOfBoundsException) {
             sendQuoteReply("[操作无效] 未知的参数")
         } catch (e: Exception) {
             logger.warning(e)

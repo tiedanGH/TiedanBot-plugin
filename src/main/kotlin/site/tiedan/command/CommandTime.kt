@@ -27,8 +27,8 @@ object CommandTime : RawCommand(
 ){
     private val timeCommandList = listOf(
         Command("t count <秒> [名称]", "时间 倒计时 <秒> [名称]", "▶️ 启动一个计时器", 1),
-        Command("t tiedan", "时间 铁蛋", "🥚 查看铁蛋的时间", 1),
-        Command("t star", "时间 星星", "🌟 查看星星的时间", 1)
+        Command("t tiedan", "时间 铁蛋", "-> 查看铁蛋的时间", 1),
+        Command("t star", "时间 星星", "-> 查看星星的时间", 1)
     )
 
     private var THREAD : Int = 0
@@ -57,7 +57,7 @@ object CommandTime : RawCommand(
                 "count", "倒计时"-> {
                     val second = try {
                         args[1].content.toInt()
-                    } catch (e: Exception) {
+                    } catch (_: Exception) {
                         sendQuoteReply("数字转换错误，时间必须为Int型整数")
                         return
                     }
@@ -127,7 +127,7 @@ object CommandTime : RawCommand(
                     sendQuoteReply("[参数不匹配]\n请使用「${commandPrefix}t help」来查看指令帮助")
                 }
             }
-        } catch (e: IndexOutOfBoundsException) {
+        } catch (_: IndexOutOfBoundsException) {
             sendQuoteReply("[参数不足]\n请使用「${commandPrefix}t help」来查看指令帮助")
         } catch (e: Exception) {
             logger.warning(e)

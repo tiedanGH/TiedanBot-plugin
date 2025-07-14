@@ -94,7 +94,7 @@ object CommandPastebin : RawCommand(
                     val showType = args.getOrElse(1) { "default" }.toString()
                     val page = try {
                         showType.toInt()
-                    } catch (e: Exception) {
+                    } catch (_: Exception) {
                         if (PastebinConfig.enable_ForwardMessage) { 0 } else { 1 }
                     }
                     if (page > pageLimit) {

@@ -87,7 +87,7 @@ object CommandApply : RawCommand(
                     if (applyLock()) return
                     val group = try {
                         args[1].content.toLong()
-                    } catch (e: NumberFormatException) {
+                    } catch (_: NumberFormatException) {
                         sendQuoteReply("数字转换错误，请检查指令")
                         return
                     }
@@ -97,7 +97,7 @@ object CommandApply : RawCommand(
                             return
                         }
                         args[2].content
-                    } catch (e: Exception) {
+                    } catch (_: Exception) {
                         sendQuoteReply("reason为必填项")
                         return
                     }
@@ -133,7 +133,7 @@ object CommandApply : RawCommand(
                             return
                         }
                         "申请人：$name\n原因：${content}"
-                    } catch (e: Exception) {
+                    } catch (_: Exception) {
                         sendQuoteReply("reason为必填项")
                         return
                     }
@@ -193,7 +193,7 @@ object CommandApply : RawCommand(
                     adminOnly(this)
                     val handleQQ = try {
                         args[1].content.toLong()
-                    } catch (e: NumberFormatException) {
+                    } catch (_: NumberFormatException) {
                         sendQuoteReply("数字转换错误，请检查指令")
                         return
                     }
@@ -335,7 +335,7 @@ object CommandApply : RawCommand(
             }
         } catch (e: PermissionDeniedException) {
             sendQuoteReply("[操作无效] ${e.message}")
-        } catch (e: IndexOutOfBoundsException) {
+        } catch (_: IndexOutOfBoundsException) {
             sendQuoteReply("[参数不足]\n请使用「${commandPrefix}apply help」来查看指令帮助")
         } catch (e: Exception) {
             logger.warning(e)

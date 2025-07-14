@@ -53,7 +53,7 @@ object CommandPoint : RawCommand(
                             commandList.filter { it.type == 1 }.joinToString("") { "${commandPrefix}${it.usage}　${it.desc}\n" } +
                             "\n" +
                             "【请注意】在提款前请务必确保虞姬在线！实际到账积分会受到虞姬月卡等级和每日积分获取限制等影响，单日大量提款会亏损积分，建议提款额为3000以内\n" +
-                            "【获取来源】大海战BOSS战、开放蜂巢、漫漫长夜、面包危机、爆金币\n"
+                            "【获取来源】彩虹奇兵、漫漫长夜、开放蜂巢、大海战BOSS战、面包危机、爆金币\n"
                     if (args.getOrNull(1)?.content == "all" && (user?.id == BotConfig.master || isConsole())) {
                         reply += "\n ·master管理指令：\n" +
                                 commandList.filter { it.type == 2 }.joinToString("") { "${commandPrefix}${it.usage}　${it.desc}\n" }
@@ -66,7 +66,7 @@ object CommandPoint : RawCommand(
                             commandList.filter { it.type == 1 }.joinToString("") { "${commandPrefix}${it.usageCN}　${it.desc}\n" } +
                             "\n" +
                             "【请注意】在提款前请务必确保虞姬在线！实际到账积分会受到虞姬月卡等级和每日积分获取限制等影响，单日大量提款会亏损积分，建议提款额为3000以内\n" +
-                            "【获取来源】大海战BOSS战、开放蜂巢、漫漫长夜、面包危机、爆金币\n"
+                            "【获取来源】彩虹奇兵、漫漫长夜、开放蜂巢、大海战BOSS战、面包危机、爆金币\n"
                     if (args.getOrNull(1)?.content == "all" && (user?.id == BotConfig.master || isConsole())) {
                         reply += "\n ·master管理指令：\n" +
                                 commandList.filter { it.type == 2 }.joinToString("") { "${commandPrefix}${it.usageCN}　${it.desc}\n" }
@@ -169,7 +169,7 @@ object CommandPoint : RawCommand(
                 "rank", "排行"-> {   // 查看积分排行榜
                     val page = try {
                         args.getOrElse(1) { 1 }.toString().toInt()
-                    } catch (e: NumberFormatException) { 1 }
+                    } catch (_: NumberFormatException) { 1 }
                     val sortedPoint = PointData.PointData .filter { it.value > 0 }.toList().sortedByDescending { it.second }
                     val totalPoints = sortedPoint.sumOf { it.second }
                     val totalUsers = sortedPoint.size
@@ -236,7 +236,7 @@ object CommandPoint : RawCommand(
                     masterOnly(this)
                     val id = args[1].content.replace("@", "").toLong()
                     val point = args[2].content.toLong()
-                    val force = args.getOrNull(3)?.content?.let { it == "force" || it == "f" } ?: false
+                    val force = args.getOrNull(3)?.content?.let { it == "force" || it == "f" } == true
                     val name = getNickname(this, id)
                     if (PointData.PointData.contains(id).not() && name == "[获取昵称失败]" && !force) {
                         sendQuoteReply("[警告] 无法获取目标用户信息，请再次确认是否输入正确，或添加参数强制添加")
@@ -254,11 +254,11 @@ object CommandPoint : RawCommand(
                     sendQuoteReply("[参数不匹配]\n请使用「${commandPrefix}pt help」来查看指令帮助")
                 }
             }
-        } catch (e: NumberFormatException) {
+        } catch (_: NumberFormatException) {
             sendQuoteReply("[操作失败] 数值超出或无法转换为Long类型")
         } catch (e: PermissionDeniedException) {
             sendQuoteReply("[操作无效] ${e.message}")
-        } catch (e: IndexOutOfBoundsException) {
+        } catch (_: IndexOutOfBoundsException) {
             sendQuoteReply("[参数不足]\n请使用「${commandPrefix}pt help」来查看指令帮助")
         } catch (e: Exception) {
             logger.warning(e)

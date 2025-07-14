@@ -72,7 +72,7 @@ object CommandUpload : RawCommand(
             return
         }
         // 无引用遍历消息链
-        if (args.size == 0) {
+        if (args.isEmpty()) {
             safeSendMessage(user, subject, HELP)
             return
         }
@@ -84,7 +84,7 @@ object CommandUpload : RawCommand(
                 for (arg in args) {
                     val imageUrl = try {
                         (arg as Image).queryUrl()
-                    } catch (e: ClassCastException) {
+                    } catch (_: ClassCastException) {
                         if (!arg.content.startsWith("http")) {
                             if (args.size == 1) message = HELP
                             continue

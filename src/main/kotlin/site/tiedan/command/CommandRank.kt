@@ -2,7 +2,6 @@ package site.tiedan.command
 
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
-import net.mamoe.mirai.console.command.CommandManager
 import net.mamoe.mirai.console.command.CommandManager.INSTANCE.commandPrefix
 import net.mamoe.mirai.console.command.CommandSender
 import net.mamoe.mirai.console.command.RawCommand
@@ -84,7 +83,7 @@ object CommandRank : RawCommand(
                 }
 
                 "rank", "info", "排名", "信息" -> {
-                    val showDesc = args.getOrNull(1)?.content?.let { it == "desc" || it == "详情" } ?: false
+                    val showDesc = args.getOrNull(1)?.content?.let { it == "desc" || it == "详情" } == true
                     var message =
                         "→ 活动详情和完整排行：${RankData.URL}\n🏆 前10名实时排行：\n"
                     sortedData.keys.forEachIndexed { index, key ->
@@ -206,12 +205,12 @@ object CommandRank : RawCommand(
                 }
 
                 else-> {
-                    sendQuoteReply("[参数不匹配]\n请使用「${CommandManager.commandPrefix}rank help」来查看指令帮助")
+                    sendQuoteReply("[参数不匹配]\n请使用「${commandPrefix}rank help」来查看指令帮助")
                 }
             }
         } catch (e: PermissionDeniedException) {
             sendQuoteReply("[操作无效] ${e.message}")
-        } catch (e: IndexOutOfBoundsException) {
+        } catch (_: IndexOutOfBoundsException) {
             sendQuoteReply("[参数不足]\n请使用「${commandPrefix}rank help」来查看指令帮助")
         } catch (e: Exception) {
             logger.warning(e)
