@@ -206,12 +206,11 @@ object Events : SimpleListenerHost() {
      */
     @EventHandler(priority = EventPriority.MONITOR)
     internal suspend fun MessagePostSendEvent<*>.count() {
-        if (message.contains(Image)) {
-            if (target !is Group) {
-                BotInfoData.todayPrivateImageNum++
-            }
-            BotInfoData.totalImageNum++
-            BotInfoData.todayImageNum++
+        val imageCount = message.count{ it is Image }
+        if (imageCount > 0) {
+            BotInfoData.totalImageNum += imageCount
+            BotInfoData.todayImageNum += imageCount
+            if (target !is Group) BotInfoData.todayPrivateImageNum += imageCount
         }
         if (message.isNotEmpty()) {
             BotInfoData.totalMsgNum++
