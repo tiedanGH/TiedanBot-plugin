@@ -153,6 +153,10 @@ object CommandAdmin : RawCommand(
                             sendQuoteReply("操作保护：不能把自己移入黑名单")
                             return
                         }
+                        if (qq in AdminListData.AdminList) {
+                            sendQuoteReply("操作保护：管理员不能被移入黑名单")
+                            return
+                        }
                         if (BlackListData.BlackList.contains(qq)) {
                             BlackListData.BlackList.remove(qq)
                             sendQuoteReply("已将 $qq 移出黑名单")
