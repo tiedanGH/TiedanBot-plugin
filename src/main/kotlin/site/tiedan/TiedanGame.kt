@@ -53,7 +53,7 @@ object TiedanGame : KotlinPlugin(
 
     override fun onDisable() {
         CommandAdmin.unregister()
-        CommandBotHelp.unregister()
+        CommandBot.unregister()
         CommandTime.unregister()
         CommandRecall.unregister()
         CommandApply.unregister()
@@ -84,7 +84,7 @@ object TiedanGame : KotlinPlugin(
 
     private fun regCommand() {
         CommandAdmin.register()
-        CommandBotHelp.register()
+        CommandBot.register()
         CommandTime.register()
         CommandRecall.register()
         CommandApply.register()

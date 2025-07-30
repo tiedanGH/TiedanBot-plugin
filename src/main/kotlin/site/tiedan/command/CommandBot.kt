@@ -11,7 +11,7 @@ import site.tiedan.TiedanGame.logger
 import site.tiedan.TiedanGame.sendQuoteReply
 import site.tiedan.plugindata.BotInfoData
 
-object CommandBotHelp : RawCommand(
+object CommandBot : RawCommand(
     owner = TiedanGame,
     primaryName = "bot",
     secondaryNames = arrayOf("b"),
@@ -79,7 +79,7 @@ object CommandBotHelp : RawCommand(
                     sendQuoteReply(reply)
                 }
 
-                "info", "信息"-> {   // 查看bot信息
+                "info", "stats", "信息", "统计"-> {   // 查看bot信息
 //                    val whiteEnable: String = if (BotConfig.WhiteList_enable) {"已启用"} else {"未启用"}
 //                    val limit: String =
 //                        if (BotInfoData.todayFriendImageNum < BotConfig.dailyLimit * 0.85) {

@@ -229,14 +229,17 @@ object CommandAdmin : RawCommand(
                     val enable: List<String> = arrayListOf("enable","on","true","开启")
                     val disable: List<String> = arrayListOf("disable","off","false","关闭")
                     val option = args[1].content
-                    when {
-                        enable.contains(option) -> {
+                    when (option) {
+                        in enable -> {
                             BotConfig.WhiteList_enable = true
                             sendQuoteReply("已启用bot白名单功能")
                         }
-                        disable.contains(option) -> {
+                        in disable -> {
                             BotConfig.WhiteList_enable = false
                             sendQuoteReply("已关闭bot白名单功能")
+                        }
+                        else-> {
+                            sendQuoteReply("无效配置：请设置 开启/关闭 白名单功能")
                         }
                     }
                     BotConfig.save()

@@ -31,8 +31,7 @@ object CommandPoint : RawCommand(
         Command("pt rank [页码]", "积分 排行 [页码]", "查看排行和数据", 1),
         Command("pt transfer <QQ号/@目标> <数额>", "积分 转账 <QQ号/@目标> <数额>", "向指定目标转账", 1),
 
-        Command("pt ExchangeFunction <on/off>", "积分 提款功能 <开启/关闭>", "配置提款功能状态", 2),
-        Command("pt TransferFunction <on/off>", "积分 转账功能 <开启/关闭>", "配置转账功能状态", 2),
+        Command("pt function <func> <on/off>", "积分 功能 <功能> <开启/关闭>", "配置功能状态", 2),
         Command("pt add <QQ> <数额>", "积分 添加 <QQ> <数额>", "为指定账户增加积分", 2),
     )
 
@@ -198,35 +197,45 @@ object CommandPoint : RawCommand(
                 }
 
                 // master操作
-                "ExchangeFunction", "提款功能"-> {   // 配置提款功能状态
+                "function", "功能"-> {   // 配置功能状态
                     masterOnly(this)
-                    val enable: List<String> = arrayListOf("enable","on","true","开启")
-                    val disable: List<String> = arrayListOf("disable","off","false","关闭")
-                    when {
-                        enable.contains(args[1].content) -> {
-                            PointData.ExchangeFunction = true
-                            sendQuoteReply("已启用提款功能")
-                        }
-                        disable.contains(args[1].content) -> {
-                            PointData.ExchangeFunction = false
-                            sendQuoteReply("已关闭提款功能")
-                        }
-                    }
-                    PointData.save()
-                }
+                    val enable = setOf("enable", "on", "true", "开启")
+                    val disable = setOf("disable", "off", "false", "关闭")
+                    data class FuncConfig(
+                        val names: List<String>,
+                        val setter: (Boolean) -> Unit,
+                        val displayName: String
+                    )
+                    val configs = listOf(
+                        FuncConfig(
+                            names = listOf("exchange", "提款"),
+                            setter = { v -> PointData.ExchangeFunction = v },
+                            displayName = "提款功能"
+                        ),
+                        FuncConfig(
+                            names = listOf("transfer", "转账"),
+                            setter = { v -> PointData.TransferFunction = v },
+                            displayName = "转账功能"
+                        )
+                    )
+                    val funcMap: Map<String, FuncConfig> = configs
+                        .flatMap { cfg -> cfg.names.map { name -> name to cfg } }
+                        .toMap()
 
-                "TransferFunction", "转账功能"-> {   // 配置转账功能状态
-                    masterOnly(this)
-                    val enable: List<String> = arrayListOf("enable","on","true","开启")
-                    val disable: List<String> = arrayListOf("disable","off","false","关闭")
+                    val function = args[1].content
+                    val option   = args[2].content
+                    val cfg = funcMap[function]
+                    val newValue: Boolean? = when (option.lowercase()) {
+                        in enable  -> true
+                        in disable -> false
+                        else       -> null
+                    }
                     when {
-                        enable.contains(args[1].content) -> {
-                            PointData.TransferFunction = true
-                            sendQuoteReply("已启用转账功能")
-                        }
-                        disable.contains(args[1].content) -> {
-                            PointData.TransferFunction = false
-                            sendQuoteReply("已关闭转账功能")
+                        cfg == null -> sendQuoteReply("未知功能：仅支持配置 提款/转账")
+                        newValue == null -> sendQuoteReply("无效配置：请设置 开启/关闭")
+                        else -> {
+                            cfg.setter(newValue)
+                            sendQuoteReply("${if (newValue) "已启用" else "已关闭"}${cfg.displayName}")
                         }
                     }
                     PointData.save()
