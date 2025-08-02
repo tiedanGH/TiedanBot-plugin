@@ -24,6 +24,7 @@ import site.tiedan.command.CommandPoint.savePointChange
 import site.tiedan.config.BotConfig
 import site.tiedan.config.MailConfig
 import site.tiedan.plugindata.*
+import top.mrxiaom.overflow.contact.RemoteGroup.Companion.asRemoteGroup
 import java.io.File
 import kotlin.coroutines.CoroutineContext
 import kotlin.io.path.inputStream
@@ -234,6 +235,15 @@ object Events : SimpleListenerHost() {
                 logger.warning(e)
                 target.sendMessage("[错误] 积分自动记录出现错误，请联系铁蛋查看后台")
             }
+        }
+    }
+
+    @EventHandler(priority = EventPriority.MONITOR)
+    internal suspend fun GroupMessageEvent.hitMe() {
+        if (message.content == "敲我") {
+            val icon = "38"
+            val msgId = source.ids[0]
+            group.asRemoteGroup.setMsgReaction(msgId, icon, true)
         }
     }
 
