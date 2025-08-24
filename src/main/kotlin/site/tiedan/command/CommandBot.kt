@@ -36,14 +36,16 @@ object CommandBot : RawCommand(
 //                                "${commandPrefix}bot mcmod    MC百科查询帮助\n" +
 //                                "${commandPrefix}抽卡    原神抽卡插件菜单\n" +
                             "\n" +
-                            "📋 查看和添加pastebin代码\n" +
-                            "${commandPrefix}pb help\n" +
-                            "🖼️ 上传图片至图床\n" +
-                            "${commandPrefix}upload help\n" +
                             "⏱️ 计时器指令帮助\n" +
                             "${commandPrefix}time help\n" +
                             "🎮 游戏积分相关指令\n" +
                             "${commandPrefix}point help\n" +
+                            "🖼️ 上传图片至图床\n" +
+                            "${commandPrefix}upload help\n" +
+                            "📋 pb代码项目操作指令\n" +
+                            "${commandPrefix}pb help\n" +
+                            "🗄 跨项目存储库操作指令：\n" +
+                            "${commandPrefix}bk help\n" +
                             "📮 提交权限申请相关指令\n" +
                             "${commandPrefix}apply help\n" +
                             "\n" +
@@ -64,14 +66,16 @@ object CommandBot : RawCommand(
 //                            "${commandPrefix}b MC    MC百科查询帮助\n" +
 //                            "${commandPrefix}抽卡    原神抽卡插件菜单\n" +
                             "\n" +
-                            "📋 查看和添加pastebin代码\n" +
-                            "${commandPrefix}代码 帮助\n" +
-                            "🖼️ 上传图片至图床\n" +
-                            "${commandPrefix}上传 帮助\n" +
                             "⏱️ 计时器指令帮助\n" +
                             "${commandPrefix}时间 帮助\n" +
                             "🎮 游戏积分相关指令\n" +
                             "${commandPrefix}积分 帮助\n" +
+                            "🖼️ 上传图片至图床\n" +
+                            "${commandPrefix}上传 帮助\n" +
+                            "📋 pb代码项目操作指令\n" +
+                            "${commandPrefix}代码 帮助\n" +
+                            "🗄 跨项目存储库操作指令：\n" +
+                            "${commandPrefix}存储库 帮助\n" +
                             "📮 提交权限申请相关指令\n" +
                             "${commandPrefix}申请 帮助\n" +
                             "\n" +
