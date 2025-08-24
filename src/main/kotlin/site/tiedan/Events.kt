@@ -182,7 +182,7 @@ object Events : SimpleListenerHost() {
             val type = when (this) {
                 is BotLeaveEvent.Active-> "主动退出"
                 is BotLeaveEvent.Disband -> "群聊解散"
-                is BotLeaveEvent.Kick -> "被踢出群聊"
+                is BotLeaveEvent.Kick -> "被踢出群聊\n操作者：${operator.nick}(${operator.id})"
             }
             val notice: String =
                         "【机器人退出白名单群聊】\n" +
