@@ -157,13 +157,31 @@ object CommandAdmin : RawCommand(
                             sendQuoteReply("操作保护：管理员不能被移入黑名单")
                             return
                         }
+                        var reply = ""
+                        var type: String
                         if (BlackListData.BlackList.contains(qq)) {
                             BlackListData.BlackList.remove(qq)
-                            sendQuoteReply("已将 $qq 移出黑名单")
+                            reply = "已将 $qq 移出黑名单"
+                            type = "移出黑名单"
                         } else {
                             BlackListData.BlackList.add(qq)
-                            sendQuoteReply("已将 $qq 移入黑名单")
+                            reply = "已将 $qq 移入黑名单"
+                            type = "移入黑名单"
                         }
+                        try {
+                            if (qq != BotConfig.master && isNotConsole()) {
+                                reply += "\n\n操作结果已抄送至：${BotConfig.master}"
+                                var notice = "【黑名单指令操作】\n" +
+                                        "处理人：$name(${user?.id})\n" +
+                                        "操作：$type\n" +
+                                        "目标ID：$qq"
+                                bot?.getFriendOrFail(BotConfig.master)?.sendMessage(notice)   // 抄送结果至bot所有者
+                            }
+                        } catch (e: Exception) {
+                            logger.warning(e)
+                            sendMessage("出现错误：${e.message}")
+                        }
+                        sendQuoteReply(reply)
                         BlackListData.save()
                     } catch (_: NumberFormatException) {
                         sendQuoteReply("数字转换错误，请检查指令")
