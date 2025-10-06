@@ -12,6 +12,9 @@ object BotConfig : AutoSavePluginConfig("BotConfig") {
     @ValueDescription("Bot的qq号")
     var BotId: Long by value(1919810L)
 
+    @ValueDescription("拥有者信息接收的qq号")
+    var OwnerId: Long by value(1919810L)
+
     @ValueDescription("启用引用回复")
     var quote_enable: Boolean by value(true)
 

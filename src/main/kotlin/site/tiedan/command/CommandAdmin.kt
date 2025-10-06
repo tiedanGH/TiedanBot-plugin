@@ -170,7 +170,7 @@ object CommandAdmin : RawCommand(
                         }
                         try {
                             if (qq != BotConfig.master && isNotConsole()) {
-                                reply += "\n\n操作结果已抄送至：${BotConfig.master}"
+                                reply += "\n\n操作结果已抄送至 MASTER"
                                 var notice = "【黑名单指令操作】\n" +
                                         "处理人：$name(${user?.id})\n" +
                                         "操作：$type\n" +

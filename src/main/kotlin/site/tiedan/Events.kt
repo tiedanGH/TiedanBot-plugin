@@ -26,6 +26,8 @@ import site.tiedan.config.MailConfig
 import site.tiedan.plugindata.*
 import top.mrxiaom.overflow.contact.RemoteGroup.Companion.asRemoteGroup
 import java.io.File
+import java.time.LocalDateTime
+import java.time.format.DateTimeFormatter
 import kotlin.coroutines.CoroutineContext
 import kotlin.io.path.inputStream
 
@@ -56,6 +58,10 @@ object Events : SimpleListenerHost() {
     @EventHandler(priority = EventPriority.HIGH)
     internal fun UserMessagePreSendEvent.check() {
         if (BotConfig.SecureMode > 0 && bot.containsFriend(target.id).not()) cancel()
+    }
+    @EventHandler(priority = EventPriority.HIGH)
+    internal fun GroupMessagePreSendEvent.check() {
+        if (BotConfig.WhiteList_enable && WhiteListData.WhiteList.containsKey(target.id).not()) cancel()
     }
 
     @EventHandler(priority = EventPriority.HIGH)
@@ -109,7 +115,8 @@ object Events : SimpleListenerHost() {
                 "来自群：$fromGroup\n" +
                 "申请消息：$message"
         try {
-            bot.getFriendOrFail(BotConfig.master).sendMessage(notice)
+            appendNoticeLog(notice)
+            bot.getFriendOrFail(BotConfig.OwnerId).sendMessage(notice)
         } catch (e: Exception) {
             logger.warning(e)
         }
@@ -142,7 +149,8 @@ object Events : SimpleListenerHost() {
                     "\n目标群并不在白名单中，已发送私信提醒邀请人"
                 }
             }
-            bot.getFriendOrFail(BotConfig.master).sendMessage(notice)
+            appendNoticeLog(notice)
+            bot.getFriendOrFail(BotConfig.OwnerId).sendMessage(notice)
         } catch (e: Exception) {
             logger.warning(e)
         }
@@ -166,7 +174,8 @@ object Events : SimpleListenerHost() {
                     "\n目标群并不在白名单中，已发送群消息提醒目标群聊"
                 }
             }
-            bot.getFriendOrFail(BotConfig.master).sendMessage(notice)
+            appendNoticeLog(notice)
+            bot.getFriendOrFail(BotConfig.OwnerId).sendMessage(notice)
         } catch (e: Exception) {
             logger.warning(e)
         }
@@ -194,7 +203,8 @@ object Events : SimpleListenerHost() {
             WhiteListData.WhiteList.remove(groupId)
             BotConfig.save()
             try {
-                bot.getFriendOrFail(BotConfig.master).sendMessage(notice)
+                appendNoticeLog(notice)
+                bot.getFriendOrFail(BotConfig.OwnerId).sendMessage(notice)
             } catch (e: Exception) {
                 logger.warning(e)
             }
@@ -333,5 +343,14 @@ object Events : SimpleListenerHost() {
                 current.contextClassLoader = oc
             }
         }
+    }
+
+    fun appendNoticeLog(message: String, logFile: String = "notice.log") {
+        val time = LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"))
+        val logEntry = buildString {
+            appendLine("[$time]\n$message")
+            appendLine()
+        }
+        File(logFile).appendText(logEntry)
     }
 }
