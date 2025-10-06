@@ -19,7 +19,7 @@ dependencies {
     testConsoleRuntime("top.mrxiaom.mirai:overflow-core:1.0.8")
 
     api("jakarta.mail:jakarta.mail-api:2.1.5")
-    implementation("org.eclipse.angus:angus-mail:2.0.3")
+    implementation("org.eclipse.angus:angus-mail:2.0.5")
 }
 
 mirai {
