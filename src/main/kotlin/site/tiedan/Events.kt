@@ -116,7 +116,7 @@ object Events : SimpleListenerHost() {
                 "申请消息：$message"
         try {
             appendNoticeLog(notice)
-            bot.getFriendOrFail(BotConfig.OwnerId).sendMessage(notice)
+            bot.getFriend(BotConfig.OwnerId)?.sendMessage(notice)
         } catch (e: Exception) {
             logger.warning(e)
         }
@@ -150,7 +150,7 @@ object Events : SimpleListenerHost() {
                 }
             }
             appendNoticeLog(notice)
-            bot.getFriendOrFail(BotConfig.OwnerId).sendMessage(notice)
+            bot.getFriend(BotConfig.OwnerId)?.sendMessage(notice)
         } catch (e: Exception) {
             logger.warning(e)
         }
@@ -175,7 +175,7 @@ object Events : SimpleListenerHost() {
                 }
             }
             appendNoticeLog(notice)
-            bot.getFriendOrFail(BotConfig.OwnerId).sendMessage(notice)
+            bot.getFriend(BotConfig.OwnerId)?.sendMessage(notice)
         } catch (e: Exception) {
             logger.warning(e)
         }
@@ -204,7 +204,7 @@ object Events : SimpleListenerHost() {
             BotConfig.save()
             try {
                 appendNoticeLog(notice)
-                bot.getFriendOrFail(BotConfig.OwnerId).sendMessage(notice)
+                bot.getFriend(BotConfig.OwnerId)?.sendMessage(notice)
             } catch (e: Exception) {
                 logger.warning(e)
             }
