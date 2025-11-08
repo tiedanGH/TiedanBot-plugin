@@ -61,7 +61,7 @@ object Events : SimpleListenerHost() {
     }
     @EventHandler(priority = EventPriority.HIGH)
     internal fun GroupMessagePreSendEvent.check() {
-        if (BotConfig.WhiteList_enable && WhiteListData.WhiteList.containsKey(target.id).not()) cancel()
+        if (BotConfig.WhiteList_enable && WhiteListData.WhiteList[BotConfig.BotId]!!.containsKey(target.id).not()) cancel()
     }
 
     @EventHandler(priority = EventPriority.HIGH)
@@ -85,7 +85,7 @@ object Events : SimpleListenerHost() {
     @EventHandler(priority = EventPriority.HIGH)
     internal fun GroupMessageEvent.check() {
         if (BotConfig.WhiteList_enable &&
-            WhiteListData.WhiteList.containsKey(group.id).not() &&
+            WhiteListData.WhiteList[BotConfig.BotId]!!.containsKey(group.id).not() &&
             AdminListData.AdminList.contains(sender.id).not() &&
             sender.id != BotConfig.master
             ) {
@@ -95,7 +95,7 @@ object Events : SimpleListenerHost() {
     @EventHandler(priority = EventPriority.HIGH)
     internal fun NudgeEvent.check() {
         if (BotConfig.WhiteList_enable &&
-            WhiteListData.WhiteList.containsKey(target.id).not() &&
+            WhiteListData.WhiteList[BotConfig.BotId]!!.containsKey(target.id).not() &&
             subject is Group
             ) {
             intercept()
@@ -136,7 +136,7 @@ object Events : SimpleListenerHost() {
                 "QQ号：$invitorId"
         try {
             if (BotConfig.WhiteList_enable) {
-                notice += if (WhiteListData.WhiteList.containsKey(groupId)) {
+                notice += if (WhiteListData.WhiteList[BotConfig.BotId]!!.containsKey(groupId)) {
                     if (BotConfig.SecureMode == 2) {
                         invitor?.sendMessage("【提醒】目标群在白名单中，但因机器人处于增强安全模式，仍需手动同意申请，请您联系账号所有者")
                         "\n目标群在白名单中，但仍需手动同意邀请，已发送私信提醒邀请人"
@@ -167,7 +167,7 @@ object Events : SimpleListenerHost() {
                     "群号：${groupId}"
         try {
             if (BotConfig.WhiteList_enable && group.getMember(BotConfig.master) == null) {
-                notice += if (WhiteListData.WhiteList.containsKey(groupId)) {
+                notice += if (WhiteListData.WhiteList[BotConfig.BotId]!!.containsKey(groupId)) {
                     "\n目标群在白名单中"
                 } else {
                     group.sendMessage("【重要提醒】本群 $groupId 并不在机器人的白名单中，需要白名单才能正常使用，请先联系机器人管理员申请白名单，或尝试使用「${CommandManager.commandPrefix}apply white <群号> <原因>」指令发送白名单申请。")
@@ -187,7 +187,7 @@ object Events : SimpleListenerHost() {
     @OptIn(MiraiExperimentalApi::class)
     @EventHandler(priority = EventPriority.MONITOR)
     internal suspend fun BotLeaveEvent.leaveGroup() {
-        if (WhiteListData.WhiteList.containsKey(groupId)) {
+        if (WhiteListData.WhiteList[BotConfig.BotId]!!.containsKey(groupId)) {
             val type = when (this) {
                 is BotLeaveEvent.Active-> "主动退出"
                 is BotLeaveEvent.Disband -> "群聊解散"
@@ -198,9 +198,9 @@ object Events : SimpleListenerHost() {
                         "群名称：${group.name}\n" +
                         "群号：${groupId}\n" +
                         "原因：$type\n" +
-                        "白名单注释：${WhiteListData.WhiteList[groupId]}\n" +
+                        "白名单注释：${WhiteListData.WhiteList[BotConfig.BotId]!![groupId]}\n" +
                         "（白名单已被自动移除）"
-            WhiteListData.WhiteList.remove(groupId)
+            WhiteListData.WhiteList[BotConfig.BotId]!!.remove(groupId)
             BotConfig.save()
             try {
                 appendNoticeLog(notice)

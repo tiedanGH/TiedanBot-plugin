@@ -211,8 +211,8 @@ object CommandApply : RawCommand(
                         option = "同意"
                         when(type) {
                             "white"-> {
-                                ApplyData.WhiteListApplication[handleQQ]?.get("group")?.let { WhiteListData.WhiteList.put(it.toLong(), remark) }
-                                WhiteListData.WhiteList = WhiteListData.WhiteList.toSortedMap()
+                                ApplyData.WhiteListApplication[handleQQ]?.get("group")?.let { WhiteListData.WhiteList[BotConfig.BotId]!!.put(it.toLong(), remark) }
+                                WhiteListData.WhiteList[BotConfig.BotId] = WhiteListData.WhiteList[BotConfig.BotId]!!.toSortedMap()
                             }
                             "admin"-> {
                                 AdminListData.AdminList.add(handleQQ)
@@ -284,8 +284,8 @@ object CommandApply : RawCommand(
                         if (type == "white" || type == "all") {
                             ApplyData.WhiteListApplication.keys.forEachIndexed { _, key ->
                                 if (option == "同意") {
-                                    ApplyData.WhiteListApplication[key]?.get("group")?.let { WhiteListData.WhiteList.put(it.toLong(), "批量处理(h*)") }
-                                    WhiteListData.WhiteList = WhiteListData.WhiteList.toSortedMap()
+                                    ApplyData.WhiteListApplication[key]?.get("group")?.let { WhiteListData.WhiteList[BotConfig.BotId]!!.put(it.toLong(), "批量处理(h*)") }
+                                    WhiteListData.WhiteList[BotConfig.BotId] = WhiteListData.WhiteList[BotConfig.BotId]!!.toSortedMap()
                                 }
                                 if (option != "忽略") {
                                     val noticeApply = "【申请处理通知】\n" +

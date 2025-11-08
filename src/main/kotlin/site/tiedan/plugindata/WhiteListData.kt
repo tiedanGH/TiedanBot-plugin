@@ -8,6 +8,6 @@ import net.mamoe.mirai.console.data.value
 internal object WhiteListData : AutoSavePluginData("WhiteListData") {
 
     @ValueDescription("白名单列表")
-    var WhiteList: MutableMap<Long, String> by value(mutableMapOf(1919810.toLong() to "no_desc"))
+    var WhiteList: MutableMap<Long, MutableMap<Long, String>> by value(mutableMapOf(10000L to mutableMapOf(1919810L to "no_desc")))
 
 }
