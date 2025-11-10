@@ -75,6 +75,10 @@ object TiedanGame : KotlinPlugin(
         PointData.reload()
         BlackListData.reload()
         RankData.reload()
+
+        if (WhiteListData.WhiteList.contains(BotConfig.BotId).not()) {
+            WhiteListData.WhiteList.put(BotConfig.BotId, mutableMapOf())
+        }
     }
 
     private fun regEvent() {

@@ -232,6 +232,10 @@ object CommandAdmin : RawCommand(
                 }
 
                 "WhiteList", "whitelist", "白名单"-> {   // 查看白名单列表
+                    if (WhiteListData.WhiteList.contains(BotConfig.BotId).not()) {
+                        sendQuoteReply("当前账号下无任何白名单记录")
+                        return
+                    }
                     val showDesc = args.getOrNull(1)?.content?.let { it == "info" || it == "信息" } == true
                     var whiteListInfo = "白名单功能：$whiteEnable\n白名单总数：${WhiteListData.WhiteList[BotConfig.BotId]!!.size}\n·白名单列表："
                     for (key in WhiteListData.WhiteList[BotConfig.BotId]!!.keys) {
