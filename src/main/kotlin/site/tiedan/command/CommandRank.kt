@@ -109,7 +109,7 @@ object CommandRank : RawCommand(
 
                 "mine", "我", "查询" -> {
                     var message =
-                        "→ 活动详情和完整排行：${RankData.URL}👤 您的当前个人数据：\n"
+                        "→ 活动详情和完整排行：${RankData.URL}\n👤 您的当前个人数据：\n"
                     if (sortedData.containsKey(user?.id)) {
                         sortedData.keys.forEachIndexed { index, key ->
                             if (key == user?.id) {

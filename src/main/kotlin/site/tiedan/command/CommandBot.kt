@@ -42,10 +42,12 @@ object CommandBot : RawCommand(
                             "${commandPrefix}point help\n" +
                             "🖼️ 上传图片至图床\n" +
                             "${commandPrefix}upload help\n" +
-                            "📋 pb代码项目操作指令\n" +
+                            "📋 PB代码项目操作指令\n" +
                             "${commandPrefix}pb help\n" +
-                            "🗄 跨项目存储库操作指令：\n" +
+                            "🗄 PB跨项目存储库操作指令：\n" +
                             "${commandPrefix}bk help\n" +
+                            "🖼️ PB本地图片操作指令：\n" +
+                            "${commandPrefix}img help\n" +
                             "📮 提交权限申请相关指令\n" +
                             "${commandPrefix}apply help\n" +
                             "\n" +
@@ -72,10 +74,12 @@ object CommandBot : RawCommand(
                             "${commandPrefix}积分 帮助\n" +
                             "🖼️ 上传图片至图床\n" +
                             "${commandPrefix}上传 帮助\n" +
-                            "📋 pb代码项目操作指令\n" +
+                            "📋 PB代码项目操作指令\n" +
                             "${commandPrefix}代码 帮助\n" +
-                            "🗄 跨项目存储库操作指令：\n" +
+                            "🗄 PB跨项目存储库操作指令：\n" +
                             "${commandPrefix}存储库 帮助\n" +
+                            "🖼️ PB本地图片操作指令：\n" +
+                            "${commandPrefix}图片 帮助\n" +
                             "📮 提交权限申请相关指令\n" +
                             "${commandPrefix}申请 帮助\n" +
                             "\n" +
