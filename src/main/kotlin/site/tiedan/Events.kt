@@ -12,6 +12,7 @@ import net.mamoe.mirai.event.EventPriority
 import net.mamoe.mirai.event.ExceptionInEventHandlerException
 import net.mamoe.mirai.event.SimpleListenerHost
 import net.mamoe.mirai.event.events.*
+import net.mamoe.mirai.message.data.ForwardMessage
 import net.mamoe.mirai.message.data.Image
 import net.mamoe.mirai.message.data.content
 import net.mamoe.mirai.utils.MiraiExperimentalApi
@@ -66,6 +67,10 @@ object Events : SimpleListenerHost() {
 
     @EventHandler(priority = EventPriority.HIGH)
     internal fun MessageEvent.check() {
+        // 调试：不处理收到的任何转发消息
+        if (message[ForwardMessage] != null) {
+            intercept()
+        }
         // 黑名单检测
         if (BlackListData.BlackList.contains(sender.id)) {
             intercept()
@@ -220,11 +225,11 @@ object Events : SimpleListenerHost() {
         if (imageCount > 0) {
             BotInfoData.totalImageNum += imageCount
             BotInfoData.todayImageNum += imageCount
-            if (target !is Group) BotInfoData.todayPrivateImageNum += imageCount
         }
         if (message.isNotEmpty()) {
             BotInfoData.totalMsgNum++
             BotInfoData.todayMsgNum++
+            if (target is Group) BotInfoData.todayGroupMsgNum++
         }
         BotInfoData.save()
         if (message.content.startsWith("新游戏积分已记录")) {

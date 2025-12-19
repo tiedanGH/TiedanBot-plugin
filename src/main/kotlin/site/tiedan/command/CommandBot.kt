@@ -114,7 +114,7 @@ object CommandBot : RawCommand(
                                 "  ·今日数据统计\n" +
                                 "今日发送消息：${BotInfoData.todayMsgNum}\n" +
                                 "今日发送图片：${BotInfoData.todayImageNum}\n" +
-                                "今日私信图片：${BotInfoData.todayPrivateImageNum}"
+                                "今日群聊消息：${BotInfoData.todayGroupMsgNum}"
 //                                "今日私信图片${limit}上限：\n" +
 //                                "       ${BotInfoData.todayFriendImageNum} / ${BotConfig.dailyLimit}"
                     sendQuoteReply(reply)

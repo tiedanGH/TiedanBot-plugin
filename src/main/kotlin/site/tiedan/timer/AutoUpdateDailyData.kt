@@ -14,7 +14,7 @@ class AutoUpdateDailyData : TimerTask() {
         BotInfoData.yesterdayImageNum = BotInfoData.todayImageNum
         BotInfoData.todayMsgNum = 0
         BotInfoData.todayImageNum = 0
-        BotInfoData.todayPrivateImageNum = 0
+        BotInfoData.todayGroupMsgNum = 0
         BotInfoData.save()
         logger.info { "定时更新数据成功！" }
     }
