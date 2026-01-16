@@ -29,7 +29,7 @@
 | `/bot info`   | 查看bot数据信息   |
 | `/bot status` | 查看mirai状态   |
 
-- bot发言数据通过`MessagePostSendEvent`进行统计，在启动时注册 [定时任务](src/main/kotlin/timer/AutoUpdateDailyData.kt)，每日0点自动更新统计数据。数据保存在 [BotInfoData](src/main/kotlin/plugindata/BotInfoData.kt) 中。
+- bot发言数据通过`MessagePostSendEvent`进行统计，在启动时注册 [定时任务](src/main/kotlin/site/tiedan/timer/AutoUpdateDailyData.kt)，每日0点自动更新统计数据。数据保存在 [BotInfoData](src/main/kotlin/site/tiedan/data/BotInfoData.kt) 中。
 
 ### CommandAdmin
 
@@ -59,7 +59,7 @@
 
 ### CommandApply
 
-- 用于用户申请群聊白名单或admin权限，申请数据保存在 [ApplyData](src/main/kotlin/plugindata/ApplyData.kt) 中。
+- 用于用户申请群聊白名单或admin权限，申请数据保存在 [ApplyData](src/main/kotlin/site/tiedan/data/ApplyData.kt) 中。
 
 | Command                              | Description |
 |:-------------------------------------|:------------|
@@ -75,7 +75,7 @@
 
 ### CommandPastebin
 
-- 用于查看和添加pastebin代码，并使用在线编译器运行，数据保存在 [PastebinData](src/main/kotlin/plugindata/PastebinData.kt) 中。
+- 用于查看和添加pastebin代码，并使用在线编译器运行，数据保存在 [PastebinData](src/main/kotlin/site/tiedan/data/PastebinData.kt) 中。
 
 | Command                                                    | Description  |
 |:-----------------------------------------------------------|:-------------|

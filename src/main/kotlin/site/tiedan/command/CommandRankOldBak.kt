@@ -15,7 +15,7 @@ import site.tiedan.TiedanGame.masterOnly
 import site.tiedan.TiedanGame.save
 import site.tiedan.TiedanGame.sendQuoteReply
 import site.tiedan.config.BotConfig
-import site.tiedan.plugindata.RankData
+import site.tiedan.data.RankData
 import java.io.FileOutputStream
 import java.io.IOException
 

@@ -7,7 +7,7 @@
  *
  * Original copyright and license terms are retained.
  */
-package site.tiedan
+package site.tiedan.module
 
 import jakarta.activation.DataHandler
 import jakarta.activation.DataSource

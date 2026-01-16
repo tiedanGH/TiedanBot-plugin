@@ -16,9 +16,9 @@ import site.tiedan.TiedanGame.masterOnly
 import site.tiedan.TiedanGame.save
 import site.tiedan.TiedanGame.sendQuoteReply
 import site.tiedan.config.BotConfig
-import site.tiedan.plugindata.AdminListData
-import site.tiedan.plugindata.ApplyData
-import site.tiedan.plugindata.WhiteListData
+import site.tiedan.data.AdminListData
+import site.tiedan.data.ApplyData
+import site.tiedan.data.WhiteListData
 
 object CommandApply : RawCommand(
     owner = TiedanGame,

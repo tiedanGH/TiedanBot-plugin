@@ -16,7 +16,7 @@ import site.tiedan.TiedanGame.masterOnly
 import site.tiedan.TiedanGame.save
 import site.tiedan.TiedanGame.sendQuoteReply
 import site.tiedan.config.BotConfig
-import site.tiedan.plugindata.PointData
+import site.tiedan.data.PointData
 
 object CommandPoint : RawCommand(
     owner = TiedanGame,

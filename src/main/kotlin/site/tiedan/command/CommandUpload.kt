@@ -13,10 +13,10 @@ import net.mamoe.mirai.contact.Group
 import net.mamoe.mirai.contact.User
 import net.mamoe.mirai.message.data.*
 import net.mamoe.mirai.message.data.Image.Key.queryUrl
-import site.tiedan.MessageRecorder.quoteMessage
 import site.tiedan.TiedanGame
 import site.tiedan.TiedanGame.logger
 import site.tiedan.config.BotConfig
+import site.tiedan.module.MessageRecorder.quoteMessage
 import java.io.File
 import java.net.HttpURLConnection
 import java.net.URL

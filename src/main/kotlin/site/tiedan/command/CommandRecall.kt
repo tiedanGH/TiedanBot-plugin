@@ -9,13 +9,13 @@ import net.mamoe.mirai.console.util.ContactUtils.render
 import net.mamoe.mirai.contact.Contact
 import net.mamoe.mirai.contact.Member
 import net.mamoe.mirai.message.data.MessageSource.Key.recall
-import site.tiedan.MessageRecorder.from
-import site.tiedan.MessageRecorder.quote
-import site.tiedan.MessageRecorder.target
 import site.tiedan.TiedanGame
 import site.tiedan.TiedanGame.logger
 import site.tiedan.config.BotConfig
-import site.tiedan.plugindata.AdminListData
+import site.tiedan.data.AdminListData
+import site.tiedan.module.MessageRecorder.from
+import site.tiedan.module.MessageRecorder.quote
+import site.tiedan.module.MessageRecorder.target
 
 object CommandRecall : SimpleCommand(
     owner = TiedanGame,

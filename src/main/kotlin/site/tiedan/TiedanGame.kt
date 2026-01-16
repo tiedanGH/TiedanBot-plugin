@@ -21,7 +21,9 @@ import net.mamoe.mirai.utils.info
 import site.tiedan.command.*
 import site.tiedan.config.BotConfig
 import site.tiedan.config.MailConfig
-import site.tiedan.plugindata.*
+import site.tiedan.data.*
+import site.tiedan.module.Events
+import site.tiedan.module.MessageRecorder
 import site.tiedan.timer.AutoUpdateDailyData
 import site.tiedan.timer.DateTime
 import site.tiedan.timer.calculateNextSignDelay

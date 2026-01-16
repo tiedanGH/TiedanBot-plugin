@@ -1,5 +1,7 @@
-package site.tiedan
+package site.tiedan.module
 
+import jakarta.mail.MessagingException
+import jakarta.mail.Transport
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 import net.mamoe.mirai.console.command.CommandManager
@@ -24,7 +26,7 @@ import site.tiedan.TiedanGame.save
 import site.tiedan.command.CommandPoint.savePointChange
 import site.tiedan.config.BotConfig
 import site.tiedan.config.MailConfig
-import site.tiedan.plugindata.*
+import site.tiedan.data.*
 import top.mrxiaom.overflow.contact.RemoteGroup.Companion.asRemoteGroup
 import java.io.File
 import java.time.LocalDateTime
@@ -62,7 +64,8 @@ object Events : SimpleListenerHost() {
     }
     @EventHandler(priority = EventPriority.HIGH)
     internal fun GroupMessagePreSendEvent.check() {
-        if (BotConfig.WhiteList_enable && WhiteListData.WhiteList[BotConfig.BotId]!!.containsKey(target.id).not()) cancel()
+        if (BotConfig.SecureMode == 2 && BotConfig.WhiteList_enable &&
+            WhiteListData.WhiteList[BotConfig.BotId]!!.containsKey(target.id).not()) cancel()
     }
 
     @EventHandler(priority = EventPriority.HIGH)
@@ -341,8 +344,8 @@ object Events : SimpleListenerHost() {
             val oc = current.contextClassLoader
             try {
                 current.contextClassLoader = MailConfig::class.java.classLoader
-                jakarta.mail.Transport.send(mail)
-            } catch (cause: jakarta.mail.MessagingException) {
+                Transport.send(mail)
+            } catch (cause: MessagingException) {
                 logger.error({ "邮件发送失败" }, cause)
             } finally {
                 current.contextClassLoader = oc

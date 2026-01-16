@@ -5,7 +5,7 @@ import net.mamoe.mirai.utils.info
 import site.tiedan.TiedanGame.logger
 import site.tiedan.TiedanGame.save
 import site.tiedan.config.BotConfig
-import site.tiedan.plugindata.BotInfoData
+import site.tiedan.data.BotInfoData
 import java.util.*
 
 class AutoUpdateDailyData : TimerTask() {

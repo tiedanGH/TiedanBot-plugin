@@ -7,7 +7,7 @@
  *
  * Original copyright and license terms are retained.
  */
-package site.tiedan
+package site.tiedan.module
 
 import net.mamoe.mirai.contact.Contact
 import net.mamoe.mirai.contact.Member

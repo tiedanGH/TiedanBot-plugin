@@ -14,13 +14,13 @@ import site.tiedan.TiedanGame.logger
 import site.tiedan.TiedanGame.masterOnly
 import site.tiedan.TiedanGame.save
 import site.tiedan.TiedanGame.sendQuoteReply
-import site.tiedan.buildMailContent
-import site.tiedan.buildMailSession
 import site.tiedan.config.BotConfig
 import site.tiedan.config.MailConfig
-import site.tiedan.plugindata.AdminListData
-import site.tiedan.plugindata.BlackListData
-import site.tiedan.plugindata.WhiteListData
+import site.tiedan.data.AdminListData
+import site.tiedan.data.BlackListData
+import site.tiedan.data.WhiteListData
+import site.tiedan.module.buildMailContent
+import site.tiedan.module.buildMailSession
 import java.io.File
 import java.util.concurrent.TimeUnit
 import kotlin.io.path.inputStream
@@ -169,7 +169,7 @@ object CommandAdmin : RawCommand(
                             type = "移入黑名单"
                         }
                         try {
-                            if (qq != BotConfig.master && isNotConsole()) {
+                            if (user?.id != BotConfig.master && isNotConsole()) {
                                 reply += "\n\n操作结果已抄送至 MASTER"
                                 var notice = "【黑名单指令操作】\n" +
                                         "处理人：$name(${user?.id})\n" +

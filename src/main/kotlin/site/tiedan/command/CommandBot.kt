@@ -9,7 +9,7 @@ import net.mamoe.mirai.message.data.content
 import site.tiedan.TiedanGame
 import site.tiedan.TiedanGame.logger
 import site.tiedan.TiedanGame.sendQuoteReply
-import site.tiedan.plugindata.BotInfoData
+import site.tiedan.data.BotInfoData
 
 object CommandBot : RawCommand(
     owner = TiedanGame,

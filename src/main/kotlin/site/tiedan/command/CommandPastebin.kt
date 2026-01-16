@@ -12,7 +12,7 @@ import site.tiedan.TiedanGame
 import site.tiedan.TiedanGame.logger
 import site.tiedan.TiedanGame.reload
 import site.tiedan.TiedanGame.save
-import site.tiedan.plugindata.PastebinData
+import site.tiedan.data.PastebinData
 import kotlin.math.ceil
 
 /**

@@ -29,7 +29,7 @@ The command prefix will automatically change according to the `commandPrefix` pa
 | `/bot info`   | view bot data information |
 | `/bot status` | view mirai status         |
 
-- The bot message data is collected through `MessagePostSendEvent`. [Scheduled task](src/main/kotlin/timer/AutoUpdateDailyData.kt) is registered at startup, and the statistical data is automatically updated at 0 o'clock every day. The data is saved in [BotInfoData](src/main/kotlin/plugindata/BotInfoData.kt).
+- The bot message data is collected through `MessagePostSendEvent`. [Scheduled task](src/main/kotlin/site/tiedan/timer/AutoUpdateDailyData.kt) is registered at startup, and the statistical data is automatically updated at 0 o'clock every day. The data is saved in [BotInfoData](src/main/kotlin/site/tiedan/data/BotInfoData.kt).
 
 ### CommandAdmin
 
@@ -59,7 +59,7 @@ The command prefix will automatically change according to the `commandPrefix` pa
 
 ### CommandApply
 
-- Used by users to apply for group WhiteList or admin permission. The application data is saved in [ApplyData](src/main/kotlin/plugindata/ApplyData.kt).
+- Used by users to apply for group WhiteList or admin permission. The application data is saved in [ApplyData](src/main/kotlin/site/tiedan/data/ApplyData.kt).
 
 | Command                                          | Description                 |
 |:-------------------------------------------------|:----------------------------|
@@ -75,7 +75,7 @@ The command prefix will automatically change according to the `commandPrefix` pa
 
 ### CommandPastebin
 
-- Used to view and add pastebin codes and run them by using the online compiler. The data is saved in [PastebinData](src/main/kotlin/plugindata/PastebinData.kt).
+- Used to view and add pastebin codes and run them by using the online compiler. The data is saved in [PastebinData](src/main/kotlin/site/tiedan/data/PastebinData.kt).
 
 | Command                                                                        | Description                                   |
 |:-------------------------------------------------------------------------------|:----------------------------------------------|

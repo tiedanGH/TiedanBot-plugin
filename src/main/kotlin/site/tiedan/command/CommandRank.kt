@@ -16,12 +16,12 @@ import site.tiedan.TiedanGame.logger
 import site.tiedan.TiedanGame.masterOnly
 import site.tiedan.TiedanGame.save
 import site.tiedan.TiedanGame.sendQuoteReply
-import site.tiedan.buildMailContent
-import site.tiedan.buildMailSession
 import site.tiedan.config.BotConfig
 import site.tiedan.config.MailConfig
-import site.tiedan.plugindata.AdminListData
-import site.tiedan.plugindata.RankData
+import site.tiedan.data.AdminListData
+import site.tiedan.data.RankData
+import site.tiedan.module.buildMailContent
+import site.tiedan.module.buildMailSession
 import java.io.File
 import java.io.FileOutputStream
 import java.io.IOException
