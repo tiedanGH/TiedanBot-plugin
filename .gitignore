@@ -1,5 +1,7 @@
 # User-specific stuff
 .idea/
+.kotlin/
+.run/
 
 *.iml
 *.ipr
@@ -129,5 +131,4 @@ src/test/kotlin/RunTerminal.kt
 
 # Local Test Launch Point working directory
 /debug-sandbox
-/.run/RunTerminal.run.xml
 /backup.txt
