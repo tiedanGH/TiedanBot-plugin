@@ -9,14 +9,20 @@ import net.mamoe.mirai.console.command.CommandSenderOnMessage
 import net.mamoe.mirai.console.command.isNotConsole
 import net.mamoe.mirai.console.plugin.jvm.JvmPluginDescription
 import net.mamoe.mirai.console.plugin.jvm.KotlinPlugin
+import net.mamoe.mirai.console.util.ConsoleExperimentalApi
+import net.mamoe.mirai.contact.Contact
 import net.mamoe.mirai.contact.Group
 import net.mamoe.mirai.contact.PermissionDeniedException
 import net.mamoe.mirai.contact.getMember
 import net.mamoe.mirai.contact.nameCardOrNick
 import net.mamoe.mirai.event.GlobalEventChannel
+import net.mamoe.mirai.message.data.Image
+import net.mamoe.mirai.message.data.Message
 import net.mamoe.mirai.message.data.PlainText
 import net.mamoe.mirai.message.data.QuoteReply
 import net.mamoe.mirai.message.data.buildMessageChain
+import net.mamoe.mirai.utils.ExternalResource.Companion.DEFAULT_FORMAT_NAME
+import net.mamoe.mirai.utils.ExternalResource.Companion.toExternalResource
 import net.mamoe.mirai.utils.info
 import site.tiedan.command.*
 import site.tiedan.config.BotConfig
@@ -28,6 +34,7 @@ import site.tiedan.timer.AutoUpdateDailyData
 import site.tiedan.timer.DateTime
 import site.tiedan.timer.calculateNextSignDelay
 import site.tiedan.timer.executeDailySign
+import java.io.File
 import java.util.*
 
 
@@ -41,6 +48,9 @@ object TiedanGame : KotlinPlugin(
         info("""TiedanGame Plugin""")
     }
 ) {
+    @OptIn(ConsoleExperimentalApi::class)
+    val baseDataFolder = "./data/$dataHolderName"
+
     data class Command(val usage: String, val usageCN: String, val desc: String, val type: Int)
 
     override fun onEnable() {
@@ -62,6 +72,7 @@ object TiedanGame : KotlinPlugin(
         CommandPoint.unregister()
         CommandRank.unregister()
         Commandkx.unregister()
+        CommandScreenshot.unregister()
     }
 
     fun rdConfig() {
@@ -72,6 +83,7 @@ object TiedanGame : KotlinPlugin(
     fun rdData() {
         AdminListData.reload()
         WhiteListData.reload()
+        DomainWhiteListData.reload()
         BotInfoData.reload()
         ApplyData.reload()
         PointData.reload()
@@ -97,6 +109,7 @@ object TiedanGame : KotlinPlugin(
         CommandPoint.register()
         CommandRank.register()
         Commandkx.register()
+        CommandScreenshot.register()
     }
 
     private fun startTimer() {
@@ -117,14 +130,35 @@ object TiedanGame : KotlinPlugin(
         }
     }
 
+    /**
+     * 发送引用消息
+     */
     suspend fun CommandSender.sendQuoteReply(msgToSend: String) {
-        if (this is CommandSenderOnMessage<*> && BotConfig.quote_enable) {
+        sendQuoteReplyInternal(PlainText(msgToSend))
+    }
+    suspend fun CommandSender.sendQuoteReply(msgToSend: Message) {
+        sendQuoteReplyInternal(msgToSend)
+    }
+    private suspend fun CommandSender.sendQuoteReplyInternal(message: Message) {
+        if (this is CommandSenderOnMessage<*>) {
             sendMessage(buildMessageChain {
                 +QuoteReply(fromEvent.message)
-                +PlainText(msgToSend)
+                +message
             })
         } else {
-            sendMessage(msgToSend)
+            sendMessage(message)
+        }
+    }
+
+    /**
+     * 上传文件至在线图片
+     */
+    suspend fun Contact.uploadFileToImage(file: File): Image? {
+        return file.toExternalResource().use { resource ->     // 返回结果图片
+            if (resource.formatName == DEFAULT_FORMAT_NAME) {
+                return null
+            }
+            this.uploadImage(resource)
         }
     }
 

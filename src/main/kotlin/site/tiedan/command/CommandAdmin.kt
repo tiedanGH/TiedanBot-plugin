@@ -100,7 +100,7 @@ object CommandAdmin : RawCommand(
                         val result = AdminListData.AdminList.add(qq)
                         if (result) {
                             AdminListData.AdminList = AdminListData.AdminList.toSortedSet()
-                            BotConfig.save()
+                            AdminListData.save()
                             if (qq == 0.toLong()) {   // 0视为all
                                 sendQuoteReply("已解除管理员权限限制")
                             } else {
@@ -120,7 +120,7 @@ object CommandAdmin : RawCommand(
                         val qq = args[1].content.toLong()
                         val result = AdminListData.AdminList.remove(qq)
                         if (result) {
-                            BotConfig.save()
+                            AdminListData.save()
                             if (qq == 0.toLong()) {   // 0视为all
                                 sendQuoteReply("已恢复管理员权限限制")
                             } else {
