@@ -17,7 +17,7 @@ repositories {
 dependencies {
     api("jakarta.mail:jakarta.mail-api:2.1.5")
     implementation("org.eclipse.angus:angus-mail:2.0.5")
-    implementation("com.microsoft.playwright:playwright:1.42.0")
+    implementation("com.microsoft.playwright:playwright:1.58.0")
 
     compileOnly("top.mrxiaom.mirai:overflow-core-api:1.0.8")
     testConsoleRuntime("top.mrxiaom.mirai:overflow-core:1.0.8")
