@@ -219,6 +219,30 @@ object Events : SimpleListenerHost() {
         }
     }
 
+    @EventHandler(priority = EventPriority.MONITOR)
+    internal suspend fun MemberLeaveEvent.masterLeaveGroup() {
+        if (WhiteListData.WhiteList[BotConfig.BotId]!!.containsKey(groupId) && member.id == BotConfig.master) {
+            val message = "⚠ 检测到 MASTER 离开本群，出于账号安全考虑，将自动退出本群并移除白名单"
+            val notice: String =
+                "【机器人退出白名单群聊】\n" +
+                "群名称：${group.name}\n" +
+                "群号：${groupId}\n" +
+                "原因：MASTER离开群聊\n" +
+                "白名单注释：${WhiteListData.WhiteList[BotConfig.BotId]!![groupId]}\n" +
+                "（白名单已被自动移除）"
+            WhiteListData.WhiteList[BotConfig.BotId]!!.remove(groupId)
+            BotConfig.save()
+            try {
+                appendNoticeLog(notice)
+                bot.getFriend(BotConfig.OwnerId)?.sendMessage(notice)
+                group.sendMessage(message)
+                group.quit()
+            } catch (e: Exception) {
+                logger.warning(e)
+            }
+        }
+    }
+
     /**
      * bot数据统计
      */
