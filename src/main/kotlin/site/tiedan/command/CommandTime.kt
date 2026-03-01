@@ -27,8 +27,11 @@ object CommandTime : RawCommand(
 ){
     private val timeCommandList = listOf(
         Command("t count <秒> [名称]", "时间 倒计时 <秒> [名称]", "▶️ 启动一个计时器", 1),
-        Command("t tiedan", "时间 铁蛋", "-> 查看铁蛋的时间", 1),
-        Command("t star", "时间 星星", "-> 查看星星的时间", 1)
+
+        Command("t tiedan", "时间 铁蛋", "", 2),
+        Command("t star", "时间 星星", "", 2),
+        Command("t BC", "时间 BC", "", 2),
+        Command("t 猫猫", "时间 猫猫", "", 2)
     )
 
     private var THREAD : Int = 0
@@ -41,7 +44,9 @@ object CommandTime : RawCommand(
                 "help" -> {  // 英文帮助
                     val reply = buildString {
                         append(" ·⏱️ 计时器指令帮助\n")
-                        timeCommandList.forEach { append("${it.desc}\n${commandPrefix}${it.usage}\n") }
+                        timeCommandList.filter { it.type == 1 }.forEach { append("${it.desc}\n${commandPrefix}${it.usage}\n") }
+                        append(" ·👥 查看群友当前时间\n")
+                        timeCommandList.filter { it.type == 2 }.forEach { append("${commandPrefix}${it.usage}\n") }
                     }
                     sendQuoteReply(reply)
                 }
@@ -49,7 +54,9 @@ object CommandTime : RawCommand(
                 "帮助" -> {  // 中文帮助
                     val reply = buildString {
                         append(" ·⏱️ 计时器指令帮助\n")
-                        timeCommandList.forEach { append("${it.desc}\n${commandPrefix}${it.usageCN}\n") }
+                        timeCommandList.filter { it.type == 1 }.forEach { append("${it.desc}\n${commandPrefix}${it.usageCN}\n") }
+                        append(" ·👥 查看群友当前时间\n")
+                        timeCommandList.filter { it.type == 2 }.forEach { append("${commandPrefix}${it.usageCN}\n") }
                     }
                     sendQuoteReply(reply)
                 }
@@ -109,6 +116,13 @@ object CommandTime : RawCommand(
                     }
                 }
 
+                "tiedan", "铁蛋"-> {
+                    val zoneId = ZoneId.of(BotConfig.TimeZone[0])
+                    val now = ZonedDateTime.now(zoneId)
+                    val formatted = now.format(DateTimeFormatter.ofPattern("HH:mm:ss   Z"))
+                    sendQuoteReply("铁蛋现在的时间为：\n$formatted\n（${BotConfig.TimeZone[1]}时间）")
+                }
+
                 "star", "星星"-> {
                     val zoneId = ZoneId.of("America/Los_Angeles")
                     val now = ZonedDateTime.now(zoneId)
@@ -116,11 +130,18 @@ object CommandTime : RawCommand(
                     sendQuoteReply("星星现在的时间为：\n$formatted\n（太平洋标准时间）")
                 }
 
-                "tiedan", "铁蛋"-> {
-                    val zoneId = ZoneId.of(BotConfig.TimeZone[0])
+                "BC", "bc"-> {
+                    val zoneId = ZoneId.of("America/Los_Angeles")
                     val now = ZonedDateTime.now(zoneId)
                     val formatted = now.format(DateTimeFormatter.ofPattern("HH:mm:ss   Z"))
-                    sendQuoteReply("铁蛋现在的时间为：\n$formatted\n（${BotConfig.TimeZone[1]}时间）")
+                    sendQuoteReply("BC现在的时间为：\n$formatted\n（太平洋标准时间）")
+                }
+
+                "猫猫", "cat"-> {
+                    val zoneId = ZoneId.of("America/Los_Angeles")
+                    val now = ZonedDateTime.now(zoneId)
+                    val formatted = now.format(DateTimeFormatter.ofPattern("HH:mm:ss   Z"))
+                    sendQuoteReply("猫猫现在的时间为：\n$formatted\n（太平洋标准时间）")
                 }
 
                 else-> {
