@@ -27,6 +27,7 @@ import net.mamoe.mirai.utils.info
 import site.tiedan.command.*
 import site.tiedan.config.BotConfig
 import site.tiedan.config.MailConfig
+import site.tiedan.config.PlatformConfig
 import site.tiedan.data.*
 import site.tiedan.module.Events
 import site.tiedan.module.MessageRecorder
@@ -78,6 +79,7 @@ object TiedanGame : KotlinPlugin(
     fun rdConfig() {
         BotConfig.reload()
         MailConfig.reload()
+        PlatformConfig.reload()
     }
 
     fun rdData() {

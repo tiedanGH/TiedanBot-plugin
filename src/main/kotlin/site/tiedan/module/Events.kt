@@ -26,6 +26,7 @@ import site.tiedan.TiedanGame.save
 import site.tiedan.command.CommandPoint.savePointChange
 import site.tiedan.config.BotConfig
 import site.tiedan.config.MailConfig
+import site.tiedan.config.PlatformConfig
 import site.tiedan.data.*
 import top.mrxiaom.overflow.contact.RemoteGroup.Companion.asRemoteGroup
 import java.io.File
@@ -64,8 +65,13 @@ object Events : SimpleListenerHost() {
     }
     @EventHandler(priority = EventPriority.HIGH)
     internal fun GroupMessagePreSendEvent.check() {
-        if (BotConfig.SecureMode == 2 && BotConfig.WhiteList_enable &&
-            WhiteListData.WhiteList[BotConfig.BotId]!!.containsKey(target.id).not()) cancel()
+        val botId = bot.id
+        val whiteListEnabled = getWhiteListEnabled(botId)
+        val whiteList = WhiteListData.WhiteList[botId] ?: WhiteListData.WhiteList[BotConfig.BotId]
+
+        if (BotConfig.SecureMode == 2 && whiteListEnabled && (whiteList?.containsKey(target.id) != true)) {
+            cancel()
+        }
     }
 
     @EventHandler(priority = EventPriority.HIGH)
@@ -88,24 +94,40 @@ object Events : SimpleListenerHost() {
     }
 
     /**
+     * 获取当前 bot 的白名单开关
+     * - 默认使用 BotConfig.WhiteList_enable
+     * - 如果当前 bot.id 在平台配置中存在，且配置了 whitelist，则使用该值
+     */
+    fun getWhiteListEnabled(botId: Long): Boolean {
+        val platformConfig = PlatformConfig.platforms[botId] ?: return BotConfig.WhiteList_enable
+        return platformConfig["whitelist"]?.toBooleanStrictOrNull() ?: BotConfig.WhiteList_enable
+    }
+    /**
      * 白名单检测
      */
     @EventHandler(priority = EventPriority.HIGH)
     internal fun GroupMessageEvent.check() {
-        if (BotConfig.WhiteList_enable &&
-            WhiteListData.WhiteList[BotConfig.BotId]!!.containsKey(group.id).not() &&
-            AdminListData.AdminList.contains(sender.id).not() &&
+        val botId = bot.id
+        val whiteListEnabled = getWhiteListEnabled(botId)
+        val whiteList = WhiteListData.WhiteList[botId] ?: WhiteListData.WhiteList[BotConfig.BotId]
+
+        if (whiteListEnabled &&
+            (whiteList?.containsKey(group.id) != true) &&
+            sender.id !in AdminListData.AdminList &&
             sender.id != BotConfig.master
-            ) {
+        ) {
             intercept()
         }
     }
     @EventHandler(priority = EventPriority.HIGH)
     internal fun NudgeEvent.check() {
-        if (BotConfig.WhiteList_enable &&
-            WhiteListData.WhiteList[BotConfig.BotId]!!.containsKey(target.id).not() &&
-            subject is Group
-            ) {
+        if (subject !is Group) return
+
+        val botId = bot.id
+        val whiteListEnabled = getWhiteListEnabled(botId)
+        val whiteList = WhiteListData.WhiteList[botId] ?: WhiteListData.WhiteList[BotConfig.BotId]
+
+        if (whiteListEnabled && (whiteList?.containsKey(target.id) != true)) {
             intercept()
         }
     }
