@@ -121,14 +121,18 @@ object TiedanGame : KotlinPlugin(
         Timer().schedule(dailyUpdate, updateDate, periodDay)
         logger.info { "已启用定时任务，每日0点自动更新统计数据" }
         // bot自动签到
-        launch {
-            var success = true
-            while (true) {
-                val delayTime = calculateNextSignDelay(success)
-                logger.info { "已重新加载协程，下次签到剩余时间 ${delayTime / 1000} 秒" }
-                delay(delayTime)
-                success = executeDailySign()
+        if (BotConfig.auto_sign) {
+            launch {
+                var success = true
+                while (true) {
+                    val delayTime = calculateNextSignDelay(success)
+                    logger.info { "已重新加载协程，下次签到剩余时间 ${delayTime / 1000} 秒" }
+                    delay(delayTime)
+                    success = executeDailySign()
+                }
             }
+        } else {
+            logger.info { "未启用自动签到功能" }
         }
     }
 
@@ -142,7 +146,7 @@ object TiedanGame : KotlinPlugin(
         sendQuoteReplyInternal(msgToSend)
     }
     private suspend fun CommandSender.sendQuoteReplyInternal(message: Message) {
-        if (this is CommandSenderOnMessage<*>) {
+        if (this is CommandSenderOnMessage<*> && BotConfig.quote_enable) {
             sendMessage(buildMessageChain {
                 +QuoteReply(fromEvent.message)
                 +message

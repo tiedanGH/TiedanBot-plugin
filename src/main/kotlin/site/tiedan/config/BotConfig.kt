@@ -36,6 +36,9 @@ object BotConfig : AutoSavePluginConfig("BotConfig") {
     @ValueDescription("专注功能服务对象")
     var focus_to: Long by value()
 
+    @ValueDescription("启用自动签到")
+    var auto_sign: Boolean by value(false)
+
 //    @ValueDescription("设置每日图片上限检测标准")
 //    var dailyLimit: Int by value(2000)
 
