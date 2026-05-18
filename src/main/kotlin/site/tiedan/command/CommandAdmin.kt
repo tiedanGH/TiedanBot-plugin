@@ -9,9 +9,13 @@ import net.mamoe.mirai.contact.PermissionDeniedException
 import net.mamoe.mirai.message.data.*
 import site.tiedan.TiedanGame
 import site.tiedan.TiedanGame.Command
+import site.tiedan.TiedanGame.adminConfigId
 import site.tiedan.TiedanGame.adminOnly
+import site.tiedan.TiedanGame.firstMasterQQ
+import site.tiedan.TiedanGame.isMaster
 import site.tiedan.TiedanGame.logger
 import site.tiedan.TiedanGame.masterOnly
+import site.tiedan.TiedanGame.permissionId
 import site.tiedan.TiedanGame.save
 import site.tiedan.TiedanGame.sendQuoteReply
 import site.tiedan.config.BotConfig
@@ -68,7 +72,7 @@ object CommandAdmin : RawCommand(
                 "help"-> {   // 查看admin可用帮助（help）
                     var reply = " ·🔧 admin可用帮助：\n" +
                             commandList.filter { it.type == 1 }.joinToString("") { "-> ${it.desc}\n${commandPrefix}${it.usage}\n" }
-                    if (user?.id == BotConfig.master || isConsole()) {
+                    if (isMaster(this)) {
                         reply += " ·👑 master管理指令：\n" +
                             commandList.filter { it.type == 2 }.joinToString("") { "-> ${it.desc}\n${commandPrefix}${it.usage}\n" }
                     }
@@ -78,7 +82,7 @@ object CommandAdmin : RawCommand(
                 "帮助"-> {   // 查看admin可用帮助（帮助）
                     var reply = " ·🔧 admin可用帮助：\n" +
                             commandList.filter { it.type == 1 }.joinToString("") { "-> ${commandPrefix}${it.usageCN}　${it.desc}\n" }
-                    if (user?.id == BotConfig.master || isConsole()) {
+                    if (isMaster(this)) {
                         reply += " ·👑 master管理指令：\n" +
                             commandList.filter { it.type == 2 }.joinToString("") { "-> ${commandPrefix}${it.usageCN}　${it.desc}\n" }
                     }
@@ -96,12 +100,12 @@ object CommandAdmin : RawCommand(
                 "op", "添加管理员"-> {   // 添加管理员
                     masterOnly(this)
                     try {
-                        val qq = args[1].content.toLong()
+                        val qq = adminConfigId(this, args[1].content)
                         val result = AdminListData.AdminList.add(qq)
                         if (result) {
                             AdminListData.AdminList = AdminListData.AdminList.toSortedSet()
                             AdminListData.save()
-                            if (qq == 0.toLong()) {   // 0视为all
+                            if (qq == "0") {   // 0视为all
                                 sendQuoteReply("已解除管理员权限限制")
                             } else {
                                 sendQuoteReply("已将 $qq 设为管理员")
@@ -111,17 +115,19 @@ object CommandAdmin : RawCommand(
                         }
                     } catch (_: NumberFormatException) {
                         sendQuoteReply("数字转换错误，请检查指令")
+                    } catch (e: IllegalArgumentException) {
+                        sendQuoteReply("[ID格式错误] ${e.message}")
                     }
                 }
 
                 "deop", "移除管理员"-> {   // 移除管理员
                     masterOnly(this)
                     try {
-                        val qq = args[1].content.toLong()
+                        val qq = adminConfigId(this, args[1].content)
                         val result = AdminListData.AdminList.remove(qq)
                         if (result) {
                             AdminListData.save()
-                            if (qq == 0.toLong()) {   // 0视为all
+                            if (qq == "0") {   // 0视为all
                                 sendQuoteReply("已恢复管理员权限限制")
                             } else {
                                 sendQuoteReply("已将 $qq 移除管理员")
@@ -131,6 +137,8 @@ object CommandAdmin : RawCommand(
                         }
                     } catch (_: NumberFormatException) {
                         sendQuoteReply("数字转换错误，请检查指令")
+                    } catch (e: IllegalArgumentException) {
+                        sendQuoteReply("[ID格式错误] ${e.message}")
                     }
                 }
 
@@ -145,7 +153,7 @@ object CommandAdmin : RawCommand(
                 "black", "添加黑名单"-> {   // 添加/移除黑名单
                     try {
                         val qq = args[1].content.replace("@", "").toLong()
-                        if (qq == BotConfig.master) {
+                        if (isMaster(bot?.id, qq)) {
                             sendQuoteReply("操作保护：Master不能被移入黑名单")
                             return
                         }
@@ -153,7 +161,7 @@ object CommandAdmin : RawCommand(
                             sendQuoteReply("操作保护：不能把自己移入黑名单")
                             return
                         }
-                        if (qq in AdminListData.AdminList) {
+                        if (permissionId(bot?.id, qq)?.let { it in AdminListData.AdminList } == true) {
                             sendQuoteReply("操作保护：管理员不能被移入黑名单")
                             return
                         }
@@ -169,13 +177,13 @@ object CommandAdmin : RawCommand(
                             type = "移入黑名单"
                         }
                         try {
-                            if (user?.id != BotConfig.master && isNotConsole()) {
+                            if (!isMaster(this) && isNotConsole()) {
                                 reply += "\n\n操作结果已抄送至 MASTER"
                                 var notice = "【黑名单指令操作】\n" +
                                         "处理人：$name(${user?.id})\n" +
                                         "操作：$type\n" +
                                         "目标ID：$qq"
-                                bot?.getFriendOrFail(BotConfig.master)?.sendMessage(notice)   // 抄送结果至bot所有者
+                                firstMasterQQ()?.let { bot?.getFriendOrFail(it)?.sendMessage(notice) }   // 抄送结果至bot所有者
                             }
                         } catch (e: Exception) {
                             logger.warning(e)

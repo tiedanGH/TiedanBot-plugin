@@ -5,16 +5,15 @@ import kotlinx.coroutines.withContext
 import net.mamoe.mirai.console.command.CommandManager.INSTANCE.commandPrefix
 import net.mamoe.mirai.console.command.CommandSender
 import net.mamoe.mirai.console.command.RawCommand
-import net.mamoe.mirai.console.command.isConsole
 import net.mamoe.mirai.contact.PermissionDeniedException
 import net.mamoe.mirai.message.data.MessageChain
 import net.mamoe.mirai.message.data.content
 import site.tiedan.TiedanGame
+import site.tiedan.TiedanGame.isMaster
 import site.tiedan.TiedanGame.logger
 import site.tiedan.TiedanGame.masterOnly
 import site.tiedan.TiedanGame.save
 import site.tiedan.TiedanGame.sendQuoteReply
-import site.tiedan.config.BotConfig
 import site.tiedan.data.RankData
 import java.io.FileOutputStream
 import java.io.IOException
@@ -41,7 +40,7 @@ object CommandRankOldBak : RawCommand(
                             "${commandPrefix}rank [rank] [desc]\n" +
                             "-> 查询个人数据\n" +
                             "${commandPrefix}rank mine"
-                    if (user?.id == BotConfig.master || isConsole()) {
+                    if (isMaster(this)) {
                         reply += "\n ·master管理指令：\n" +
                                 "-> 清除全部数据\n" +
                                 "${commandPrefix}rank clear\n" +
@@ -59,7 +58,7 @@ object CommandRankOldBak : RawCommand(
                                 "${commandPrefix}排行 [排名] [详情]\n" +
                                 "-> 查询个人数据\n" +
                                 "${commandPrefix}排行 查询"
-                    if (user?.id == BotConfig.master || isConsole()) {
+                    if (isMaster(this)) {
                         reply += "\n ·master管理指令：\n" +
                                 "-> 清空全部数据\n" +
                                 "${commandPrefix}排行 清空\n" +

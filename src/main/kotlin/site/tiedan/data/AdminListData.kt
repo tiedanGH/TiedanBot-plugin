@@ -8,6 +8,6 @@ import net.mamoe.mirai.console.data.value
 internal object AdminListData : AutoSavePluginData("AdminListData") {
 
     @ValueDescription("管理员列表")
-    var AdminList: MutableSet<Long> by value(mutableSetOf(114514))
+    var AdminList: MutableSet<String> by value(mutableSetOf("114514"))
 
 }

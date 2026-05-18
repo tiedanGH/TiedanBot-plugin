@@ -5,20 +5,19 @@ import kotlinx.coroutines.withContext
 import net.mamoe.mirai.console.command.CommandManager.INSTANCE.commandPrefix
 import net.mamoe.mirai.console.command.CommandSender
 import net.mamoe.mirai.console.command.RawCommand
-import net.mamoe.mirai.console.command.isConsole
 import net.mamoe.mirai.contact.PermissionDeniedException
 import net.mamoe.mirai.message.data.MessageChain
 import net.mamoe.mirai.message.data.content
 import site.tiedan.TiedanGame
 import site.tiedan.TiedanGame.Command
 import site.tiedan.TiedanGame.adminOnly
+import site.tiedan.TiedanGame.isAdmin
+import site.tiedan.TiedanGame.isMaster
 import site.tiedan.TiedanGame.logger
 import site.tiedan.TiedanGame.masterOnly
 import site.tiedan.TiedanGame.save
 import site.tiedan.TiedanGame.sendQuoteReply
-import site.tiedan.config.BotConfig
 import site.tiedan.config.MailConfig
-import site.tiedan.data.AdminListData
 import site.tiedan.data.RankData
 import site.tiedan.module.buildMailContent
 import site.tiedan.module.buildMailSession
@@ -57,11 +56,11 @@ object CommandRank : RawCommand(
                 "help" -> {
                     var reply = " ·🏆 比赛排行指令帮助：\n" +
                             commandList.filter { it.type == 1 }.joinToString("") { "${it.desc}\n${commandPrefix}${it.usage}\n" }
-                    if (AdminListData.AdminList.contains(user?.id) || user?.id == BotConfig.master || isConsole()) {
+                    if (isAdmin(this)) {
                         reply += "\n ·🛠️ admin管理指令：\n" +
                                 commandList.filter { it.type == 2 }.joinToString("") { "${it.desc}\n${commandPrefix}${it.usage}\n" }
                     }
-                    if (user?.id == BotConfig.master || isConsole()) {
+                    if (isMaster(this)) {
                         reply += "\n ·👑 master管理指令：\n"+
                                 commandList.filter { it.type == 3 }.joinToString("") { "${it.desc}\n${commandPrefix}${it.usage}\n" }
                     }
@@ -71,11 +70,11 @@ object CommandRank : RawCommand(
                 "帮助" -> {
                     var reply = " ·🏆 比赛排行指令帮助：\n" +
                             commandList.filter { it.type == 1 }.joinToString("") { "${it.desc}\n${commandPrefix}${it.usageCN}\n" }
-                    if (AdminListData.AdminList.contains(user?.id) || user?.id == BotConfig.master || isConsole()) {
+                    if (isAdmin(this)) {
                         reply += "\n ·🛠️ admin管理指令：\n" +
                                 commandList.filter { it.type == 2 }.joinToString("") { "${it.desc}\n${commandPrefix}${it.usageCN}\n" }
                     }
-                    if (user?.id == BotConfig.master || isConsole()) {
+                    if (isMaster(this)) {
                         reply += "\n ·👑 master管理指令：\n" +
                                 commandList.filter { it.type == 3 }.joinToString("") { "${it.desc}\n${commandPrefix}${it.usageCN}\n" }
                     }

@@ -12,18 +12,16 @@ import site.tiedan.TiedanGame
 import site.tiedan.TiedanGame.Command
 import site.tiedan.TiedanGame.adminOnly
 import site.tiedan.TiedanGame.baseDataFolder
+import site.tiedan.TiedanGame.isAdmin
 import site.tiedan.TiedanGame.logger
 import site.tiedan.TiedanGame.save
 import site.tiedan.TiedanGame.sendQuoteReply
 import site.tiedan.TiedanGame.uploadFileToImage
-import site.tiedan.config.BotConfig
-import site.tiedan.data.AdminListData
 import site.tiedan.data.DomainWhiteListData
 import site.tiedan.module.UrlWhitelistValidator
 import java.io.File
 import java.net.URLClassLoader
 import java.nio.file.Paths
-import kotlin.collections.contains
 import kotlin.io.path.createDirectories
 
 object CommandScreenshot : RawCommand(
@@ -46,7 +44,7 @@ object CommandScreenshot : RawCommand(
 
     override suspend fun CommandSender.onCommand(args: MessageChain) {
 
-        val isAdmin = AdminListData.AdminList.contains(user?.id) || user?.id == BotConfig.master || isConsole()
+        val hasAdminPermission = isAdmin(this)
 
         try {
             when (args[0].content) {
@@ -54,7 +52,7 @@ object CommandScreenshot : RawCommand(
                 "help"-> {   // 查看screenshot可用帮助（help）
                     var reply = " ·📸 截图指令帮助：\n" +
                             commandList.filter { it.type == 1 }.joinToString("") { "${commandPrefix}${it.usage}　${it.desc}\n" }
-                    if (isAdmin) {
+                    if (hasAdminPermission) {
                         reply += " ·🛠️ admin管理指令：\n" +
                             commandList.filter { it.type == 2 }.joinToString("") { "${commandPrefix}${it.usage}　${it.desc}\n" }
                     }
@@ -64,7 +62,7 @@ object CommandScreenshot : RawCommand(
                 "帮助"-> {   // 查看screenshot可用帮助（帮助）
                     var reply = " ·📸 截图指令帮助：\n" +
                             commandList.filter { it.type == 1 }.joinToString("") { "${commandPrefix}${it.usageCN}　${it.desc}\n" }
-                    if (isAdmin) {
+                    if (hasAdminPermission) {
                         reply += " ·🛠️ admin管理指令：\n" +
                             commandList.filter { it.type == 2 }.joinToString("") { "${commandPrefix}${it.usageCN}　${it.desc}\n" }
                     }

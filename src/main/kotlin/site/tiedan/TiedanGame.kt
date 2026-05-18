@@ -6,7 +6,7 @@ import net.mamoe.mirai.console.command.CommandManager.INSTANCE.register
 import net.mamoe.mirai.console.command.CommandManager.INSTANCE.unregister
 import net.mamoe.mirai.console.command.CommandSender
 import net.mamoe.mirai.console.command.CommandSenderOnMessage
-import net.mamoe.mirai.console.command.isNotConsole
+import net.mamoe.mirai.console.command.isConsole
 import net.mamoe.mirai.console.plugin.jvm.JvmPluginDescription
 import net.mamoe.mirai.console.plugin.jvm.KotlinPlugin
 import net.mamoe.mirai.console.util.ConsoleExperimentalApi
@@ -180,15 +180,93 @@ object TiedanGame : KotlinPlugin(
         return nickname ?: "[获取昵称失败]"
     }
 
+    private val platformNameRegex = Regex("[a-z0-9-]+")
+    private val platformPrefixedIdRegex = Regex("^[a-z0-9-]+_.+")
+
+    private fun normalizedPlatform(platform: String?): String? {
+        val normalized = platform?.trim()?.lowercase()?.takeIf { it.isNotEmpty() } ?: return null
+        return normalized.takeIf { platformNameRegex.matches(it) }
+    }
+
+    private fun platformPrefix(botId: Long?): String? {
+        if (botId == null || botId == BotConfig.BotId) return null
+        return normalizedPlatform(botId.let { PlatformConfig.platforms[it]?.get("platform") })
+    }
+
+    private fun knownPlatformPrefixes(): Set<String> {
+        return PlatformConfig.platforms.values.mapNotNull { normalizedPlatform(it["platform"]) }.toSet()
+    }
+
+    private fun hasKnownPlatformPrefix(id: String): Boolean {
+        return knownPlatformPrefixes().any { id.startsWith("${it}_") }
+    }
+
+    fun permissionId(botId: Long?, userId: Long?): String? {
+        val id = userId?.toString() ?: return null
+        val prefix = platformPrefix(botId) ?: return id
+        return if (id.startsWith("${prefix}_")) id else "${prefix}_$id"
+    }
+
+    fun adminConfigId(sender: CommandSender, id: String): String {
+        val trimmed = id.trim().removePrefix("@")
+        require(trimmed.isNotEmpty()) { "ID不能为空" }
+        if (trimmed == "0") return trimmed
+
+        val currentPrefix = platformPrefix(sender.bot?.id)
+        val knownPrefixes = knownPlatformPrefixes()
+        val inputPrefix = knownPrefixes.firstOrNull { trimmed.startsWith("${it}_") }
+
+        if (currentPrefix == null) {
+            require(inputPrefix == null && !platformPrefixedIdRegex.matches(trimmed)) {
+                "当前账号未配置平台来源，请使用不带平台前缀的ID"
+            }
+            return trimmed
+        }
+
+        if (inputPrefix != null) {
+            require(inputPrefix == currentPrefix) {
+                "平台前缀不匹配，当前账号应使用 ${currentPrefix}_ 前缀"
+            }
+            require(trimmed.removePrefix("${inputPrefix}_").isNotEmpty()) { "平台前缀后的ID不能为空" }
+            return trimmed
+        }
+
+        require(!platformPrefixedIdRegex.matches(trimmed)) {
+            "未知平台前缀，请检查PlatformConfig或使用当前平台的 ${currentPrefix}_ 前缀"
+        }
+        return "${currentPrefix}_$trimmed"
+    }
+
+    fun isMaster(botId: Long?, userId: Long?): Boolean {
+        val id = permissionId(botId, userId) ?: return false
+        return id in BotConfig.master
+    }
+
+    fun isMaster(sender: CommandSender): Boolean = sender.isConsole() || isMaster(sender.bot?.id, sender.user?.id)
+
+    fun isAdmin(botId: Long?, userId: Long?): Boolean {
+        val id = permissionId(botId, userId) ?: return false
+        return "0" in AdminListData.AdminList || id in AdminListData.AdminList || id in BotConfig.master
+    }
+
+    fun isAdmin(sender: CommandSender): Boolean = sender.isConsole() || isAdmin(sender.bot?.id, sender.user?.id)
+
+    fun firstMasterQQ(): Long? = BotConfig.master.firstNotNullOfOrNull {
+        it.takeUnless(::hasKnownPlatformPrefix)?.toLongOrNull()
+    }
+
+    fun masterQQs(): List<Long> = BotConfig.master.mapNotNull {
+        it.takeUnless(::hasKnownPlatformPrefix)?.toLongOrNull()
+    }
+
     fun masterOnly(sender: CommandSender) {
-        if (sender.user?.id != BotConfig.master && sender.isNotConsole()) {
+        if (!isMaster(sender)) {
             throw PermissionDeniedException("Master Only")
         }
     }
 
     fun adminOnly(sender: CommandSender) {
-        if (AdminListData.AdminList.contains(sender.user?.id).not() && AdminListData.AdminList.contains(0).not() &&
-            sender.user?.id != BotConfig.master && sender.isNotConsole()) {
+        if (!isAdmin(sender)) {
             throw PermissionDeniedException("未持有管理员权限")
         }
     }

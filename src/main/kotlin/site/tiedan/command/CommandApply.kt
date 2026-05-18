@@ -3,7 +3,6 @@ package site.tiedan.command
 import net.mamoe.mirai.console.command.CommandManager.INSTANCE.commandPrefix
 import net.mamoe.mirai.console.command.CommandSender
 import net.mamoe.mirai.console.command.RawCommand
-import net.mamoe.mirai.console.command.isConsole
 import net.mamoe.mirai.console.command.isNotConsole
 import net.mamoe.mirai.contact.PermissionDeniedException
 import net.mamoe.mirai.message.data.MessageChain
@@ -11,8 +10,12 @@ import net.mamoe.mirai.message.data.content
 import site.tiedan.TiedanGame
 import site.tiedan.TiedanGame.Command
 import site.tiedan.TiedanGame.adminOnly
+import site.tiedan.TiedanGame.firstMasterQQ
+import site.tiedan.TiedanGame.isAdmin
+import site.tiedan.TiedanGame.isMaster
 import site.tiedan.TiedanGame.logger
 import site.tiedan.TiedanGame.masterOnly
+import site.tiedan.TiedanGame.permissionId
 import site.tiedan.TiedanGame.save
 import site.tiedan.TiedanGame.sendQuoteReply
 import site.tiedan.config.BotConfig
@@ -43,8 +46,8 @@ object CommandApply : RawCommand(
     override suspend fun CommandSender.onCommand(args: MessageChain) {
 
         val qq = user?.id ?: 10000
-        val isAdmin = AdminListData.AdminList.contains(user?.id) || user?.id == BotConfig.master || isConsole()
-        val isMaster = user?.id == BotConfig.master || isConsole()
+        val hasAdminPermission = isAdmin(this)
+        val hasMasterPermission = isMaster(this)
 
         try {
             when (args[0].content) {
@@ -53,11 +56,11 @@ object CommandApply : RawCommand(
                     val reply = buildString {
                         append(" ·📮 apply指令帮助：\n")
                         commandList.filter { it.type == 1 }.forEach { append("${it.desc}\n${commandPrefix}${it.usage}\n") }
-                        if (isAdmin) {
+                        if (hasAdminPermission) {
                             append("\n ·🛠️ admin管理指令：\n")
                             commandList.filter { it.type == 2 }.forEach { append("${it.desc}\n${commandPrefix}${it.usage}\n") }
                         }
-                        if (isMaster) {
+                        if (hasMasterPermission) {
                             append(" ·👑 master管理指令：\n")
                             commandList.filter { it.type == 3 }.forEach { append("${it.desc}\n${commandPrefix}${it.usage}\n") }
                         }
@@ -70,11 +73,11 @@ object CommandApply : RawCommand(
                     val reply = buildString {
                         append(" ·📮 apply指令帮助：\n")
                         commandList.filter { it.type == 1 }.forEach { append("${it.desc}\n${commandPrefix}${it.usageCN}\n") }
-                        if (isAdmin) {
+                        if (hasAdminPermission) {
                             append("\n ·🛠️ admin管理指令：\n")
                             commandList.filter { it.type == 2 }.forEach { append("${it.desc}\n${commandPrefix}${it.usageCN}\n") }
                         }
-                        if (isMaster) {
+                        if (hasMasterPermission) {
                             append(" ·👑 master管理指令：\n")
                             commandList.filter { it.type == 3 }.forEach { append("${it.desc}\n${commandPrefix}${it.usageCN}\n") }
                         }
@@ -118,7 +121,7 @@ object CommandApply : RawCommand(
                             "白名单：$group\n" +
                             "原因：$reason"
                     try {
-                        bot?.getFriendOrFail(BotConfig.master)?.sendMessage(notice)   // 抄送至bot所有者
+                        firstMasterQQ()?.let { bot?.getFriendOrFail(it)?.sendMessage(notice) }   // 抄送至bot所有者
                     } catch (e: Exception) {
                         logger.warning(e)
                     }
@@ -147,7 +150,7 @@ object CommandApply : RawCommand(
                             "申请人QQ：$qq\n" +
                             reason
                     try {
-                        bot?.getFriendOrFail(BotConfig.master)?.sendMessage(notice)   // 抄送至bot所有者
+                        firstMasterQQ()?.let { bot?.getFriendOrFail(it)?.sendMessage(notice) }   // 抄送至bot所有者
                     } catch (e: Exception) {
                         logger.warning(e)
                     }
@@ -215,7 +218,7 @@ object CommandApply : RawCommand(
                                 WhiteListData.WhiteList[BotConfig.BotId] = WhiteListData.WhiteList[BotConfig.BotId]!!.toSortedMap()
                             }
                             "admin"-> {
-                                AdminListData.AdminList.add(handleQQ)
+                                permissionId(bot?.id, handleQQ)?.let { AdminListData.AdminList.add(it) }
                             }
                         }
                     } else if (arrayListOf("refuse","拒绝").contains(option)) {
@@ -236,8 +239,8 @@ object CommandApply : RawCommand(
                                        "备注：$remark"
                         bot?.getFriendOrFail(handleQQ)?.sendMessage(noticeApply)   // 抄送结果至申请人
 
-                        if (qq != BotConfig.master && isNotConsole()) {
-                            reply += "\n\n处理结果已抄送至：${BotConfig.master}"
+                        if (!isMaster(this) && isNotConsole()) {
+                            reply += "\n\n处理结果已抄送至：${firstMasterQQ() ?: "MASTER"}"
                             var notice = "【其他申请处理结果】\n" +
                                         "处理人：$name($qq)\n" +
                                         "申请内容：${type}\n" +
@@ -247,7 +250,7 @@ object CommandApply : RawCommand(
                             }
                             notice += "操作：$option\n" +
                                       "备注：$remark"
-                            bot?.getFriendOrFail(BotConfig.master)?.sendMessage(notice)   // 抄送结果至bot所有者
+                            firstMasterQQ()?.let { bot?.getFriendOrFail(it)?.sendMessage(notice) }   // 抄送结果至bot所有者
                         }
                     } catch (e: Exception) {
                         logger.warning(e)
@@ -304,7 +307,7 @@ object CommandApply : RawCommand(
                         if (type == "admin" || type == "all") {
                             ApplyData.AdminApplication.keys.forEachIndexed { _, key ->
                                 if (option == "同意") {
-                                    AdminListData.AdminList.add(key)
+                                    permissionId(bot?.id, key)?.let { AdminListData.AdminList.add(it) }
                                 }
                                 if (option != "忽略") {
                                     val noticeApply = "【申请处理通知】\n" +

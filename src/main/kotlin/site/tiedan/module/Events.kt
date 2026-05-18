@@ -4,6 +4,7 @@ import jakarta.mail.MessagingException
 import jakarta.mail.Transport
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
+import net.mamoe.mirai.Bot
 import net.mamoe.mirai.console.command.CommandManager
 import net.mamoe.mirai.contact.Friend
 import net.mamoe.mirai.contact.Group
@@ -21,7 +22,11 @@ import net.mamoe.mirai.utils.MiraiExperimentalApi
 import net.mamoe.mirai.utils.MiraiInternalApi
 import net.mamoe.mirai.utils.error
 import net.mamoe.mirai.utils.warning
+import site.tiedan.TiedanGame.firstMasterQQ
+import site.tiedan.TiedanGame.isAdmin
+import site.tiedan.TiedanGame.isMaster
 import site.tiedan.TiedanGame.logger
+import site.tiedan.TiedanGame.masterQQs
 import site.tiedan.TiedanGame.save
 import site.tiedan.command.CommandPoint.savePointChange
 import site.tiedan.config.BotConfig
@@ -87,7 +92,7 @@ object Events : SimpleListenerHost() {
         // 专注模式
         if (BotConfig.focus_enable && ((subject is Group && BotConfig.focus_to != subject.id) ||
             (subject is Friend && bot.getGroup(BotConfig.focus_to)?.getMember(sender.id) == null)) &&
-            AdminListData.AdminList.contains(sender.id).not() && sender.id != BotConfig.master)
+            !isAdmin(bot.id, sender.id))
         {
             intercept()
         }
@@ -113,8 +118,7 @@ object Events : SimpleListenerHost() {
 
         if (whiteListEnabled &&
             (whiteList?.containsKey(group.id) != true) &&
-            sender.id !in AdminListData.AdminList &&
-            sender.id != BotConfig.master
+            !isAdmin(bot.id, sender.id)
         ) {
             intercept()
         }
@@ -146,7 +150,7 @@ object Events : SimpleListenerHost() {
                 "申请消息：$message"
         try {
             appendNoticeLog(notice)
-            bot.getFriend(BotConfig.OwnerId)?.sendMessage(notice)
+            sendOwnerNotice(notice)
         } catch (e: Exception) {
             logger.warning(e)
         }
@@ -167,7 +171,10 @@ object Events : SimpleListenerHost() {
         try {
             if (BotConfig.WhiteList_enable) {
                 notice += if (WhiteListData.WhiteList[BotConfig.BotId]!!.containsKey(groupId)) {
-                    if (BotConfig.SecureMode != 2 || invitorId == BotConfig.master || invitorId == BotConfig.OwnerId) {
+                    if (BotConfig.SecureMode != 2 ||
+                        isMaster(bot.id, invitorId) ||
+                        (bot.id == BotConfig.BotId && invitorId == BotConfig.OwnerId)
+                    ) {
                         this.accept()
                         "\n目标群在白名单中，已自动同意邀请"
                     } else {
@@ -180,7 +187,7 @@ object Events : SimpleListenerHost() {
                 }
             }
             appendNoticeLog(notice)
-            bot.getFriend(BotConfig.OwnerId)?.sendMessage(notice)
+            sendOwnerNotice(notice)
         } catch (e: Exception) {
             logger.warning(e)
         }
@@ -196,7 +203,7 @@ object Events : SimpleListenerHost() {
                     "群名称：${group.name}\n" +
                     "群号：${groupId}"
         try {
-            if (BotConfig.WhiteList_enable && group.getMember(BotConfig.master) == null) {
+            if (BotConfig.WhiteList_enable && masterQQs().none { group.getMember(it) != null }) {
                 notice += if (WhiteListData.WhiteList[BotConfig.BotId]!!.containsKey(groupId)) {
                     "\n目标群在白名单中"
                 } else {
@@ -205,7 +212,7 @@ object Events : SimpleListenerHost() {
                 }
             }
             appendNoticeLog(notice)
-            bot.getFriend(BotConfig.OwnerId)?.sendMessage(notice)
+            sendOwnerNotice(notice)
         } catch (e: Exception) {
             logger.warning(e)
         }
@@ -234,7 +241,7 @@ object Events : SimpleListenerHost() {
             BotConfig.save()
             try {
                 appendNoticeLog(notice)
-                bot.getFriend(BotConfig.OwnerId)?.sendMessage(notice)
+                sendOwnerNotice(notice)
             } catch (e: Exception) {
                 logger.warning(e)
             }
@@ -243,7 +250,7 @@ object Events : SimpleListenerHost() {
 
     @EventHandler(priority = EventPriority.MONITOR)
     internal suspend fun MemberLeaveEvent.masterLeaveGroup() {
-        if (WhiteListData.WhiteList[BotConfig.BotId]!!.containsKey(groupId) && member.id == BotConfig.master) {
+        if (WhiteListData.WhiteList[BotConfig.BotId]!!.containsKey(groupId) && isMaster(bot.id, member.id)) {
             val message = "⚠ 检测到 MASTER 离开本群，出于账号安全考虑，将自动退出本群并移除白名单"
             val notice: String =
                 "【机器人退出白名单群聊】\n" +
@@ -256,7 +263,7 @@ object Events : SimpleListenerHost() {
             BotConfig.save()
             try {
                 appendNoticeLog(notice)
-                bot.getFriend(BotConfig.OwnerId)?.sendMessage(notice)
+                sendOwnerNotice(notice)
                 group.sendMessage(message)
                 group.quit()
             } catch (e: Exception) {
@@ -329,7 +336,7 @@ object Events : SimpleListenerHost() {
 
         launch {
             val mail = buildMailContent(session) {
-                to = MailConfig.offline_mail.ifEmpty { "${BotConfig.master}@qq.com" }
+                to = MailConfig.offline_mail.ifEmpty { "${firstMasterQQ() ?: BotConfig.OwnerId}@qq.com" }
                 title = if (reconnect) "机器人掉线通知" else "机器人下线通知"
                 text {
                     append(bot)
@@ -406,5 +413,9 @@ object Events : SimpleListenerHost() {
             appendLine()
         }
         File(logFile).appendText(logEntry)
+    }
+
+    private suspend fun sendOwnerNotice(message: String) {
+        Bot.getInstanceOrNull(BotConfig.BotId)?.getFriend(BotConfig.OwnerId)?.sendMessage(message)
     }
 }

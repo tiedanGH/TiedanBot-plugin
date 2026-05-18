@@ -3,7 +3,6 @@ package site.tiedan.command
 import net.mamoe.mirai.console.command.CommandManager.INSTANCE.commandPrefix
 import net.mamoe.mirai.console.command.CommandSender
 import net.mamoe.mirai.console.command.RawCommand
-import net.mamoe.mirai.console.command.isConsole
 import net.mamoe.mirai.contact.Group
 import net.mamoe.mirai.contact.PermissionDeniedException
 import net.mamoe.mirai.message.data.MessageChain
@@ -11,11 +10,11 @@ import net.mamoe.mirai.message.data.content
 import site.tiedan.TiedanGame
 import site.tiedan.TiedanGame.Command
 import site.tiedan.TiedanGame.getNickname
+import site.tiedan.TiedanGame.isMaster
 import site.tiedan.TiedanGame.logger
 import site.tiedan.TiedanGame.masterOnly
 import site.tiedan.TiedanGame.save
 import site.tiedan.TiedanGame.sendQuoteReply
-import site.tiedan.config.BotConfig
 import site.tiedan.data.PointData
 
 object CommandPoint : RawCommand(
@@ -53,7 +52,7 @@ object CommandPoint : RawCommand(
                             "\n" +
                             "【请注意】在提款前请务必确保虞姬在线！实际到账积分会受到虞姬月卡等级和每日积分获取限制等影响，单日大量提款会亏损积分，建议提款额为3000以内\n" +
                             "【获取来源】彩虹奇兵、漫漫长夜、开放蜂巢、大海战BOSS战、面包危机、爆金币\n"
-                    if (args.getOrNull(1)?.content == "all" && (user?.id == BotConfig.master || isConsole())) {
+                    if (args.getOrNull(1)?.content == "all" && isMaster(this)) {
                         reply += "\n ·master管理指令：\n" +
                                 commandList.filter { it.type == 2 }.joinToString("") { "${commandPrefix}${it.usage}　${it.desc}\n" }
                     }
@@ -66,7 +65,7 @@ object CommandPoint : RawCommand(
                             "\n" +
                             "【请注意】在提款前请务必确保虞姬在线！实际到账积分会受到虞姬月卡等级和每日积分获取限制等影响，单日大量提款会亏损积分，建议提款额为3000以内\n" +
                             "【获取来源】彩虹奇兵、漫漫长夜、开放蜂巢、大海战BOSS战、面包危机、爆金币\n"
-                    if (args.getOrNull(1)?.content == "all" && (user?.id == BotConfig.master || isConsole())) {
+                    if (args.getOrNull(1)?.content == "all" && isMaster(this)) {
                         reply += "\n ·master管理指令：\n" +
                                 commandList.filter { it.type == 2 }.joinToString("") { "${commandPrefix}${it.usageCN}　${it.desc}\n" }
                     }

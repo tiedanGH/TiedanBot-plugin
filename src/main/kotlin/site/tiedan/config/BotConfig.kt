@@ -7,7 +7,7 @@ import net.mamoe.mirai.console.data.value
 object BotConfig : AutoSavePluginConfig("BotConfig") {
 
     @ValueDescription("MASTER")
-    var master: Long by value(114514L)
+    var master: MutableList<String> by value(mutableListOf("114514", "kook_114514"))
 
     @ValueDescription("Bot的qq号")
     var BotId: Long by value(1919810L)

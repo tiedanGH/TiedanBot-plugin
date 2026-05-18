@@ -10,9 +10,8 @@ import net.mamoe.mirai.contact.Contact
 import net.mamoe.mirai.contact.Member
 import net.mamoe.mirai.message.data.MessageSource.Key.recall
 import site.tiedan.TiedanGame
+import site.tiedan.TiedanGame.isAdmin
 import site.tiedan.TiedanGame.logger
-import site.tiedan.config.BotConfig
-import site.tiedan.data.AdminListData
 import site.tiedan.module.MessageRecorder.from
 import site.tiedan.module.MessageRecorder.quote
 import site.tiedan.module.MessageRecorder.target
@@ -25,7 +24,7 @@ object CommandRecall : SimpleCommand(
 ) {
     @Handler @ConsoleExperimentalApi
     suspend fun CommandSender.handle(contact: Contact? = null) {
-        if (AdminListData.AdminList.contains(user?.id).not() && AdminListData.AdminList.contains(0).not() && user?.id != BotConfig.master && user != null) {
+        if (!isAdmin(this) && user != null) {
             sendMessage("未持有管理员权限")
             return
         }
