@@ -19,6 +19,7 @@ import site.tiedan.TiedanGame.permissionId
 import site.tiedan.TiedanGame.save
 import site.tiedan.TiedanGame.sendQuoteReply
 import site.tiedan.config.BotConfig
+import site.tiedan.config.FunctionConfig
 import site.tiedan.config.MailConfig
 import site.tiedan.data.AdminListData
 import site.tiedan.data.BlackListData
@@ -64,7 +65,7 @@ object CommandAdmin : RawCommand(
             return
         }
 
-        val whiteEnable: String = if (BotConfig.WhiteList_enable) { "已启用" } else { "未启用" }
+        val whiteEnable: String = if (FunctionConfig.WhiteList_enable) { "已启用" } else { "未启用" }
 
         try {
             when (args[0].content) {
@@ -261,18 +262,18 @@ object CommandAdmin : RawCommand(
                     val option = args[1].content
                     when (option) {
                         in enable -> {
-                            BotConfig.WhiteList_enable = true
+                            FunctionConfig.WhiteList_enable = true
                             sendQuoteReply("已启用bot白名单功能")
                         }
                         in disable -> {
-                            BotConfig.WhiteList_enable = false
+                            FunctionConfig.WhiteList_enable = false
                             sendQuoteReply("已关闭bot白名单功能")
                         }
                         else-> {
                             sendQuoteReply("无效配置：请设置 开启/关闭 白名单功能")
                         }
                     }
-                    BotConfig.save()
+                    FunctionConfig.save()
                 }
 
                 "addWhiteList", "addwhitelist", "添加白名单"-> {   // 添加白名单
@@ -332,15 +333,15 @@ object CommandAdmin : RawCommand(
                     masterOnly(this)
                     val option = args[1].content
                     if (option == "disable") {
-                        BotConfig.focus_enable = false
-                        BotConfig.focus_to = 0
-                        BotConfig.save()
+                        FunctionConfig.focus_enable = false
+                        FunctionConfig.focus_to = 0
+                        FunctionConfig.save()
                         sendQuoteReply("***专注模式 [已关闭]***\n已清除专注模式配置")
                     } else {
                         try {
-                            BotConfig.focus_to = option.toLong()
-                            BotConfig.save()
-                            sendQuoteReply("***专注模式 [已启用]***\nbot将专注于群聊 ${BotConfig.focus_to} 进行服务")
+                            FunctionConfig.focus_to = option.toLong()
+                            FunctionConfig.save()
+                            sendQuoteReply("***专注模式 [已启用]***\nbot将专注于群聊 ${FunctionConfig.focus_to} 进行服务")
                         } catch (_: NumberFormatException) {
                             sendQuoteReply("参数转换错误，请检查指令")
                         }

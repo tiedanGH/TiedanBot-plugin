@@ -31,6 +31,7 @@ import site.tiedan.TiedanGame.masterQQs
 import site.tiedan.TiedanGame.save
 import site.tiedan.command.CommandPoint.savePointChange
 import site.tiedan.config.BotConfig
+import site.tiedan.config.FunctionConfig
 import site.tiedan.config.MailConfig
 import site.tiedan.config.PlatformConfig
 import site.tiedan.data.*
@@ -103,8 +104,8 @@ object Events : SimpleListenerHost() {
             intercept()
         }
         // 专注模式
-        if (BotConfig.focus_enable && ((subject is Group && BotConfig.focus_to != subject.id) ||
-            (subject is Friend && bot.getGroup(BotConfig.focus_to)?.getMember(sender.id) == null)) &&
+        if (FunctionConfig.focus_enable && ((subject is Group && FunctionConfig.focus_to != subject.id) ||
+            (subject is Friend && bot.getGroup(FunctionConfig.focus_to)?.getMember(sender.id) == null)) &&
             !isAdmin(bot.id, sender.id))
         {
             intercept()
@@ -113,21 +114,21 @@ object Events : SimpleListenerHost() {
 
     /**
      * 获取当前 bot 的白名单开关
-     * - 默认使用 BotConfig.WhiteList_enable
+     * - 默认使用 FunctionConfig.WhiteList_enable
      * - 如果当前 bot.id 在平台配置中存在，且配置了 whitelist，则使用该值
      */
     fun getWhiteListEnabled(botId: Long): Boolean {
-        val platformConfig = PlatformConfig.platforms[botId] ?: return BotConfig.WhiteList_enable
-        return platformConfig["whitelist"]?.toBooleanStrictOrNull() ?: BotConfig.WhiteList_enable
+        val platformConfig = PlatformConfig.platforms[botId] ?: return FunctionConfig.WhiteList_enable
+        return platformConfig["whitelist"]?.toBooleanStrictOrNull() ?: FunctionConfig.WhiteList_enable
     }
 
     /**
      * 私信白名单是否启用
      * - 仅主账号（[BotConfig.BotId]）生效，多平台账号始终不启用
-     * - 需配置申请群聊（[BotConfig.apply_group] != 0）
+     * - 需配置申请群聊（[FunctionConfig.apply_group] != 0）
      */
     fun isPrivateWhiteListEnabled(botId: Long): Boolean {
-        return botId == BotConfig.BotId && BotConfig.apply_group != 0L
+        return botId == BotConfig.BotId && FunctionConfig.apply_group != 0L
     }
     /**
      * 白名单检测
@@ -204,7 +205,7 @@ object Events : SimpleListenerHost() {
                 "邀请人：$invitorNick\n" +
                 "QQ号：$invitorId"
         try {
-            if (BotConfig.WhiteList_enable) {
+            if (FunctionConfig.WhiteList_enable) {
                 notice += if (WhiteListData.WhiteList[BotConfig.BotId]!!.containsKey(groupId)) {
                     if (BotConfig.SecureMode != 2 ||
                         isMaster(bot.id, invitorId) ||
@@ -238,7 +239,7 @@ object Events : SimpleListenerHost() {
                     "群名称：${group.name}\n" +
                     "群号：${groupId}"
         try {
-            if (BotConfig.WhiteList_enable && masterQQs().none { group.getMember(it) != null }) {
+            if (FunctionConfig.WhiteList_enable && masterQQs().none { group.getMember(it) != null }) {
                 notice += if (WhiteListData.WhiteList[BotConfig.BotId]!!.containsKey(groupId)) {
                     "\n目标群在白名单中"
                 } else {
@@ -313,7 +314,7 @@ object Events : SimpleListenerHost() {
     @EventHandler(priority = EventPriority.MONITOR)
     internal suspend fun MemberLeaveEvent.privateWhiteListLeave() {
         if (!isPrivateWhiteListEnabled(bot.id)) return
-        if (groupId != BotConfig.apply_group) return
+        if (groupId != FunctionConfig.apply_group) return
         val whiteList = WhiteListData.PrivateWhiteList[bot.id] ?: return
         if (whiteList.contains(member.id)) {
             try {

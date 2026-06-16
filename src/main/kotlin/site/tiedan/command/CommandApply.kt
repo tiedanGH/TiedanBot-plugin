@@ -20,6 +20,7 @@ import site.tiedan.TiedanGame.permissionId
 import site.tiedan.TiedanGame.save
 import site.tiedan.TiedanGame.sendQuoteReply
 import site.tiedan.config.BotConfig
+import site.tiedan.config.FunctionConfig
 import site.tiedan.data.AdminListData
 import site.tiedan.data.ApplyData
 import site.tiedan.data.WhiteListData
@@ -89,7 +90,7 @@ object CommandApply : RawCommand(
                 }
 
                 "private", "私信"-> {   // 申请私信白名单（仅可在指定群聊内申请，自动通过无需审核）
-                    if (BotConfig.apply_group == 0L) {
+                    if (FunctionConfig.apply_group == 0L) {
                         sendQuoteReply("私信白名单未启用，无需申请")
                         return
                     }
@@ -98,8 +99,8 @@ object CommandApply : RawCommand(
                         return
                     }
                     val subj = subject
-                    if (subj !is Group || subj.id != BotConfig.apply_group) {
-                        sendQuoteReply("私信白名单目前使用严格的名单管理，仅可在指定群聊内申请，请先加入群聊「${BotConfig.apply_group}」并在群内发送本指令")
+                    if (subj !is Group || subj.id != FunctionConfig.apply_group) {
+                        sendQuoteReply("私信白名单目前使用严格的名单管理，仅可在指定群聊内申请，请先加入群聊「${FunctionConfig.apply_group}」并在群内发送本指令")
                         return
                     }
                     val privateWhiteList = WhiteListData.PrivateWhiteList.getOrPut(bot!!.id) { mutableSetOf() }

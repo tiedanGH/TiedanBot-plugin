@@ -9,6 +9,7 @@ import net.mamoe.mirai.message.data.MessageChain
 import net.mamoe.mirai.message.data.PlainText
 import net.mamoe.mirai.message.data.messageChainOf
 import site.tiedan.TiedanGame
+import site.tiedan.config.FunctionConfig
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
 import kotlin.random.Random
@@ -22,6 +23,7 @@ object Commandkx : RawCommand(
     prefixOptional = true){
 
     override suspend fun CommandSender.onCommand(args: MessageChain) {
+        if (!FunctionConfig.kanxi_enable) return
         val formatted = LocalDateTime.now().format(DateTimeFormatter.ofPattern("HH:mm:ss"))
         val kxReply = mutableListOf(
             "还在看戏，还不赶紧加入！",

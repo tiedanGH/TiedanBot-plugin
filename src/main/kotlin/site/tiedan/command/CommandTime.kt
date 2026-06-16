@@ -14,6 +14,7 @@ import site.tiedan.TiedanGame.Command
 import site.tiedan.TiedanGame.logger
 import site.tiedan.TiedanGame.sendQuoteReply
 import site.tiedan.config.BotConfig
+import site.tiedan.config.FunctionConfig
 import java.time.ZoneId
 import java.time.ZonedDateTime
 import java.time.format.DateTimeFormatter
@@ -37,6 +38,7 @@ object CommandTime : RawCommand(
     private var THREAD : Int = 0
 
     override suspend fun CommandSender.onCommand(args: MessageChain) {
+        if (!FunctionConfig.timer_enable) return
 
         try {
             when (args[0].content) {

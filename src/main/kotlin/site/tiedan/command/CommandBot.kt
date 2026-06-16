@@ -90,7 +90,7 @@ object CommandBot : RawCommand(
                 }
 
                 "info", "stats", "信息", "统计"-> {   // 查看bot信息
-//                    val whiteEnable: String = if (BotConfig.WhiteList_enable) {"已启用"} else {"未启用"}
+//                    val whiteEnable: String = if (FunctionConfig.WhiteList_enable) {"已启用"} else {"未启用"}
 //                    val limit: String =
 //                        if (BotInfoData.todayFriendImageNum < BotConfig.dailyLimit * 0.85) {
 //                            "未达"

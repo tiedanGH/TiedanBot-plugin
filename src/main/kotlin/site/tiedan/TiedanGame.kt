@@ -27,6 +27,7 @@ import net.mamoe.mirai.utils.info
 import net.mamoe.mirai.utils.warning
 import site.tiedan.command.*
 import site.tiedan.config.BotConfig
+import site.tiedan.config.FunctionConfig
 import site.tiedan.config.MailConfig
 import site.tiedan.config.PlatformConfig
 import site.tiedan.data.*
@@ -62,11 +63,15 @@ object TiedanGame : KotlinPlugin(
         regCommand()
         startTimer()
         BotInfoData.startTime = System.currentTimeMillis()
-        if (BotConfig.apply_group == 0L) {
+
+        if (FunctionConfig.apply_group == 0L) {
             logger.warning { "未配置申请群聊，私信白名单功能未启用" }
         } else {
-            logger.info { "私信白名单功能已启用，申请群聊：${BotConfig.apply_group}" }
+            logger.info { "私信白名单功能已启用，申请群聊：${FunctionConfig.apply_group}" }
         }
+        if (!FunctionConfig.timer_enable) logger.warning { "计时器指令未启用" }
+        if (!FunctionConfig.kanxi_enable) logger.warning { "看戏指令未启用" }
+
         logger.info { "TiedanGame Plugin loaded!" }
     }
 
@@ -84,6 +89,7 @@ object TiedanGame : KotlinPlugin(
 
     fun rdConfig() {
         BotConfig.reload()
+        FunctionConfig.reload()
         MailConfig.reload()
         PlatformConfig.reload()
     }
@@ -130,7 +136,7 @@ object TiedanGame : KotlinPlugin(
         Timer().schedule(dailyUpdate, updateDate, periodDay)
         logger.info { "已启用定时任务，每日0点自动更新统计数据" }
         // bot自动签到
-        if (BotConfig.auto_sign) {
+        if (FunctionConfig.auto_sign) {
             launch {
                 var success = true
                 while (true) {
