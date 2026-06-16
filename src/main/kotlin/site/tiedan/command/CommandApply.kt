@@ -4,6 +4,7 @@ import net.mamoe.mirai.console.command.CommandManager.INSTANCE.commandPrefix
 import net.mamoe.mirai.console.command.CommandSender
 import net.mamoe.mirai.console.command.RawCommand
 import net.mamoe.mirai.console.command.isNotConsole
+import net.mamoe.mirai.contact.Group
 import net.mamoe.mirai.contact.PermissionDeniedException
 import net.mamoe.mirai.message.data.MessageChain
 import net.mamoe.mirai.message.data.content
@@ -31,6 +32,7 @@ object CommandApply : RawCommand(
     usage = "${commandPrefix}apply help"
 ){
     private val commandList = listOf(
+        Command("apply private", "申请 私信", "✉️ 申请私信白名单", 1),
         Command("apply white <group> <reason>", "申请 白名单 <群号> <原因>", "📌 申请群聊白名单", 1),
         Command("apply admin <reason>", "申请 管理员 <原因>", "🔑 申请管理员权限", 1),
         Command("apply cancel", "申请 取消", "❎ 取消个人申请", 1),
@@ -84,6 +86,29 @@ object CommandApply : RawCommand(
                         append("\n🔸<原因>-申请原因")
                     }
                     sendQuoteReply(reply)
+                }
+
+                "private", "私信"-> {   // 申请私信白名单（仅可在指定群聊内申请，自动通过无需审核）
+                    if (BotConfig.apply_group == 0L) {
+                        sendQuoteReply("私信白名单未启用，无需申请")
+                        return
+                    }
+                    if (bot?.id != BotConfig.BotId) {
+                        sendQuoteReply("当前bot无需申请私信白名单")
+                        return
+                    }
+                    val subj = subject
+                    if (subj !is Group || subj.id != BotConfig.apply_group) {
+                        sendQuoteReply("私信白名单目前使用严格的名单管理，仅可在指定群聊内申请，请先加入群聊「${BotConfig.apply_group}」并在群内发送本指令")
+                        return
+                    }
+                    val privateWhiteList = WhiteListData.PrivateWhiteList.getOrPut(bot!!.id) { mutableSetOf() }
+                    if (privateWhiteList.add(qq)) {
+                        WhiteListData.save()
+                        sendQuoteReply("申请成功！已将您（$qq）加入私信白名单")
+                    } else {
+                        sendQuoteReply("您已在私信白名单中，无需重复申请")
+                    }
                 }
 
                 "white", "白名单"-> {   // 申请群聊白名单

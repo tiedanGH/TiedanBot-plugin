@@ -10,4 +10,7 @@ internal object WhiteListData : AutoSavePluginData("WhiteListData") {
     @ValueDescription("白名单列表")
     var WhiteList: MutableMap<Long, MutableMap<Long, String>> by value(mutableMapOf(10000L to mutableMapOf(1919810L to "no_desc")))
 
+    @ValueDescription("私信白名单列表")
+    var PrivateWhiteList: MutableMap<Long, MutableSet<Long>> by value(mutableMapOf())
+
 }

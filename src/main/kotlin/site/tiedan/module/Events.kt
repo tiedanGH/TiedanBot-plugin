@@ -20,6 +20,7 @@ import net.mamoe.mirai.message.data.Image
 import net.mamoe.mirai.message.data.content
 import net.mamoe.mirai.utils.MiraiExperimentalApi
 import net.mamoe.mirai.utils.MiraiInternalApi
+import net.mamoe.mirai.utils.debug
 import net.mamoe.mirai.utils.error
 import net.mamoe.mirai.utils.warning
 import site.tiedan.TiedanGame.firstMasterQQ
@@ -68,6 +69,18 @@ object Events : SimpleListenerHost() {
     internal fun UserMessagePreSendEvent.check() {
         if (BotConfig.SecureMode > 0 && bot.containsFriend(target.id).not()) cancel()
     }
+    /**
+     * 拦截机器人向非私信白名单用户主动发送私信
+     */
+    @EventHandler(priority = EventPriority.HIGH)
+    internal fun UserMessagePreSendEvent.privateWhiteListCheck() {
+        if (!isPrivateWhiteListEnabled(bot.id)) return
+        if (isAdmin(bot.id, target.id)) return
+        if (WhiteListData.PrivateWhiteList[bot.id]?.contains(target.id) != true) {
+            logger.debug { "[私信白名单] 取消向非白名单用户发送私信：${target.id}" }
+            cancel()
+        }
+    }
     @EventHandler(priority = EventPriority.HIGH)
     internal fun GroupMessagePreSendEvent.check() {
         val botId = bot.id
@@ -107,6 +120,15 @@ object Events : SimpleListenerHost() {
         val platformConfig = PlatformConfig.platforms[botId] ?: return BotConfig.WhiteList_enable
         return platformConfig["whitelist"]?.toBooleanStrictOrNull() ?: BotConfig.WhiteList_enable
     }
+
+    /**
+     * 私信白名单是否启用
+     * - 仅主账号（[BotConfig.BotId]）生效，多平台账号始终不启用
+     * - 需配置申请群聊（[BotConfig.apply_group] != 0）
+     */
+    fun isPrivateWhiteListEnabled(botId: Long): Boolean {
+        return botId == BotConfig.BotId && BotConfig.apply_group != 0L
+    }
     /**
      * 白名单检测
      */
@@ -132,6 +154,19 @@ object Events : SimpleListenerHost() {
         val whiteList = WhiteListData.WhiteList[botId] ?: WhiteListData.WhiteList[BotConfig.BotId]
 
         if (whiteListEnabled && (whiteList?.containsKey(target.id) != true)) {
+            intercept()
+        }
+    }
+
+    /**
+     * 私信白名单检测
+     */
+    @EventHandler(priority = EventPriority.HIGH)
+    internal fun FriendMessageEvent.privateWhiteListCheck() {
+        if (!isPrivateWhiteListEnabled(bot.id)) return
+        if (isAdmin(bot.id, sender.id)) return
+        if (WhiteListData.PrivateWhiteList[bot.id]?.contains(sender.id) != true) {
+            logger.debug { "[私信白名单] 拦截非白名单用户的私信请求：${sender.id}" }
             intercept()
         }
     }
@@ -269,6 +304,25 @@ object Events : SimpleListenerHost() {
             } catch (e: Exception) {
                 logger.warning(e)
             }
+        }
+    }
+
+    /**
+     * 用户退出私信白名单申请群聊时，自动移除私信白名单并私信通知
+     */
+    @EventHandler(priority = EventPriority.MONITOR)
+    internal suspend fun MemberLeaveEvent.privateWhiteListLeave() {
+        if (!isPrivateWhiteListEnabled(bot.id)) return
+        if (groupId != BotConfig.apply_group) return
+        val whiteList = WhiteListData.PrivateWhiteList[bot.id] ?: return
+        if (whiteList.contains(member.id)) {
+            try {
+                bot.getFriend(member.id)?.sendMessage("【提醒】您已退出私信白名单申请群聊（$groupId），为保证名单可控，私信白名单权限已被自动移除")
+            } catch (e: Exception) {
+                logger.warning(e)
+            }
+            whiteList.remove(member.id)
+            WhiteListData.save()
         }
     }
 

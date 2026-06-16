@@ -24,6 +24,7 @@ import net.mamoe.mirai.message.data.buildMessageChain
 import net.mamoe.mirai.utils.ExternalResource.Companion.DEFAULT_FORMAT_NAME
 import net.mamoe.mirai.utils.ExternalResource.Companion.toExternalResource
 import net.mamoe.mirai.utils.info
+import net.mamoe.mirai.utils.warning
 import site.tiedan.command.*
 import site.tiedan.config.BotConfig
 import site.tiedan.config.MailConfig
@@ -61,6 +62,11 @@ object TiedanGame : KotlinPlugin(
         regCommand()
         startTimer()
         BotInfoData.startTime = System.currentTimeMillis()
+        if (BotConfig.apply_group == 0L) {
+            logger.warning { "未配置申请群聊，私信白名单功能未启用" }
+        } else {
+            logger.info { "私信白名单功能已启用，申请群聊：${BotConfig.apply_group}" }
+        }
         logger.info { "TiedanGame Plugin loaded!" }
     }
 
@@ -94,6 +100,9 @@ object TiedanGame : KotlinPlugin(
 
         if (WhiteListData.WhiteList.contains(BotConfig.BotId).not()) {
             WhiteListData.WhiteList.put(BotConfig.BotId, mutableMapOf())
+        }
+        if (WhiteListData.PrivateWhiteList.contains(BotConfig.BotId).not()) {
+            WhiteListData.PrivateWhiteList.put(BotConfig.BotId, mutableSetOf())
         }
     }
 

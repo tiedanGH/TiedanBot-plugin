@@ -39,6 +39,9 @@ object BotConfig : AutoSavePluginConfig("BotConfig") {
     @ValueDescription("启用自动签到")
     var auto_sign: Boolean by value(false)
 
+    @ValueDescription("私信白名单申请群聊（默认不启用私信白名单功能，多平台账号始终不启用）")
+    var apply_group: Long by value(0L)
+
 //    @ValueDescription("设置每日图片上限检测标准")
 //    var dailyLimit: Int by value(2000)
 

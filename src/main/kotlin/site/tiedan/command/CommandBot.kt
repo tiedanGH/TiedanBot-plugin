@@ -10,6 +10,8 @@ import site.tiedan.TiedanGame
 import site.tiedan.TiedanGame.logger
 import site.tiedan.TiedanGame.sendQuoteReply
 import site.tiedan.data.BotInfoData
+import site.tiedan.data.WhiteListData
+import site.tiedan.module.Events
 
 object CommandBot : RawCommand(
     owner = TiedanGame,
@@ -101,11 +103,16 @@ object CommandBot : RawCommand(
                     val days = seconds / (24 * 3600)
                     val hours = (seconds % (24 * 3600)) / 3600
                     val minutes = (seconds % 3600) / 60
+                    val botId = bot?.id
+                    val privateWhiteListInfo = if (botId != null && Events.isPrivateWhiteListEnabled(botId)) {
+                        "私信白名单：${WhiteListData.PrivateWhiteList[botId]?.size ?: 0}\n"
+                    } else ""
                     val reply = "运行时间：${days}天${hours}小时${minutes}分钟\n" +
 //                                "Plugin version：v${TiedanGame.version}\n" +
 //                                "白名单功能：$whiteEnable\n" +
                                 "群聊数量：${bot?.groups?.size}\n" +
                                 "好友数量：${bot?.friends?.size}\n" +
+                                privateWhiteListInfo +
                                 "  ·消息数据统计\n" +
                                 "总计发送消息：${BotInfoData.totalMsgNum}\n" +
                                 "总计发送图片：${BotInfoData.totalImageNum}\n" +
