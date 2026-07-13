@@ -26,7 +26,7 @@ import java.util.concurrent.TimeUnit
  * ### 此部分不再使用，已迁移至 [imgloc-uploader](https://github.com/tiedanGH/imgloc-uploader)
  */
 @Deprecated("此部分不再使用，已迁移")
-object CommandUpload : RawCommand(
+object CommandUploadOldBak : RawCommand(
     owner = TiedanGame,
     primaryName = "upload",
     secondaryNames = arrayOf("上传", "图床"),

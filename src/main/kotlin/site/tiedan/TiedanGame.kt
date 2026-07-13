@@ -30,6 +30,7 @@ import site.tiedan.config.BotConfig
 import site.tiedan.config.FunctionConfig
 import site.tiedan.config.MailConfig
 import site.tiedan.config.PlatformConfig
+import site.tiedan.config.ServerUploadConfig
 import site.tiedan.data.*
 import site.tiedan.module.Events
 import site.tiedan.module.MessageRecorder
@@ -85,11 +86,13 @@ object TiedanGame : KotlinPlugin(
         CommandRank.unregister()
         Commandkx.unregister()
         CommandScreenshot.unregister()
+        CommandServerUpload.unregister()
     }
 
     fun rdConfig() {
         BotConfig.reload()
         FunctionConfig.reload()
+        ServerUploadConfig.reload()
         MailConfig.reload()
         PlatformConfig.reload()
     }
@@ -127,6 +130,7 @@ object TiedanGame : KotlinPlugin(
         CommandRank.register()
         Commandkx.register()
         CommandScreenshot.register()
+        CommandServerUpload.register()
     }
 
     private fun startTimer() {
