@@ -38,6 +38,8 @@ object CommandBot : RawCommand(
 //                                "${commandPrefix}bot mcmod    MC百科查询帮助\n" +
 //                                "${commandPrefix}抽卡    原神抽卡插件菜单\n" +
                             "\n" +
+                            "📢 开游戏通知相关指令\n" +
+                            "${commandPrefix}notify help\n" +
                             "⏱️ 计时器指令帮助\n" +
                             "${commandPrefix}time help\n" +
                             "🎮 游戏积分相关指令\n" +
@@ -70,6 +72,8 @@ object CommandBot : RawCommand(
 //                            "${commandPrefix}b MC    MC百科查询帮助\n" +
 //                            "${commandPrefix}抽卡    原神抽卡插件菜单\n" +
                             "\n" +
+                            "📢 开游戏通知指令\n" +
+                            "${commandPrefix}通知 帮助\n" +
                             "⏱️ 计时器指令帮助\n" +
                             "${commandPrefix}时间 帮助\n" +
                             "🎮 游戏积分相关指令\n" +

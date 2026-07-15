@@ -27,4 +27,7 @@ object FunctionConfig : AutoSavePluginConfig("FunctionConfig") {
     @ValueDescription("启用看戏指令")
     var kanxi_enable: Boolean by value(true)
 
+    @ValueDescription("启用开游戏通知功能")
+    var notify_enable: Boolean by value(true)
+
 }

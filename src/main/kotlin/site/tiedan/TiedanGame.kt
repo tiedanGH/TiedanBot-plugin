@@ -72,6 +72,7 @@ object TiedanGame : KotlinPlugin(
         }
         if (!FunctionConfig.timer_enable) logger.warning { "计时器指令未启用" }
         if (!FunctionConfig.kanxi_enable) logger.warning { "看戏指令未启用" }
+        if (!FunctionConfig.notify_enable) logger.warning { "开游戏通知功能未启用" }
 
         logger.info { "TiedanGame Plugin loaded!" }
     }
@@ -87,6 +88,7 @@ object TiedanGame : KotlinPlugin(
         Commandkx.unregister()
         CommandScreenshot.unregister()
         CommandServerUpload.unregister()
+        CommandNotify.unregister()
     }
 
     fun rdConfig() {
@@ -106,6 +108,7 @@ object TiedanGame : KotlinPlugin(
         PointData.reload()
         BlackListData.reload()
         RankData.reload()
+        NotifyData.reload()
 
         if (WhiteListData.WhiteList.contains(BotConfig.BotId).not()) {
             WhiteListData.WhiteList.put(BotConfig.BotId, mutableMapOf())
@@ -131,6 +134,7 @@ object TiedanGame : KotlinPlugin(
         Commandkx.register()
         CommandScreenshot.register()
         CommandServerUpload.register()
+        CommandNotify.register()
     }
 
     private fun startTimer() {

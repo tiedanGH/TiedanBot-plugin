@@ -21,7 +21,7 @@ object BotConfig : AutoSavePluginConfig("BotConfig") {
     @ValueDescription("增强安全模式（0关闭1启用2最高级）")
     var SecureMode: Int by value(2)
 
-    @ValueDescription("时区")
+    @ValueDescription("铁蛋时区")
     var TimeZone : MutableList<String> by value(mutableListOf("Asia/Shanghai", "北京"))
 
     @ValueDescription("记录消息上限")
