@@ -35,7 +35,7 @@ object CommandNotify : RawCommand(
         Command("n mine", "通知 我的", "👤 查看自己的登记信息", 1),
         Command("n add/del <标签...>", "通知 添加/删除 <标签...>", "✏ 登记/删除标签（可批量）", 1),
         Command("n on/off", "通知 开启/关闭", "🔔 个人通知开关", 1),
-        Command("n time <时间段>", "通知 时间 <时间段>", "⏰ 设置接收通知时间段\n（如8-16、16-2）", 1),
+        Command("n time <时间段> [星期 时间段 星期...]", "通知 时间 <时间段> [星期 时间段 星期...]", "⏰ 设置接收通知时间表\n（如8-20 或 9-21 1-5 14-2 6,7）", 1),
         Command("n tag <标签>", "通知 查看 <标签>", "🔍 查看标签信息", 1),
         Command("n stats", "通知 统计", "📊 查看功能统计数据", 1),
 
@@ -47,6 +47,8 @@ object CommandNotify : RawCommand(
     private const val MAX_DAILY_CALL = 10
     private const val MAX_AT_COUNT = 20
     private val timeRangeRegex = Regex("^(\\d{1,2})-(\\d{1,2})$")
+    private val weekRangeRegex = Regex("^([1-7])(?:-([1-7]))?$")
+    private val weekNames = listOf("一", "二", "三", "四", "五", "六", "日")
 
     override suspend fun CommandSender.onCommand(args: MessageChain) {
 
@@ -91,7 +93,7 @@ object CommandNotify : RawCommand(
 
                 "list", "标签"-> {   // 查看全部可用标签（按登记玩家数量排序，支持关键字搜索）
                     if (NotifyData.tags.isEmpty()) {
-                        sendQuoteReply("标签库中暂无标签")
+                        sendQuoteReply("ℹ 标签库中暂无标签")
                         return
                     }
                     val sortedTags = NotifyData.tags
@@ -99,13 +101,13 @@ object CommandNotify : RawCommand(
                         .sortedByDescending { it.second }
                     val keyword = args.getOrNull(1)?.content?.trim()
                     if (keyword.isNullOrEmpty()) {
-                        sendQuoteReply("·可用标签（${sortedTags.size}个）：\n${formatTagLines(sortedTags)}")
+                        sendQuoteReply("·🏷️ 可用标签（${sortedTags.size}个）：\n${formatTagLines(sortedTags)}")
                     } else {
                         val matched = sortedTags.filter { it.first.contains(keyword, ignoreCase = true) }
                         if (matched.isEmpty()) {
-                            sendQuoteReply("未找到包含「$keyword」的标签")
+                            sendQuoteReply("❌ 未找到包含「$keyword」的标签")
                         } else {
-                            sendQuoteReply("·搜索标签结果（${matched.size}个）：\n${formatTagLines(matched)}")
+                            sendQuoteReply("·🏷️ 搜索标签结果（${matched.size}个）：\n${formatTagLines(matched)}")
                         }
                     }
                 }
@@ -113,7 +115,7 @@ object CommandNotify : RawCommand(
                 "mine", "我的"-> {   // 查看自己的登记信息
                     val player = NotifyData.players[qq]
                     if (player == null) {
-                        sendQuoteReply("您还没有任何登记信息，请使用「${commandPrefix}n add <标签...>」登记标签")
+                        sendQuoteReply("ℹ 您还没有任何登记信息，请使用「${commandPrefix}n add <标签...>」登记标签")
                         return
                     }
                     resetDailyCount()
@@ -175,52 +177,107 @@ object CommandNotify : RawCommand(
                 "on", "开启"-> {   // 开启个人通知
                     NotifyData.players.getOrPut(qq) { NotifyPlayer() }.enable = true
                     NotifyData.save()
-                    sendQuoteReply("已开启个人游戏通知")
+                    sendQuoteReply("🟢 已开启个人通知")
                 }
 
                 "off", "关闭"-> {   // 关闭个人通知
                     NotifyData.players.getOrPut(qq) { NotifyPlayer() }.enable = false
                     NotifyData.save()
-                    sendQuoteReply("已关闭个人游戏通知，您将不会被检索和@")
+                    sendQuoteReply("🔴 已关闭个人通知，您将不会被检索和@")
                 }
 
-                "time", "时间"-> {   // 设置接收通知时间段
-                    val range = args[1].content
-                    val match = timeRangeRegex.find(range)
-                    if (match == null) {
-                        sendQuoteReply("[格式错误] 时间段格式为 <开始小时>-<结束小时>（0-23的整数），例如 8-16 或跨天的 16-2")
+                "time", "时间"-> {   // 设置接收通知时间表（单时间段=全周生效；多组「时间段 星期」按天分别设置）
+                    val parts = args.drop(1).map { it.content.trim().replace("，", ",") }.filter { it.isNotEmpty() }   // 全角逗号统一转为英文逗号
+                    val usageHint = "例如 8-20（全周生效），或 9-21 1-5 14-2 6,7（周一至周五9-21、周六日14-2，星期必须完整覆盖一周且不能重复）"
+                    if (parts.isEmpty() || (parts.size > 1 && parts.size % 2 != 0)) {
+                        sendQuoteReply("[格式错误] 时间段格式为 <开始>-<结束>（0-23的整数），多段用逗号分隔；$usageHint")
                         return
                     }
-                    val start = match.groupValues[1].toInt()
-                    val end = match.groupValues[2].toInt()
-                    if (start > 23 || end > 23) {
-                        sendQuoteReply("[范围错误] 小时数仅支持 0-23")
+                    // 全周模式：仅一个时间段参数
+                    if (parts.size == 1) {
+                        val timeValue = parseTimeSpec(parts[0])
+                        if (timeValue == null) {
+                            sendQuoteReply("[格式错误] 无效的时间段「${parts[0]}」，格式为 <开始>-<结束>（0-23的整数），多段用逗号分隔。$usageHint")
+                            return
+                        }
+                        val player = NotifyData.players.getOrPut(qq) { NotifyPlayer() }
+                        player.time = timeValue
+                        player.week = ""
+                        NotifyData.save()
+                        val lastSegment = timeValue.substringAfterLast(",").split("-")
+                        val hasCrossDay = lastSegment[0].toInt() > lastSegment[1].toInt()
+                        sendQuoteReply("已设置接收通知时间段：$timeValue" + if (hasCrossDay) "（跨天）" else "")
                         return
                     }
-                    NotifyData.players.getOrPut(qq) { NotifyPlayer() }.time = "$start-$end"
+                    // 分天模式：按（时间段, 星期）交替解析
+                    val dayCount = IntArray(7)
+                    val dayTime = arrayOfNulls<String>(7)   // 每天（0=周一）对应的规范化时间串
+                    for (i in parts.indices step 2) {
+                        val timeSpec = parseTimeSpec(parts[i])
+                        if (timeSpec == null) {
+                            sendQuoteReply("[格式错误] 无效的时间段「${parts[i]}」，格式为 <开始>-<结束>（0-23的整数），多段用逗号分隔。$usageHint")
+                            return
+                        }
+                        val days = parseWeekSpec(parts[i + 1])
+                        if (days == null) {
+                            sendQuoteReply("[格式错误] 无效的星期「${parts[i + 1]}」，仅支持1-7（周一至周日），如 1-5、6,7。$usageHint")
+                            return
+                        }
+                        days.forEach { d ->
+                            dayCount[d]++
+                            dayTime[d] = timeSpec
+                        }
+                    }
+                    // 完整性校验：每天必须且只能被设置一次
+                    val duplicated = (0..6).filter { dayCount[it] > 1 }
+                    if (duplicated.isNotEmpty()) {
+                        sendQuoteReply("[时间表无效] 以下星期被重复设置：${duplicated.joinToString("、") { "周${weekNames[it]}" }}")
+                        return
+                    }
+                    val missing = (0..6).filter { dayCount[it] == 0 }
+                    if (missing.isNotEmpty()) {
+                        sendQuoteReply("[时间表无效] 以下星期未设置时间段：${missing.joinToString("、") { "周${weekNames[it]}" }}")
+                        return
+                    }
+                    // 归一化：相同时间的天合并为一组；仅剩一组（全周同一时间）时塌缩为全周模式
+                    val player = NotifyData.players.getOrPut(qq) { NotifyPlayer() }
+                    val groups = (0..6).groupBy { dayTime[it]!! }
+                    if (groups.size == 1) {
+                        player.time = groups.keys.first()
+                        player.week = ""
+                    } else {
+                        val ordered = groups.entries.sortedBy { entry -> entry.value.min() }
+                        player.time = ordered.joinToString(" ") { it.key }
+                        player.week = ordered.joinToString(" ") { entry ->
+                            val weekCovered = BooleanArray(7)
+                            entry.value.forEach { weekCovered[it] = true }
+                            mergeCoveredHours(weekCovered).sortedWith(compareBy({ it.first > it.second }, { it.first }))
+                                .joinToString(",") { (s, e) -> if (s == e) "${s + 1}" else "${s + 1}-${e + 1}" }
+                        }
+                    }
                     NotifyData.save()
-                    sendQuoteReply("已设置接收通知时间段：$start-$end" + if (start > end) "（跨天）" else "")
+                    sendQuoteReply("✅ 已更新接收时间表：${formatSchedule(player)}")
                 }
 
                 "tag", "查看"-> {   // 查看标签信息与登记玩家
                     val tag = args[1].content
                     if (tag !in NotifyData.tags) {
-                        sendQuoteReply("标签「$tag」不存在${fuzzyMatchLine(listOf(tag))}\n请使用「${commandPrefix}n list」查看可用标签")
+                        sendQuoteReply("❓ 标签「$tag」不存在${fuzzyMatchLine(listOf(tag))}\n请使用「${commandPrefix}n list」查看可用标签")
                         return
                     }
                     val registered = NotifyData.players.filter { (_, player) -> player.tags.contains(tag) }.keys
                     val group = subject as? Group
                     val reply = buildString {
-                        append("·标签「$tag」信息：\n")
+                        append("·🏷️ 标签「$tag」\n")
                         if (group != null) {
                             val members = registered.filter { group.getMember(it) != null }
                             append("登记人数：${registered.size}（本群${members.size}人）\n")
-                            append("累计召集次数：${NotifyData.tagCallCount[tag] ?: 0}\n")
-                            append("本群登记玩家：\n")
+                            append("标签召集次数：${NotifyData.tagCallCount[tag] ?: 0}\n")
+                            append("🙋 本群登记玩家：\n")
                             append(members.joinToString("、") { getNickname(this@onCommand, it) }.ifEmpty { "无" })
                         } else {
                             append("登记人数：${registered.size}\n")
-                            append("累计召集次数：${NotifyData.tagCallCount[tag] ?: 0}\n")
+                            append("标签召集次数：${NotifyData.tagCallCount[tag] ?: 0}\n")
                             append("（玩家名单预览仅群聊中可见）")
                         }
                     }
@@ -244,7 +301,7 @@ object CommandNotify : RawCommand(
                         append("人均登记标签：${"%.1f".format(avg)}\n")
                         append("·🔝 标签召集次数排行：")
                         if (ranking.isEmpty()) {
-                            append("\n暂无召集记录")
+                            append("\n（暂无召集记录）")
                         } else {
                             ranking.forEachIndexed { index, (tag, count) ->
                                 append("\n${index + 1}. $tag　${count}次")
@@ -257,7 +314,7 @@ object CommandNotify : RawCommand(
                 "call", "召集"-> {   // 召集标签下的玩家
                     val group = subject as? Group
                     if (group == null) {
-                        sendQuoteReply("此指令只能在群聊中执行")
+                        sendQuoteReply("❌ 此指令只能在群聊中执行")
                         return
                     }
                     val tag = args[1].content
@@ -272,11 +329,12 @@ object CommandNotify : RawCommand(
                         return
                     }
                     val hour = LocalTime.now().hour
+                    val dayOfWeek = LocalDate.now().dayOfWeek.value
                     val candidates = NotifyData.players.filter { (id, player) ->
                         id != qq &&
                         player.enable &&
                         player.tags.contains(tag) &&
-                        inTimeRange(player.time, hour) &&
+                        inSchedule(player, hour, dayOfWeek) &&
                         group.getMember(id) != null
                     }.keys.toList()
                     if (candidates.isEmpty()) {
@@ -319,7 +377,7 @@ object CommandNotify : RawCommand(
                     }
                     NotifyData.save()
                     val reply = buildString {
-                        append("·标签库添加结果：")
+                        append("·🗄 标签库添加结果：")
                         if (added.isNotEmpty()) append("\n✅ 添加成功：${added.joinToString(" ")}")
                         if (exist.isNotEmpty()) append("\n⚠️ 已存在：${exist.joinToString(" ")}")
                     }
@@ -346,7 +404,7 @@ object CommandNotify : RawCommand(
                     }
                     NotifyData.save()
                     val reply = buildString {
-                        append("·标签库删除结果：")
+                        append("·🗄 标签库删除结果：")
                         if (removed.isNotEmpty()) append("\n✅ 删除成功（已同步移除玩家登记）：${removed.joinToString(" ")}")
                         if (notFound.isNotEmpty()) append("\n⚠️ 不存在：${notFound.joinToString(" ")}")
                     }
@@ -358,7 +416,7 @@ object CommandNotify : RawCommand(
                     val id = args[1].content.replace("@", "").toLong()
                     val player = NotifyData.players[id]
                     if (player == null) {
-                        sendQuoteReply("用户 $id 没有任何登记信息")
+                        sendQuoteReply("❌ 用户 $id 没有任何登记信息")
                         return
                     }
                     resetDailyCount()
@@ -412,8 +470,9 @@ object CommandNotify : RawCommand(
      */
     private fun buildPlayerInfo(who: String, player: NotifyPlayer): String {
         return "·${who}的登记信息：\n" +
-                "通知开关：${if (player.enable) "🟢开启" else "🔴关闭"}\n" +
-                "接收时间段：${player.time}\n" +
+                "通知开关：${if (player.enable) "🟢 开启" else "🔴 关闭"}\n" +
+                "🕒 接收时间表：${formatSchedule(player)}\n" +
+                "\n" +
                 "今日已用召集：${player.callCount} / $MAX_DAILY_CALL\n" +
                 "累计发起召集：${player.totalCall}\n" +
                 "累计被通知：${player.notified}\n" +
@@ -434,12 +493,132 @@ object CommandNotify : RawCommand(
     }
 
     /**
-     * 判断当前小时是否在玩家设置的时间段内（支持跨天）
+     * 将环形覆盖表重建为最简区间列表（重叠区间自动合并，适用于24小时制与星期7天制）
+     */
+    private fun mergeCoveredHours(covered: BooleanArray): List<Pair<Int, Int>> {
+        val size = covered.size
+        if (covered.all { it }) return listOf(0 to size - 1)
+        val offset = covered.indexOfFirst { !it }   // 从未覆盖位置开始环形扫描，保证跨界区间完整
+        val result = mutableListOf<Pair<Int, Int>>()
+        var runStart = -1
+        for (k in 0 until size) {
+            val h = (offset + k) % size
+            if (covered[h]) {
+                if (runStart == -1) runStart = h
+            } else if (runStart != -1) {
+                result.add(runStart to (h + size - 1) % size)
+                runStart = -1
+            }
+        }
+        if (runStart != -1) result.add(runStart to (offset + size - 1) % size)
+        return result
+    }
+
+    /**
+     * 解析单组时间段串（逗号分隔多段，支持跨天），返回合并排序后的规范化串；格式无效返回null
+     */
+    private fun parseTimeSpec(spec: String): String? {
+        val segments = spec.split(",").map { it.trim() }.filter { it.isNotEmpty() }
+        if (segments.isEmpty()) return null
+        val covered = BooleanArray(24)
+        for (segment in segments) {
+            val (start, end) = timeRangeRegex.find(segment)?.destructured
+                ?.let { (s, e) -> s.toInt() to e.toInt() } ?: (-1 to -1)
+            if (start !in 0..23 || end !in 0..23) return null
+            var h = start
+            while (true) {
+                covered[h] = true
+                if (h == end) break
+                h = (h + 1) % 24
+            }
+        }
+        return mergeCoveredHours(covered).sortedWith(compareBy({ it.first > it.second }, { it.first }))
+            .joinToString(",") { (start, end) -> "$start-$end" }
+    }
+
+    /**
+     * 解析单组星期串（如 1-5、6,7，支持跨周6-2），返回0基的天集合；格式无效返回null
+     */
+    private fun parseWeekSpec(spec: String): Set<Int>? {
+        val segments = spec.split(",").map { it.trim() }.filter { it.isNotEmpty() }
+        if (segments.isEmpty()) return null
+        val days = mutableSetOf<Int>()
+        for (segment in segments) {
+            val match = weekRangeRegex.find(segment) ?: return null
+            val start = match.groupValues[1].toInt() - 1
+            val end = match.groupValues[2].ifEmpty { match.groupValues[1] }.toInt() - 1
+            var d = start
+            while (true) {
+                days.add(d)
+                if (d == end) break
+                d = (d + 1) % 7
+            }
+        }
+        return days
+    }
+
+    /**
+     * 按玩家时间表判断当前时刻是否可接收通知：
+     * - week为空：全周使用time判断
+     * - 分天模式：找到包含今天的星期组，用对应时间组判断；无匹配组则不通知
+     */
+    private fun inSchedule(player: NotifyPlayer, hour: Int, day: Int): Boolean {
+        if (player.week.isEmpty()) return inTimeRange(player.time, hour)
+        val timeGroups = player.time.split(" ")
+        val weekGroups = player.week.split(" ")
+        weekGroups.forEachIndexed { index, week ->
+            if (inWeekRange(week, day)) {
+                return inTimeRange(timeGroups.getOrNull(index) ?: return false, hour)
+            }
+        }
+        return false
+    }
+
+    /**
+     * 格式化玩家时间表显示：全周模式直接显示时间段，分天模式逐组显示「时间（星期）」
+     */
+    private fun formatSchedule(player: NotifyPlayer): String {
+        if (player.week.isEmpty()) return player.time
+        val timeGroups = player.time.split(" ")
+        val weekGroups = player.week.split(" ")
+        return timeGroups.zip(weekGroups).joinToString("\n", prefix = "\n") { (time, week) -> "$time（${formatWeek(week)}）" }
+    }
+
+    /**
+     * 判断当前小时是否在玩家设置的时间段内（支持逗号分隔多段与跨天）
      */
     private fun inTimeRange(range: String, hour: Int): Boolean {
-        val match = timeRangeRegex.find(range) ?: return true   // 格式异常时视为全天
-        val start = match.groupValues[1].toInt()
-        val end = match.groupValues[2].toInt()
-        return if (start <= end) hour in start..end else hour >= start || hour <= end
+        val matches = range.split(",").mapNotNull { timeRangeRegex.find(it.trim()) }
+        if (matches.isEmpty()) return true   // 格式异常时视为全天
+        return matches.any { match ->
+            val start = match.groupValues[1].toInt()
+            val end = match.groupValues[2].toInt()
+            if (start <= end) hour in start..end else hour >= start || hour <= end
+        }
+    }
+
+    /**
+     * 判断某天是否在星期组内（空值视为整周，支持跨周如6-2）
+     */
+    private fun inWeekRange(week: String, day: Int): Boolean {
+        if (week.isEmpty()) return true
+        val matches = week.split(",").mapNotNull { weekRangeRegex.find(it.trim()) }
+        if (matches.isEmpty()) return true   // 格式异常时视为整周
+        return matches.any { match ->
+            val start = match.groupValues[1].toInt()
+            val end = match.groupValues[2].ifEmpty { match.groupValues[1] }.toInt()
+            if (start <= end) day in start..end else day >= start || day <= end
+        }
+    }
+
+    /**
+     * 将星期存储值格式化为中文显示（如 1-5,7 → 周一至周五、周日）
+     */
+    private fun formatWeek(week: String): String {
+        return week.split(",").joinToString("、") { segment ->
+            val days = segment.split("-")
+            if (days.size == 2) "周${weekNames[days[0].toInt() - 1]}至周${weekNames[days[1].toInt() - 1]}"
+            else "周${weekNames[segment.toInt() - 1]}"
+        }
     }
 }

@@ -12,8 +12,10 @@ import net.mamoe.mirai.console.data.value
 data class NotifyPlayer(
     /** 是否开启通知（关闭后不被检索和@） */
     var enable: Boolean = true,
-    /** 可用时间段（支持跨天如16-3） */
-    var time: String = "0-23",
+    /** 可用时间段（支持跨天如16-3；分天模式下为空格分隔的多组，与week分组一一对应） */
+    var time: String = "9-22",
+    /** 每周通知范围（空值代表整周使用time；分天模式下为空格分隔的多组星期，如"1-5 6-7"） */
+    var week: String = "",
     /** 登记的标签 */
     val tags: MutableSet<String> = mutableSetOf(),
     /** 今日已用召集次数 */
