@@ -46,6 +46,10 @@ object CommandNotify : RawCommand(
 
     private const val MAX_DAILY_CALL = 10
     private const val MAX_AT_COUNT = 20
+    private const val USER_CALL_COOLDOWN = 300_000L    // 用户召集冷却（跨群生效）
+    private const val GROUP_CALL_COOLDOWN = 120_000L   // 群聊召集冷却
+    private val userLastCall = mutableMapOf<Long, Long>()   // 召集冷却记录
+    private val groupLastCall = mutableMapOf<Long, Long>()
     private val timeRangeRegex = Regex("^(\\d{1,2})-(\\d{1,2})$")
     private val weekRangeRegex = Regex("^([1-7])(?:-([1-7]))?$")
     private val weekNames = listOf("一", "二", "三", "四", "五", "六", "日")
@@ -188,9 +192,9 @@ object CommandNotify : RawCommand(
 
                 "time", "时间"-> {   // 设置接收通知时间表（单时间段=全周生效；多组「时间段 星期」按天分别设置）
                     val parts = args.drop(1).map { it.content.trim().replace("，", ",") }.filter { it.isNotEmpty() }   // 全角逗号统一转为英文逗号
-                    val usageHint = "例如 8-20（全周生效），或 9-21 1-5 14-2 6,7（周一至周五9-21、周六日14-2，星期必须完整覆盖一周且不能重复）"
+                    val usageHint = "\n例如：8-20（全周生效），或 9-21 1-5 14-2 6,7（周一至周五9-21、周六日14-2，星期不能重复）"
                     if (parts.isEmpty() || (parts.size > 1 && parts.size % 2 != 0)) {
-                        sendQuoteReply("[格式错误] 时间段格式为 <开始>-<结束>（0-23的整数），多段用逗号分隔；$usageHint")
+                        sendQuoteReply("[格式错误] 时间段格式为 <开始>-<结束>（0-23的整数），多段用逗号分隔。$usageHint")
                         return
                     }
                     // 全周模式：仅一个时间段参数
@@ -228,32 +232,23 @@ object CommandNotify : RawCommand(
                             dayTime[d] = timeSpec
                         }
                     }
-                    // 完整性校验：每天必须且只能被设置一次
+                    // 校验：星期不能重复设置（允许缺失，未设置禁用通知）
                     val duplicated = (0..6).filter { dayCount[it] > 1 }
                     if (duplicated.isNotEmpty()) {
                         sendQuoteReply("[时间表无效] 以下星期被重复设置：${duplicated.joinToString("、") { "周${weekNames[it]}" }}")
                         return
                     }
-                    val missing = (0..6).filter { dayCount[it] == 0 }
-                    if (missing.isNotEmpty()) {
-                        sendQuoteReply("[时间表无效] 以下星期未设置时间段：${missing.joinToString("、") { "周${weekNames[it]}" }}")
-                        return
-                    }
-                    // 归一化：相同时间的天合并为一组；仅剩一组（全周同一时间）时塌缩为全周模式
+                    // 归一化：相同时间的天合并为一组；唯一一组且覆盖全周时塌缩为全周模式
                     val player = NotifyData.players.getOrPut(qq) { NotifyPlayer() }
-                    val groups = (0..6).groupBy { dayTime[it]!! }
-                    if (groups.size == 1) {
+                    val coveredDays = (0..6).filter { dayTime[it] != null }
+                    val groups = coveredDays.groupBy { dayTime[it]!! }
+                    if (groups.size == 1 && coveredDays.size == 7) {
                         player.time = groups.keys.first()
                         player.week = ""
                     } else {
                         val ordered = groups.entries.sortedBy { entry -> entry.value.min() }
                         player.time = ordered.joinToString(" ") { it.key }
-                        player.week = ordered.joinToString(" ") { entry ->
-                            val weekCovered = BooleanArray(7)
-                            entry.value.forEach { weekCovered[it] = true }
-                            mergeCoveredHours(weekCovered).sortedWith(compareBy({ it.first > it.second }, { it.first }))
-                                .joinToString(",") { (s, e) -> if (s == e) "${s + 1}" else "${s + 1}-${e + 1}" }
-                        }
+                        player.week = ordered.joinToString(" ") { daysToWeekSpec(it.value) }
                     }
                     NotifyData.save()
                     sendQuoteReply("✅ 已更新接收时间表：${formatSchedule(player)}")
@@ -322,6 +317,18 @@ object CommandNotify : RawCommand(
                         sendQuoteReply("[召集失败] 标签「$tag」不存在${fuzzyMatchLine(listOf(tag))}\n请使用「${commandPrefix}n list」查看可用标签")
                         return
                     }
+                    // 冷却检查
+                    val now = System.currentTimeMillis()
+                    val userRemain = ((userLastCall[qq] ?: 0L) + USER_CALL_COOLDOWN - now + 999) / 1000
+                    if (userRemain > 0) {
+                        sendQuoteReply("[冷却中] 短期内不能连续召集，请在 $userRemain 秒后再试")
+                        return
+                    }
+                    val groupRemain = ((groupLastCall[group.id] ?: 0L) + GROUP_CALL_COOLDOWN - now + 999) / 1000
+                    if (groupRemain > 0) {
+                        sendQuoteReply("[冷却中] 本群召集冷却中，请在 $groupRemain 秒后再试")
+                        return
+                    }
                     resetDailyCount()
                     val caller = NotifyData.players.getOrPut(qq) { NotifyPlayer() }
                     if (caller.callCount >= MAX_DAILY_CALL) {
@@ -341,7 +348,9 @@ object CommandNotify : RawCommand(
                         sendQuoteReply("[召集失败] 「$tag」当前没有可通知的玩家，可能不在群内/未开启通知/不在接收时间段内")
                         return
                     }
-                    caller.callCount++   // 召集成功才计入次数
+                    caller.callCount++   // 召集成功才计入次数并计入冷却
+                    userLastCall[qq] = now
+                    groupLastCall[group.id] = now
                     caller.totalCall++
                     NotifyData.totalCallCount++
                     NotifyData.tagCallCount[tag] = (NotifyData.tagCallCount[tag] ?: 0) + 1
@@ -581,7 +590,23 @@ object CommandNotify : RawCommand(
         if (player.week.isEmpty()) return player.time
         val timeGroups = player.time.split(" ")
         val weekGroups = player.week.split(" ")
-        return timeGroups.zip(weekGroups).joinToString("\n", prefix = "\n") { (time, week) -> "$time（${formatWeek(week)}）" }
+        val result = timeGroups.zip(weekGroups).joinToString("\n", prefix = "\n") { (time, week) -> "$time（${formatWeek(week)}）" }
+        // 未被任何星期组覆盖的天为禁用
+        val covered = BooleanArray(7)
+        weekGroups.forEach { spec -> parseWeekSpec(spec)?.forEach { covered[it] = true } }
+        val disabled = (0..6).filter { !covered[it] }
+        return if (disabled.isEmpty()) result
+               else "$result\n禁用（${formatWeek(daysToWeekSpec(disabled))}）"
+    }
+
+    /**
+     * 将0基天集合转为规范星期串（如 [0,1,2,3,4] → "1-5"）
+     */
+    private fun daysToWeekSpec(days: Collection<Int>): String {
+        val covered = BooleanArray(7)
+        days.forEach { covered[it] = true }
+        return mergeCoveredHours(covered).sortedWith(compareBy({ it.first > it.second }, { it.first }))
+            .joinToString(",") { (s, e) -> if (s == e) "${s + 1}" else "${s + 1}-${e + 1}" }
     }
 
     /**
