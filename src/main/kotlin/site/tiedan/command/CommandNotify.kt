@@ -29,7 +29,7 @@ object CommandNotify : RawCommand(
     usage = "${commandPrefix}n help"
 ){
     private val commandList = listOf(
-        Command("n call <标签>", "通知 召集 <标签>", "📢 召集标签下的玩家（每日${MAX_DAILY_CALL}次）", 2),
+        Command("n call <标签> [通知]", "通知 召集 <标签> [通知]", "📢 召集标签下的玩家（每日${MAX_DAILY_CALL}次）", 2),
 
         Command("n list [关键字]", "通知 标签 [关键字]", "🏷️ 查看全可用标签", 1),
         Command("n mine", "通知 我的", "👤 查看自己的登记信息", 1),
@@ -358,8 +358,11 @@ object CommandNotify : RawCommand(
                     val targets = if (candidates.size > MAX_AT_COUNT) candidates.shuffled().take(MAX_AT_COUNT) else candidates
                     targets.forEach { id -> NotifyData.players[id]?.let { it.notified++ } }   // 累计被通知次数
                     NotifyData.save()
+                    // 通知补充文本（限100字符，超出截断为省略号）
+                    val text = args.drop(2).joinToString(" ") { it.content }.trim()
+                    val notice = if (text.length > 100) text.take(100) + "..." else text
                     val message = buildMessageChain {
-                        +PlainText("【开游戏通知】\n$name 召集「$tag」玩家：\n\n")
+                        +PlainText(if (notice.isEmpty()) "$name：「$tag」\n\n" else "$name：\n「$tag」：$notice\n\n")
                         targets.forEach {
                             +At(it)
                             +PlainText(" ")
