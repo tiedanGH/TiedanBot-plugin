@@ -210,7 +210,7 @@ object CommandNotify : RawCommand(
                         NotifyData.save()
                         val lastSegment = timeValue.substringAfterLast(",").split("-")
                         val hasCrossDay = lastSegment[0].toInt() > lastSegment[1].toInt()
-                        sendQuoteReply("已设置接收通知时间段：$timeValue" + if (hasCrossDay) "（跨天）" else "")
+                        sendQuoteReply("已设置接收通知时间段：${formatTime(timeValue)}" + if (hasCrossDay) "（跨天）" else "")
                         return
                     }
                     // 分天模式：按（时间段, 星期）交替解析
@@ -590,10 +590,10 @@ object CommandNotify : RawCommand(
      * 格式化玩家时间表显示：全周模式直接显示时间段，分天模式逐组显示「时间（星期）」
      */
     private fun formatSchedule(player: NotifyPlayer): String {
-        if (player.week.isEmpty()) return player.time
+        if (player.week.isEmpty()) return formatTime(player.time)
         val timeGroups = player.time.split(" ")
         val weekGroups = player.week.split(" ")
-        val result = timeGroups.zip(weekGroups).joinToString("\n", prefix = "\n") { (time, week) -> "$time（${formatWeek(week)}）" }
+        val result = timeGroups.zip(weekGroups).joinToString("\n", prefix = "\n") { (time, week) -> "${formatTime(time)}（${formatWeek(week)}）" }
         // 未被任何星期组覆盖的天为禁用
         val covered = BooleanArray(7)
         weekGroups.forEach { spec -> parseWeekSpec(spec)?.forEach { covered[it] = true } }
@@ -601,6 +601,11 @@ object CommandNotify : RawCommand(
         return if (disabled.isEmpty()) result
                else "$result\n禁用（${formatWeek(daysToWeekSpec(disabled))}）"
     }
+
+    /**
+     * 时间段显示：0-23（含多段自动合并为全天）显示为"全天"
+     */
+    private fun formatTime(time: String): String = if (time == "0-23") "全天" else time
 
     /**
      * 将0基天集合转为规范星期串（如 [0,1,2,3,4] → "1-5"）
