@@ -44,4 +44,7 @@ internal object NotifyData : AutoSavePluginData("NotifyData") {
     @ValueDescription("标签召集次数")
     var tagCallCount: MutableMap<String, Int> by value()
 
+    @ValueDescription("标签别名（别名 → 真实标签名）")
+    var tagAlias: MutableMap<String, String> by value()
+
 }

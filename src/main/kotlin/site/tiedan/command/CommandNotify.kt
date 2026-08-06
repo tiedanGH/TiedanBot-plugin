@@ -41,6 +41,8 @@ object CommandNotify : RawCommand(
 
         Command("n addtag <标签...>", "通知 添加标签 <标签...>", "🏷️ 添加标签至标签库", 3),
         Command("n deltag <标签...>", "通知 删除标签 <标签...>", "🗑️ 从标签库删除标签", 3),
+        Command("n addalias <标签> <别名...>", "通知 添加别名 <标签> <别名...>", "🔗 为标签添加别名（可批量）", 3),
+        Command("n delalias <别名...>", "通知 删除别名 <别名...>", "✂ 删除标签别名（可批量）", 3),
         Command("n user <QQ>", "通知 查询 <QQ>", "🔍 查询指定用户信息", 3),
     )
 
@@ -107,7 +109,11 @@ object CommandNotify : RawCommand(
                     if (keyword.isNullOrEmpty()) {
                         sendQuoteReply("·🏷️ 可用标签（${sortedTags.size}个）：\n${formatTagLines(sortedTags)}")
                     } else {
-                        val matched = sortedTags.filter { it.first.contains(keyword, ignoreCase = true) }
+                        // 标签名或其别名包含关键字均视为匹配
+                        val matched = sortedTags.filter { (tag, _) ->
+                            tag.contains(keyword, ignoreCase = true) ||
+                            aliasOf(tag).any { it.contains(keyword, ignoreCase = true) }
+                        }
                         if (matched.isEmpty()) {
                             sendQuoteReply("❌ 未找到包含「$keyword」的标签")
                         } else {
@@ -126,7 +132,7 @@ object CommandNotify : RawCommand(
                     sendQuoteReply(buildPlayerInfo("您", player))
                 }
 
-                "add", "添加"-> {   // 登记标签（可批量）
+                "add", "添加"-> {   // 登记标签（可批量，支持别名）
                     val inputTags = parseTags(args)
                     if (inputTags.isEmpty()) {
                         sendQuoteReply("[参数不足] 请提供至少一个标签，多个标签用空格分隔")
@@ -136,9 +142,10 @@ object CommandNotify : RawCommand(
                     val added = mutableListOf<String>()
                     val exist = mutableListOf<String>()
                     val invalid = mutableListOf<String>()
-                    for (tag in inputTags) {
+                    for (input in inputTags) {
+                        val tag = resolveTag(input)   // 别名转换为真实标签名
                         when {
-                            tag !in NotifyData.tags -> invalid.add(tag)
+                            tag == null -> invalid.add(input)
                             !player.tags.add(tag) -> exist.add(tag)
                             else -> added.add(tag)
                         }
@@ -157,7 +164,7 @@ object CommandNotify : RawCommand(
                     sendQuoteReply(reply)
                 }
 
-                "del", "删除"-> {   // 删除登记标签（可批量）
+                "del", "删除"-> {   // 删除登记标签（可批量，支持别名）
                     val inputTags = parseTags(args)
                     if (inputTags.isEmpty()) {
                         sendQuoteReply("[参数不足] 请提供至少一个标签，多个标签用空格分隔")
@@ -166,7 +173,8 @@ object CommandNotify : RawCommand(
                     val player = NotifyData.players[qq]
                     val removed = mutableListOf<String>()
                     val notFound = mutableListOf<String>()
-                    for (tag in inputTags) {
+                    for (input in inputTags) {
+                        val tag = resolveTag(input) ?: input   // 别名转换为真实标签名；无法解析时按原样处理
                         if (player?.tags?.remove(tag) == true) removed.add(tag) else notFound.add(tag)
                     }
                     NotifyData.save()
@@ -254,16 +262,19 @@ object CommandNotify : RawCommand(
                     sendQuoteReply("✅ 已更新接收时间表：${formatSchedule(player)}")
                 }
 
-                "tag", "查看"-> {   // 查看标签信息与登记玩家
-                    val tag = args[1].content
-                    if (tag !in NotifyData.tags) {
-                        sendQuoteReply("❓ 标签「$tag」不存在${fuzzyMatchLine(listOf(tag))}\n请使用「${commandPrefix}n list」查看可用标签")
+                "tag", "查看"-> {   // 查看标签信息与登记玩家（支持别名）
+                    val input = args[1].content
+                    val tag = resolveTag(input)
+                    if (tag == null) {
+                        sendQuoteReply("❓ 标签「$input」不存在${fuzzyMatchLine(listOf(input))}\n请使用「${commandPrefix}n list」查看可用标签")
                         return
                     }
                     val registered = NotifyData.players.filter { (_, player) -> player.tags.contains(tag) }.keys
+                    val alias = aliasOf(tag)
                     val group = subject as? Group
                     val reply = buildString {
                         append("·🏷️ 标签「$tag」\n")
+                        if (alias.isNotEmpty()) append("别名：${alias.joinToString(" ")}\n")
                         if (group != null) {
                             val members = registered.filter { group.getMember(it) != null }
                             append("登记人数：${registered.size}（本群${members.size}人）\n")
@@ -312,9 +323,10 @@ object CommandNotify : RawCommand(
                         sendQuoteReply("❌ 此指令只能在群聊中执行")
                         return
                     }
-                    val tag = args[1].content
-                    if (tag !in NotifyData.tags) {
-                        sendQuoteReply("[召集失败] 标签「$tag」不存在${fuzzyMatchLine(listOf(tag))}\n请使用「${commandPrefix}n list」查看可用标签")
+                    val input = args[1].content
+                    val tag = resolveTag(input)
+                    if (tag == null) {
+                        sendQuoteReply("[召集失败] 标签「$input」不存在${fuzzyMatchLine(listOf(input))}\n请使用「${commandPrefix}n list」查看可用标签")
                         return
                     }
                     // 冷却检查
@@ -409,6 +421,7 @@ object CommandNotify : RawCommand(
                         if (NotifyData.tags.remove(tag)) {
                             NotifyData.players.values.forEach { it.tags.remove(tag) }   // 级联移除玩家已登记的该标签
                             NotifyData.tagCallCount.remove(tag)
+                            NotifyData.tagAlias.values.removeAll { it == tag }   // 级联移除该标签的别名
                             removed.add(tag)
                         } else {
                             notFound.add(tag)
@@ -419,6 +432,61 @@ object CommandNotify : RawCommand(
                         append("·🗄 标签库删除结果：")
                         if (removed.isNotEmpty()) append("\n✅ 删除成功（已同步移除玩家登记）：${removed.joinToString(" ")}")
                         if (notFound.isNotEmpty()) append("\n⚠️ 不存在：${notFound.joinToString(" ")}")
+                    }
+                    sendQuoteReply(reply)
+                }
+
+                "addalias", "添加别名"-> {   // 为标签添加别名（可批量）
+                    adminOnly(this)
+                    val tag = resolveTag(args[1].content)
+                    if (tag == null) {
+                        sendQuoteReply("❓ 标签「${args[1].content}」不存在${fuzzyMatchLine(listOf(args[1].content))}\n请使用「${commandPrefix}n list」查看可用标签")
+                        return
+                    }
+                    val inputAlias = args.drop(2).map { it.content.trim() }.filter { it.isNotEmpty() }.distinct()
+                    if (inputAlias.isEmpty()) {
+                        sendQuoteReply("[参数不足] 请提供至少一个别名，多个别名用空格分隔")
+                        return
+                    }
+                    val added = mutableListOf<String>()
+                    val conflict = mutableListOf<String>()
+                    for (alias in inputAlias) {
+                        when {
+                            alias in NotifyData.tags -> conflict.add("$alias（已是标签）")
+                            NotifyData.tagAlias.containsKey(alias) -> conflict.add("$alias（已指向${NotifyData.tagAlias[alias]}）")
+                            else -> {
+                                NotifyData.tagAlias[alias] = tag
+                                added.add(alias)
+                            }
+                        }
+                    }
+                    NotifyData.save()
+                    val reply = buildString {
+                        append("·🔗 标签「$tag」别名添加结果：")
+                        if (added.isNotEmpty()) append("\n✅ 添加成功：${added.joinToString(" ")}")
+                        if (conflict.isNotEmpty()) append("\n⚠️ 无法添加：${conflict.joinToString(" ")}")
+                    }
+                    sendQuoteReply(reply)
+                }
+
+                "delalias", "删除别名"-> {   // 删除标签别名（可批量）
+                    adminOnly(this)
+                    val inputAlias = parseTags(args)
+                    if (inputAlias.isEmpty()) {
+                        sendQuoteReply("[参数不足] 请提供至少一个别名，多个别名用空格分隔")
+                        return
+                    }
+                    val removed = mutableListOf<String>()
+                    val notFound = mutableListOf<String>()
+                    for (alias in inputAlias) {
+                        val tag = NotifyData.tagAlias.remove(alias)
+                        if (tag != null) removed.add("$alias→$tag") else notFound.add(alias)
+                    }
+                    NotifyData.save()
+                    val reply = buildString {
+                        append("·✂ 别名删除结果：")
+                        if (removed.isNotEmpty()) append("\n✅ 删除成功：${removed.joinToString(" ")}")
+                        if (notFound.isNotEmpty()) append("\n⚠️ 别名不存在：${notFound.joinToString(" ")}")
                     }
                     sendQuoteReply(reply)
                 }
@@ -459,11 +527,27 @@ object CommandNotify : RawCommand(
     }
 
     /**
-     * 在标签库中模糊搜索关键词（结果汇总去重），生成🔍模糊匹配提示行；无匹配时返回空字符串
+     * 将输入解析为真实标签名：标签库中存在则原样返回，否则尝试按别名转换；均无匹配返回null
+     */
+    private fun resolveTag(input: String): String? {
+        if (input in NotifyData.tags) return input
+        return NotifyData.tagAlias[input]?.takeIf { it in NotifyData.tags }
+    }
+
+    /**
+     * 获取指定标签的全部别名
+     */
+    private fun aliasOf(tag: String): List<String> {
+        return NotifyData.tagAlias.filterValues { it == tag }.keys.toList()
+    }
+
+    /**
+     * 在标签库和别名中模糊搜索关键词（结果转换为真实标签名后汇总去重），生成🔍模糊匹配提示行；无匹配时返回空字符串
      */
     private fun fuzzyMatchLine(keywords: List<String>): String {
         val matched = keywords.flatMap { keyword ->
-            NotifyData.tags.filter { it.contains(keyword, ignoreCase = true) }
+            NotifyData.tags.filter { it.contains(keyword, ignoreCase = true) } +
+            NotifyData.tagAlias.filterKeys { it.contains(keyword, ignoreCase = true) }.values.filter { it in NotifyData.tags }
         }.distinct()
         return if (matched.isEmpty()) "" else "\n🔍 模糊匹配结果：${matched.joinToString(" ")}"
     }
