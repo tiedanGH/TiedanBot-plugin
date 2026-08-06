@@ -14,6 +14,7 @@ import site.tiedan.TiedanGame.Command
 import site.tiedan.TiedanGame.logger
 import site.tiedan.TiedanGame.masterOnly
 import site.tiedan.TiedanGame.sendQuoteReply
+import site.tiedan.config.FunctionConfig
 import site.tiedan.config.ServerUploadConfig
 import java.io.File
 import java.net.HttpURLConnection
@@ -33,6 +34,7 @@ object CommandServerUpload : RawCommand(
     )
 
     override suspend fun CommandSender.onCommand(args: MessageChain) {
+        if (!FunctionConfig.server_upload_enable) return
 
         try {
             masterOnly(this)

@@ -30,4 +30,7 @@ object FunctionConfig : AutoSavePluginConfig("FunctionConfig") {
     @ValueDescription("启用开游戏通知功能")
     var notify_enable: Boolean by value(true)
 
+    @ValueDescription("启用服务器上传指令")
+    var server_upload_enable: Boolean by value(false)
+
 }

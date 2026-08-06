@@ -73,6 +73,7 @@ object TiedanGame : KotlinPlugin(
         if (!FunctionConfig.timer_enable) logger.warning { "计时器指令未启用" }
         if (!FunctionConfig.kanxi_enable) logger.warning { "看戏指令未启用" }
         if (!FunctionConfig.notify_enable) logger.warning { "开游戏通知功能未启用" }
+        if (!FunctionConfig.server_upload_enable) logger.warning { "服务器上传指令未启用" }
 
         logger.info { "TiedanGame Plugin loaded!" }
     }
