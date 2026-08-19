@@ -65,10 +65,11 @@ object TiedanGame : KotlinPlugin(
         startTimer()
         BotInfoData.startTime = System.currentTimeMillis()
 
-        if (FunctionConfig.apply_group == 0L) {
+        val applyGroups = FunctionConfig.apply_group.filterValues { it != 0L }
+        if (applyGroups.isEmpty()) {
             logger.warning { "未配置申请群聊，私信白名单功能未启用" }
         } else {
-            logger.info { "私信白名单功能已启用，申请群聊：${FunctionConfig.apply_group}" }
+            logger.info { "私信白名单功能已启用，申请群聊：${applyGroups.entries.joinToString("，") { "${it.key}→${it.value}" }}" }
         }
         if (!FunctionConfig.timer_enable) logger.warning { "计时器指令未启用" }
         if (!FunctionConfig.kanxi_enable) logger.warning { "看戏指令未启用" }
@@ -114,8 +115,8 @@ object TiedanGame : KotlinPlugin(
         if (WhiteListData.WhiteList.contains(BotConfig.BotId).not()) {
             WhiteListData.WhiteList.put(BotConfig.BotId, mutableMapOf())
         }
-        if (WhiteListData.PrivateWhiteList.contains(BotConfig.BotId).not()) {
-            WhiteListData.PrivateWhiteList.put(BotConfig.BotId, mutableSetOf())
+        for (botId in FunctionConfig.apply_group.filterValues { it != 0L }.keys) {
+            WhiteListData.PrivateWhiteList.getOrPut(botId) { mutableSetOf() }
         }
     }
 

@@ -123,12 +123,18 @@ object Events : SimpleListenerHost() {
     }
 
     /**
+     * 获取指定bot绑定的申请群号（[FunctionConfig.apply_group]），未绑定时返回null
+     */
+    fun applyGroup(botId: Long): Long? {
+        return FunctionConfig.apply_group[botId]?.takeIf { it != 0L }
+    }
+
+    /**
      * 私信白名单是否启用
-     * - 仅主账号（[BotConfig.BotId]）生效，多平台账号始终不启用
-     * - 需配置申请群聊（[FunctionConfig.apply_group] != 0）
+     * - 每个bot绑定各自的申请群，未绑定申请群的bot不启用私信白名单功能
      */
     fun isPrivateWhiteListEnabled(botId: Long): Boolean {
-        return botId == BotConfig.BotId && FunctionConfig.apply_group != 0L
+        return applyGroup(botId) != null
     }
     /**
      * 白名单检测
@@ -313,8 +319,7 @@ object Events : SimpleListenerHost() {
      */
     @EventHandler(priority = EventPriority.MONITOR)
     internal suspend fun MemberLeaveEvent.privateWhiteListLeave() {
-        if (!isPrivateWhiteListEnabled(bot.id)) return
-        if (groupId != FunctionConfig.apply_group) return
+        if (groupId != applyGroup(bot.id)) return
         val whiteList = WhiteListData.PrivateWhiteList[bot.id] ?: return
         if (whiteList.contains(member.id)) {
             try {

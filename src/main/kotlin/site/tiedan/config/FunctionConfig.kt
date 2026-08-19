@@ -9,8 +9,8 @@ object FunctionConfig : AutoSavePluginConfig("FunctionConfig") {
     @ValueDescription("启用白名单功能")
     var WhiteList_enable: Boolean by value(false)
 
-    @ValueDescription("私信白名单申请群聊（默认不启用私信白名单功能，多平台账号始终不启用）")
-    var apply_group: Long by value(0L)
+    @ValueDescription("私信白名单申请群聊（bot号绑定申请群号，未配置的bot不启用私信白名单功能）")
+    var apply_group: MutableMap<Long, Long> by value(mutableMapOf())
 
     @ValueDescription("启用专注功能")
     var focus_enable: Boolean by value(false)

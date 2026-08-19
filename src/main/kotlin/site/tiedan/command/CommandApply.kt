@@ -89,21 +89,19 @@ object CommandApply : RawCommand(
                     sendQuoteReply(reply)
                 }
 
-                "private", "私信"-> {   // 申请私信白名单（仅可在指定群聊内申请，自动通过无需审核）
-                    if (FunctionConfig.apply_group == 0L) {
-                        sendQuoteReply("私信白名单未启用，无需申请")
-                        return
-                    }
-                    if (bot?.id != BotConfig.BotId) {
+                "private", "私信"-> {   // 申请私信白名单（仅可在bot绑定的申请群内申请，自动通过无需审核）
+                    val botId = bot?.id
+                    val applyGroup = botId?.let { FunctionConfig.apply_group[it] }?.takeIf { it != 0L }
+                    if (applyGroup == null) {
                         sendQuoteReply("当前bot无需申请私信白名单")
                         return
                     }
                     val subj = subject
-                    if (subj !is Group || subj.id != FunctionConfig.apply_group) {
-                        sendQuoteReply("私信白名单目前使用严格的名单管理，仅可在指定群聊内申请，请先加入群聊「${FunctionConfig.apply_group}」并在群内发送本指令")
+                    if (subj !is Group || subj.id != applyGroup) {
+                        sendQuoteReply("私信白名单目前使用严格的名单管理，仅可在指定群聊内申请，请先加入群聊「$applyGroup」并在群内发送本指令")
                         return
                     }
-                    val privateWhiteList = WhiteListData.PrivateWhiteList.getOrPut(bot!!.id) { mutableSetOf() }
+                    val privateWhiteList = WhiteListData.PrivateWhiteList.getOrPut(botId) { mutableSetOf() }
                     if (privateWhiteList.add(qq)) {
                         WhiteListData.save()
                         sendQuoteReply("申请成功！已将您（$qq）加入私信白名单")
