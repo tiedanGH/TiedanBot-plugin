@@ -10,4 +10,7 @@ internal object BlackListData : AutoSavePluginData("BlackListData") {
     @ValueName("黑名单用户")
     var BlackList: MutableList<Long> by value()
 
+    @ValueName("黑名单群聊")
+    var BlackListGroup: MutableMap<Long, MutableSet<Long>> by value()
+
 }

@@ -93,8 +93,21 @@ object Events : SimpleListenerHost() {
         }
     }
 
+    /**
+     * 黑名单群检测
+     * - 黑名单群内的全部消息均被无视，包括MASTER和管理员
+     */
+    fun isBlackListGroup(botId: Long, groupId: Long): Boolean {
+        return BlackListData.BlackListGroup[botId]?.contains(groupId) == true
+    }
+
     @EventHandler(priority = EventPriority.HIGH)
     internal fun MessageEvent.check() {
+        // 黑名单群：无视群内全部消息（不受管理员和MASTER权限影响）
+        val group = subject
+        if (group is Group && isBlackListGroup(bot.id, group.id)) {
+            intercept()
+        }
         // 调试：不处理收到的任何转发消息
         if (message[ForwardMessage] != null) {
             intercept()
@@ -154,7 +167,12 @@ object Events : SimpleListenerHost() {
     }
     @EventHandler(priority = EventPriority.HIGH)
     internal fun NudgeEvent.check() {
-        if (subject !is Group) return
+        val group = subject
+        if (group !is Group) return
+        if (isBlackListGroup(bot.id, group.id)) {   // 黑名单群：无视群内戳一戳
+            intercept()
+            return
+        }
 
         val botId = bot.id
         val whiteListEnabled = getWhiteListEnabled(botId)
