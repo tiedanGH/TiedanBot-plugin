@@ -65,6 +65,7 @@ object CommandAdmin : RawCommand(
             return
         }
 
+        val botId = bot?.id ?: BotConfig.BotId
         val whiteEnable: String = if (FunctionConfig.WhiteList_enable) { "已启用" } else { "未启用" }
 
         try {
@@ -241,16 +242,16 @@ object CommandAdmin : RawCommand(
                 }
 
                 "WhiteList", "whitelist", "白名单"-> {   // 查看白名单列表
-                    if (WhiteListData.WhiteList.contains(BotConfig.BotId).not()) {
+                    if (WhiteListData.WhiteList.contains(botId).not()) {
                         sendQuoteReply("当前账号下无任何白名单记录")
                         return
                     }
                     val showDesc = args.getOrNull(1)?.content?.let { it == "info" || it == "信息" } == true
-                    var whiteListInfo = "白名单功能：$whiteEnable\n白名单总数：${WhiteListData.WhiteList[BotConfig.BotId]!!.size}\n·白名单列表："
-                    for (key in WhiteListData.WhiteList[BotConfig.BotId]!!.keys) {
+                    var whiteListInfo = "白名单功能：$whiteEnable\n白名单总数：${WhiteListData.WhiteList[botId]!!.size}\n·白名单列表："
+                    for (key in WhiteListData.WhiteList[botId]!!.keys) {
                         whiteListInfo += "\n$key"
                         if (showDesc) {
-                            whiteListInfo += " ${WhiteListData.WhiteList[BotConfig.BotId]!![key]}"
+                            whiteListInfo += " ${WhiteListData.WhiteList[botId]!![key]}"
                         }
                     }
                     sendQuoteReply(whiteListInfo)
@@ -289,9 +290,9 @@ object CommandAdmin : RawCommand(
                         subject!!.id
                     }
                     val desc = args.getOrElse(2) { "no_desc" }.toString()
-                    val result = WhiteListData.WhiteList[BotConfig.BotId]!!.put(group, desc)
+                    val result = WhiteListData.WhiteList[botId]!!.put(group, desc)
                     if (result == null) {
-                        WhiteListData.WhiteList[BotConfig.BotId] = WhiteListData.WhiteList[BotConfig.BotId]!!.toSortedMap()
+                        WhiteListData.WhiteList[botId] = WhiteListData.WhiteList[botId]!!.toSortedMap()
                         sendQuoteReply("已将 $group 添加进白名单列表")
                     } else {
                         sendQuoteReply("$group 已存在，更新描述成功：$desc")
@@ -311,7 +312,7 @@ object CommandAdmin : RawCommand(
                         }
                         subject!!.id
                     }
-                    val result = WhiteListData.WhiteList[BotConfig.BotId]!!.remove(group)
+                    val result = WhiteListData.WhiteList[botId]!!.remove(group)
                     if (result != null) {
                         BotConfig.save()
                         sendQuoteReply("已将 $group 移除白名单列表")
@@ -361,7 +362,7 @@ object CommandAdmin : RawCommand(
                             var activeInfo = "【激活群聊信息】"
                             var inactiveInfo = "【未激活群聊信息】"
                             for (group in groups) {
-                                if (group.id in WhiteListData.WhiteList[BotConfig.BotId]!!) {
+                                if (group.id in WhiteListData.WhiteList[botId]!!) {
                                     activeCount++
                                     activeInfo += "\n${group.name}(${group.id}) [人数：${group.members.size}]"
                                 } else {
@@ -370,7 +371,7 @@ object CommandAdmin : RawCommand(
                             }
                             val groupInfo = "白名单功能：$whiteEnable\n" +
                                             "群聊总数：${groups.size}\n" +
-                                            "白名单总数：${WhiteListData.WhiteList[BotConfig.BotId]!!.size}\n" +
+                                            "白名单总数：${WhiteListData.WhiteList[botId]!!.size}\n" +
                                             "激活群聊数：$activeCount\n" +
                                             "未知群聊数：${groups.size - activeCount}"
                             val forward = buildForwardMessage(subject!!) {
@@ -378,7 +379,7 @@ object CommandAdmin : RawCommand(
                                     override fun generateTitle(forward: RawForwardMessage): String = "群聊信息查询"
                                     override fun generateBrief(forward: RawForwardMessage): String = "[群聊信息]"
                                     override fun generatePreview(forward: RawForwardMessage): List<String> =
-                                        listOf("白名单总数：${WhiteListData.WhiteList[BotConfig.BotId]!!.size}", "激活群聊数：$activeCount", "未知群聊数：${groups.size - activeCount}")
+                                        listOf("白名单总数：${WhiteListData.WhiteList[botId]!!.size}", "激活群聊数：$activeCount", "未知群聊数：${groups.size - activeCount}")
                                     override fun generateSummary(forward: RawForwardMessage): String = "白名单功能：$whiteEnable"
                                 }
                                 subject!!.bot says groupInfo
@@ -403,7 +404,7 @@ object CommandAdmin : RawCommand(
                             masterOnly(this)
                             var count = 0
                             for (group in groups) {
-                                if ((group.id in WhiteListData.WhiteList[BotConfig.BotId]!!).not()) {
+                                if ((group.id in WhiteListData.WhiteList[botId]!!).not()) {
                                     group.sendMessage("【管理员操作自动退群】本群不在机器人白名单中，请联系机器人管理员申请白名单，或使用「${commandPrefix}apply white <群号> <原因>」指令发送白名单申请")
                                     group.quit()
                                     count++
