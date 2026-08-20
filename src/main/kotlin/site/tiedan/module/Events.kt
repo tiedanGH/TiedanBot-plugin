@@ -9,6 +9,7 @@ import net.mamoe.mirai.console.command.CommandManager
 import net.mamoe.mirai.contact.Friend
 import net.mamoe.mirai.contact.Group
 import net.mamoe.mirai.contact.getMember
+import net.mamoe.mirai.contact.nameCardOrNick
 import net.mamoe.mirai.containsFriend
 import net.mamoe.mirai.event.EventHandler
 import net.mamoe.mirai.event.EventPriority
@@ -230,7 +231,7 @@ object Events : SimpleListenerHost() {
                 "QQ号：$invitorId"
         try {
             if (FunctionConfig.WhiteList_enable) {
-                notice += if (WhiteListData.WhiteList[BotConfig.BotId]!!.containsKey(groupId)) {
+                notice += if (WhiteListData.WhiteList[bot.id]!!.containsKey(groupId)) {
                     if (BotConfig.SecureMode != 2 ||
                         isMaster(bot.id, invitorId) ||
                         (bot.id == BotConfig.BotId && invitorId == BotConfig.OwnerId)
@@ -264,7 +265,7 @@ object Events : SimpleListenerHost() {
                     "群号：${groupId}"
         try {
             if (FunctionConfig.WhiteList_enable && masterQQs().none { group.getMember(it) != null }) {
-                notice += if (WhiteListData.WhiteList[BotConfig.BotId]!!.containsKey(groupId)) {
+                notice += if (WhiteListData.WhiteList[bot.id]!!.containsKey(groupId)) {
                     "\n目标群在白名单中"
                 } else {
                     group.sendMessage("【重要提醒】本群 $groupId 并不在机器人的白名单中，需要白名单才能正常使用，请先联系机器人管理员申请白名单，或尝试使用「${CommandManager.commandPrefix}apply white <群号> <原因>」指令发送白名单申请。")
@@ -284,7 +285,7 @@ object Events : SimpleListenerHost() {
     @OptIn(MiraiExperimentalApi::class)
     @EventHandler(priority = EventPriority.MONITOR)
     internal suspend fun BotLeaveEvent.leaveGroup() {
-        if (WhiteListData.WhiteList[BotConfig.BotId]!!.containsKey(groupId)) {
+        if (WhiteListData.WhiteList[bot.id]!!.containsKey(groupId)) {
             val type = when (this) {
                 is BotLeaveEvent.Active-> "主动退出"
                 is BotLeaveEvent.Disband -> "群聊解散"
@@ -295,9 +296,9 @@ object Events : SimpleListenerHost() {
                         "群名称：${group.name}\n" +
                         "群号：${groupId}\n" +
                         "原因：$type\n" +
-                        "白名单注释：${WhiteListData.WhiteList[BotConfig.BotId]!![groupId]}\n" +
+                        "白名单注释：${WhiteListData.WhiteList[bot.id]!![groupId]}\n" +
                         "（白名单已被自动移除）"
-            WhiteListData.WhiteList[BotConfig.BotId]!!.remove(groupId)
+            WhiteListData.WhiteList[bot.id]!!.remove(groupId)
             BotConfig.save()
             try {
                 appendNoticeLog(notice)
@@ -310,16 +311,16 @@ object Events : SimpleListenerHost() {
 
     @EventHandler(priority = EventPriority.MONITOR)
     internal suspend fun MemberLeaveEvent.masterLeaveGroup() {
-        if (WhiteListData.WhiteList[BotConfig.BotId]!!.containsKey(groupId) && isMaster(bot.id, member.id)) {
+        if (WhiteListData.WhiteList[bot.id]!!.containsKey(groupId) && isMaster(bot.id, member.id)) {
             val message = "⚠ 检测到 MASTER 离开本群，出于账号安全考虑，将自动退出本群并移除白名单"
             val notice: String =
                 "【机器人退出白名单群聊】\n" +
                 "群名称：${group.name}\n" +
                 "群号：${groupId}\n" +
                 "原因：MASTER离开群聊\n" +
-                "白名单注释：${WhiteListData.WhiteList[BotConfig.BotId]!![groupId]}\n" +
+                "白名单注释：${WhiteListData.WhiteList[bot.id]!![groupId]}\n" +
                 "（白名单已被自动移除）"
-            WhiteListData.WhiteList[BotConfig.BotId]!!.remove(groupId)
+            WhiteListData.WhiteList[bot.id]!!.remove(groupId)
             BotConfig.save()
             try {
                 appendNoticeLog(notice)
@@ -340,7 +341,15 @@ object Events : SimpleListenerHost() {
         if (groupId != applyGroup(bot.id)) return
         val whiteList = WhiteListData.PrivateWhiteList[bot.id] ?: return
         if (whiteList.contains(member.id)) {
+            val notice: String =
+                "【用户退出白名单申请群聊】\n" +
+                "BOT：${bot.id}\n" +
+                "群名称：${group.name}\n" +
+                "用户：${member.nameCardOrNick}(${member.id}})\n" +
+                "（用户私信白名单已被自动移除）"
             try {
+                appendNoticeLog(notice)
+                sendOwnerNotice(notice)
                 bot.getFriend(member.id)?.sendMessage("【提醒】您已退出私信白名单申请群聊（$groupId），为保证名单可控，私信白名单权限已被自动移除")
             } catch (e: Exception) {
                 logger.warning(e)
