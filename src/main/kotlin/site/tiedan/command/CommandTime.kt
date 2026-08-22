@@ -15,6 +15,7 @@ import site.tiedan.TiedanGame.logger
 import site.tiedan.TiedanGame.sendQuoteReply
 import site.tiedan.config.BotConfig
 import site.tiedan.config.FunctionConfig
+import site.tiedan.module.MultiBotGuard.claimCommand
 import java.time.ZoneId
 import java.time.ZonedDateTime
 import java.time.format.DateTimeFormatter
@@ -38,6 +39,7 @@ object CommandTime : RawCommand(
     private var THREAD : Int = 0
 
     override suspend fun CommandSender.onCommand(args: MessageChain) {
+        if (!claimCommand()) return   // 多bot冲突处理：同一条指令仅首个bot执行
         if (!FunctionConfig.timer_enable) return
 
         try {
