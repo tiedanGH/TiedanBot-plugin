@@ -1,6 +1,8 @@
 package site.tiedan.command
 
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.sync.Mutex
+import kotlinx.coroutines.sync.withLock
 import kotlinx.coroutines.withContext
 import net.mamoe.mirai.console.command.CommandManager.INSTANCE.commandPrefix
 import net.mamoe.mirai.console.command.CommandSender
@@ -9,55 +11,69 @@ import net.mamoe.mirai.console.command.RawCommand
 import net.mamoe.mirai.contact.Group
 import net.mamoe.mirai.contact.PermissionDeniedException
 import net.mamoe.mirai.message.data.*
+import net.mamoe.mirai.message.data.Image.Key.queryUrl
 import site.tiedan.TiedanGame
 import site.tiedan.TiedanGame.Command
+import site.tiedan.TiedanGame.isMaster
 import site.tiedan.TiedanGame.logger
 import site.tiedan.TiedanGame.masterOnly
 import site.tiedan.TiedanGame.sendQuoteReply
 import site.tiedan.config.FunctionConfig
 import site.tiedan.config.ServerUploadConfig
+import site.tiedan.module.MessageRecorder.quoteMessage
 import java.io.File
 import java.net.HttpURLConnection
 import java.net.URL
 import java.nio.charset.Charset
+import java.time.LocalDateTime
+import java.time.format.DateTimeFormatter
 import java.util.zip.ZipException
 import java.util.zip.ZipFile
 
 object CommandServerUpload : RawCommand(
     owner = TiedanGame,
     primaryName = "server",
+    secondaryNames = arrayOf("s", "上传"),
     description = "服务器文件上传指令",
     usage = "${commandPrefix}server help"
 ){
     private val commandList = listOf(
-        Command("server lgtbot [force] [文件夹]", "server lgt [force] [文件夹]", "上传群文件至lgtbot", 1),
+        Command("server grass <图片/引用图片>", "server 草图 <图片/引用图片>", "上传图片至草图目录", 1),
+
+        Command("server lgtbot [force] [文件夹]", "server lgt [force] [文件夹]", "上传群文件至lgtbot", 2),
     )
+
+    private val grassLock = Mutex()
 
     override suspend fun CommandSender.onCommand(args: MessageChain) {
         if (!FunctionConfig.server_upload_enable) return
 
         try {
-            masterOnly(this)
-        } catch (e: PermissionDeniedException) {
-            sendQuoteReply("[操作无效] ${e.message}")
-            return
-        }
-
-        try {
             when (args[0].content) {
 
-                "help", "帮助"-> {   // 查看文件上传可用帮助
-                    val reply = " · 文件上传指令帮助（当前支持的上传目标：lgtbot）：\n" +
-                            commandList.joinToString("") { "-> ${it.desc}\n${commandPrefix}${it.usage}\n" } +
-                            "\n" +
-                            "🔸上传需引用一条群文件消息，仅支持zip压缩包\n" +
-                            "🔸压缩包：解压至lgtbot路径下的同名文件夹，存在重名文件夹时需添加force（删除旧文件夹后重新解压）\n" +
-                            "🔸单文件：需添加force并指定文件夹名称，存在重名文件时直接替换"
+                "help", "帮助"-> {   // 查看上传帮助（master可查看完整帮助）
+                    val reply = buildString {
+                        append(" · 服务器上传指令帮助：\n")
+                        commandList.filter { it.type == 1 }.forEach { append("-> ${it.desc}\n${commandPrefix}${it.usage}\n") }
+                        append("\n🔸草图上传：引用一条包含图片的消息，或在指令后附带图片")
+                        if (isMaster(this@onCommand)) {
+                            append("\n\n ·👑 master管理指令：\n")
+                            commandList.filter { it.type == 2 }.forEach { append("-> ${it.desc}\n${commandPrefix}${it.usage}\n") }
+                            append("\n🔸lgtbot上传需引用一条群文件消息，仅支持zip压缩包\n")
+                            append("🔸压缩包：解压至lgtbot路径下的同名文件夹，存在重名文件夹时需添加force（删除旧文件夹后重新解压）\n")
+                            append("🔸单文件：需添加force并指定文件夹名称，存在重名文件时直接替换")
+                        }
+                    }
                     sendQuoteReply(reply)
                 }
 
-                "lgtbot", "lgt"-> {   // 上传群文件至lgtbot路径
-                    handleUpload(args)
+                "grass", "草图"-> {   // 上传图片至草图目录（任何人可用）
+                    handleGrassUpload(args)
+                }
+
+                "lgtbot", "lgt"-> {   // 上传群文件至lgtbot路径（仅master）
+                    masterOnly(this)
+                    handleLgtbotUpload(args)
                 }
 
                 else-> {
@@ -74,7 +90,7 @@ object CommandServerUpload : RawCommand(
         }
     }
 
-    private suspend fun CommandSender.handleUpload(args: MessageChain) {
+    private suspend fun CommandSender.handleLgtbotUpload(args: MessageChain) {
         // 检查lgtbot路径配置
         val basePath = ServerUploadConfig.lgtbot_path
         if (basePath.isEmpty()) {
@@ -196,6 +212,103 @@ object CommandServerUpload : RawCommand(
             sendQuoteReply("[上传失败] 处理文件时发生错误：${e::class.simpleName}(${e.message})")
         } finally {
             tempFile.delete()
+        }
+    }
+
+    private suspend fun CommandSender.handleGrassUpload(args: MessageChain) {
+        // 检查草图路径配置
+        val basePath = ServerUploadConfig.grass_path
+        if (basePath.isEmpty()) {
+            sendQuoteReply("[上传失败] 未配置草图路径，请联系管理员在ServerUploadConfig中配置 grass_path")
+            return
+        }
+        val baseDir = File(basePath)
+        if (!baseDir.isDirectory) {
+            sendQuoteReply("[上传失败] 草图路径不存在或不是文件夹：$basePath")
+            return
+        }
+        // 获取图片：优先取引用消息中的图片，其次取本条消息中附带的图片
+        val event = (this as? CommandSenderOnMessage<*>)?.fromEvent
+        val quote = event?.message?.get(QuoteReply.Key)
+        val images = if (quote != null) {
+            val quoted = quoteMessage(event = event) ?: quote.source.originalMessage
+            quoted.filterIsInstance<Image>()
+        } else {
+            args.filterIsInstance<Image>()
+        }
+        if (images.isEmpty()) {
+            sendQuoteReply("[上传失败] 未检测到图片，请引用一条包含图片的消息，或在指令后附带图片")
+            return
+        }
+
+        val uploader = user?.id ?: 0
+        val saved = mutableListOf<String>()
+        grassLock.withLock {
+            for (image in images) {
+                val temp = try {
+                    downloadToTemp(image.queryUrl())
+                } catch (e: Exception) {
+                    logger.warning(e)
+                    continue
+                }
+                try {
+                    val target = withContext(Dispatchers.IO) {
+                        val file = nextGrassFile(baseDir, uploader, detectImageExtension(temp))
+                        temp.copyTo(file)
+                        file
+                    }
+                    saved.add(target.name)
+                    logger.info("草图上传：${target.path}（上传者：$uploader）")
+                } catch (e: Exception) {
+                    logger.warning(e)
+                } finally {
+                    temp.delete()
+                }
+            }
+        }
+        if (saved.isEmpty()) {
+            sendQuoteReply("[上传失败] 图片下载或保存出错，请稍后重试或联系管理员查看后台日志")
+            return
+        }
+        val failed = images.size - saved.size
+        sendQuoteReply("草图上传成功！已暂存 ${saved.size} 张：\n${saved.joinToString("\n")}" +
+                if (failed > 0) "\n（$failed 张上传失败）" else "" +
+                "\n暂存至临时目录，等待铁蛋审核后转存至正式目录")
+    }
+
+    /**
+     * 生成不重名的草图文件（时间_上传者[_序号].扩展名）
+     */
+    private fun nextGrassFile(baseDir: File, uploader: Long, extension: String): File {
+        val time = LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyyMMdd_HHmmss"))
+        var file = File(baseDir, "${time}_$uploader.$extension")
+        var seq = 1
+        while (file.exists()) {
+            file = File(baseDir, "${time}_${uploader}_$seq.$extension")
+            seq++
+        }
+        return file
+    }
+
+    /**
+     * 按文件头识别图片格式（QQ图片链接通常不带扩展名），无法识别时默认png
+     */
+    private fun detectImageExtension(file: File): String {
+        val header = ByteArray(12)
+        val length = try {
+            file.inputStream().use { it.read(header) }
+        } catch (_: Exception) {
+            return "png"
+        }
+        fun ascii(offset: Int, text: String): Boolean =
+            length >= offset + text.length && String(header, offset, text.length, Charsets.ISO_8859_1) == text
+        return when {
+            length >= 2 && header[0] == 0xFF.toByte() && header[1] == 0xD8.toByte() -> "jpg"
+            ascii(1, "PNG") -> "png"
+            ascii(0, "GIF") -> "gif"
+            ascii(8, "WEBP") -> "webp"
+            ascii(0, "BM") -> "bmp"
+            else -> "png"
         }
     }
 
