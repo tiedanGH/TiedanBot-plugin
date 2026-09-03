@@ -279,7 +279,13 @@ object CommandNotify : RawCommand(
                         if (alias.isNotEmpty()) append("别名：${alias.joinToString(" ")}\n")
                         if (group != null) {
                             val members = registered.filter { group.getMember(it) != null }
-                            append("登记人数：${registered.size}（本群${members.size}人）\n")
+                            val hour = LocalTime.now().hour
+                            val dayOfWeek = LocalDate.now().dayOfWeek.value
+                            val callable = members.count { id ->
+                                NotifyData.players[id]?.let { it.enable && inSchedule(it, hour, dayOfWeek) } == true
+                            }
+                            append("登记人数：${registered.size}人\n")
+                            append("本群：${members.size}（当前可召集${callable}人）\n")
                             append("标签召集次数：${NotifyData.tagCallCount[tag] ?: 0}\n")
                             append("🙋 本群登记玩家：\n")
                             append(members.joinToString("、") { getNickname(this@onCommand, it) }.ifEmpty { "无" })
