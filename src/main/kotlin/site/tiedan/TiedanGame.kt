@@ -57,13 +57,16 @@ object TiedanGame : KotlinPlugin(
 
     data class Command(val usage: String, val usageCN: String, val desc: String, val type: Int)
 
+    /** 插件启动时间 */
+    var startTime: Long = 0L
+
     override fun onEnable() {
         rdConfig()
         rdData()
         regEvent()
         regCommand()
         startTimer()
-        BotInfoData.startTime = System.currentTimeMillis()
+        startTime = System.currentTimeMillis()
 
         val applyGroups = FunctionConfig.apply_group.filterValues { it != 0L }
         if (applyGroups.isEmpty()) {

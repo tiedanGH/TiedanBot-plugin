@@ -103,15 +103,11 @@ object CommandBot : RawCommand(
 //                        } else {
 //                            "*已达*"
 //                        }
-                    val seconds = (System.currentTimeMillis() - BotInfoData.startTime) / 1000
-                    val days = seconds / (24 * 3600)
-                    val hours = (seconds % (24 * 3600)) / 3600
-                    val minutes = (seconds % 3600) / 60
                     val botId = bot?.id
                     val privateWhiteListInfo = if (botId != null && Events.isPrivateWhiteListEnabled(botId)) {
                         "私信白名单：${WhiteListData.PrivateWhiteList[botId]?.size ?: 0}\n"
                     } else ""
-                    val reply = "运行时间：${days}天${hours}小时${minutes}分钟\n" +
+                    val reply = "⏱️ 已运行：${formatUptime(System.currentTimeMillis() - TiedanGame.startTime)}\n" +
 //                                "Plugin version：v${TiedanGame.version}\n" +
 //                                "白名单功能：$whiteEnable\n" +
                                 "群聊数量：${bot?.groups?.size}\n" +
@@ -249,6 +245,22 @@ object CommandBot : RawCommand(
         } catch (e: Exception) {
             logger.warning(e)
             sendQuoteReply("[指令执行未知错误]\n可能由于bot发消息出错，请联系铁蛋查看后台：${e::class.simpleName}(${e.message})")
+        }
+    }
+
+    /**
+     * 格式化运行时长
+     */
+    private fun formatUptime(millis: Long): String {
+        if (millis < 0) return "未知"
+        val totalMinutes = millis / 60_000
+        val days = totalMinutes / (60 * 24)
+        val hours = (totalMinutes / 60) % 24
+        val minutes = totalMinutes % 60
+        return when {
+            days > 0 -> "${days}天${hours}小时${minutes}分"
+            hours > 0 -> "${hours}小时${minutes}分"
+            else -> "${minutes}分"
         }
     }
 
