@@ -56,6 +56,8 @@ object CommandNotify : RawCommand(
     private val timeRangeRegex = Regex("^(\\d{1,2})-(\\d{1,2})$")
     private val weekRangeRegex = Regex("^([1-7])(?:-([1-7]))?$")
     private val weekNames = listOf("一", "二", "三", "四", "五", "六", "日")
+    private val LIST_FOOTER = "\n\n➕ 登记标签：${commandPrefix}n add <标签...>\n" +
+            "⏰ 接收时间：${commandPrefix}n time <时间段> [星期 时间段 星期...]"
 
     override suspend fun CommandSender.onCommand(args: MessageChain) {
         if (!claimCommand()) return   // 多bot冲突处理：同一条指令仅首个bot执行
@@ -109,7 +111,7 @@ object CommandNotify : RawCommand(
                         .sortedByDescending { it.second }
                     val keyword = args.getOrNull(1)?.content?.trim()
                     if (keyword.isNullOrEmpty()) {
-                        sendQuoteReply("·🏷️ 可用标签（${sortedTags.size}个）：\n${formatTagLines(sortedTags)}")
+                        sendQuoteReply("·🏷️ 可用标签（${sortedTags.size}个）：\n${formatTagList(sortedTags)}$LIST_FOOTER")
                     } else {
                         // 标签名或其别名包含关键字均视为匹配
                         val matched = sortedTags.filter { (tag, _) ->
@@ -119,7 +121,7 @@ object CommandNotify : RawCommand(
                         if (matched.isEmpty()) {
                             sendQuoteReply("❌ 未找到包含「$keyword」的标签")
                         } else {
-                            sendQuoteReply("·🏷️ 搜索标签结果（${matched.size}个）：\n${formatTagLines(matched)}")
+                            sendQuoteReply("·🏷️ 搜索标签结果（${matched.size}个）：\n${formatTagList(matched)}$LIST_FOOTER")
                         }
                     }
                 }
@@ -561,12 +563,10 @@ object CommandNotify : RawCommand(
     }
 
     /**
-     * 标签列表输出：有登记的标签一行，0登记的标签另起一行
+     * 标签列表输出：单行空格分隔，每个标签后附当前登记人数
      */
-    private fun formatTagLines(tags: List<Pair<String, Int>>): String {
-        val registered = tags.filter { it.second > 0 }.joinToString(" ") { it.first }
-        val zero = tags.filter { it.second == 0 }.joinToString(" ") { it.first }
-        return listOf(registered, zero).filter { it.isNotEmpty() }.joinToString("\n")
+    private fun formatTagList(tags: List<Pair<String, Int>>): String {
+        return tags.joinToString(" ") { (tag, count) -> "$tag($count)" }
     }
 
     /**
