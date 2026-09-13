@@ -17,6 +17,7 @@ import site.tiedan.TiedanGame.logger
 import site.tiedan.TiedanGame.save
 import site.tiedan.TiedanGame.sendQuoteReply
 import site.tiedan.TiedanGame.uploadFileToImage
+import site.tiedan.config.FunctionConfig
 import site.tiedan.data.DomainWhiteListData
 import site.tiedan.module.UrlWhitelistValidator
 import java.io.File
@@ -43,6 +44,7 @@ object CommandScreenshot : RawCommand(
 
 
     override suspend fun CommandSender.onCommand(args: MessageChain) {
+        if (!FunctionConfig.screenshot_enable) return
 
         val hasAdminPermission = isAdmin(this)
 

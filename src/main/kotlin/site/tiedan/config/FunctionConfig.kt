@@ -25,12 +25,15 @@ object FunctionConfig : AutoSavePluginConfig("FunctionConfig") {
     var timer_enable: Boolean by value(true)
 
     @ValueDescription("启用看戏指令")
-    var kanxi_enable: Boolean by value(true)
+    var kanxi_enable: Boolean by value(false)
 
     @ValueDescription("启用开游戏通知功能")
     var notify_enable: Boolean by value(true)
 
     @ValueDescription("启用服务器上传指令")
     var server_upload_enable: Boolean by value(false)
+
+    @ValueDescription("启用网页截图指令")
+    var screenshot_enable: Boolean by value(false)
 
 }
