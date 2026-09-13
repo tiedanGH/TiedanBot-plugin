@@ -36,4 +36,7 @@ object FunctionConfig : AutoSavePluginConfig("FunctionConfig") {
     @ValueDescription("启用网页截图指令")
     var screenshot_enable: Boolean by value(false)
 
+    @ValueDescription("多bot指令路由（支持正则）：按配置顺序匹配消息内容，命中后固定由绑定的bot处理，其余bot不响应")
+    var multibot_routes: MutableMap<String, Long> by value(mutableMapOf())
+
 }

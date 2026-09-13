@@ -11,6 +11,7 @@ import net.mamoe.mirai.message.data.content
 import net.mamoe.mirai.utils.debug
 import net.mamoe.mirai.utils.warning
 import site.tiedan.TiedanGame.logger
+import site.tiedan.config.FunctionConfig
 import java.util.concurrent.ConcurrentHashMap
 import kotlin.coroutines.CoroutineContext
 
@@ -34,6 +35,32 @@ object MultiBotGuard : SimpleListenerHost() {
     /** 消息认领记录：消息标识 -> (认领的botId, 认领时间) */
     private val claims = ConcurrentHashMap<String, Pair<Long, Long>>()
 
+    /** 路由正则缓存，避免每条消息重复编译 */
+    private val regexCache = ConcurrentHashMap<String, Regex>()
+
+    /** 永不匹配的正则，用于占位无效的路由配置 */
+    private val NEVER_MATCH = Regex("(?!)")
+
+    /**
+     * 按配置顺序匹配指令路由，返回绑定的botId；未命中时返回null
+     * - 绑定的bot不在该群时跳过该规则，交由后续规则或认领逻辑处理
+     */
+    private fun matchRoute(content: String, botsInGroup: List<Bot>): Long? {
+        for ((pattern, boundBot) in FunctionConfig.multibot_routes) {
+            if (botsInGroup.none { it.id == boundBot }) continue
+            val regex = regexCache.getOrPut(pattern) {
+                try {
+                    Regex(pattern)
+                } catch (e: Exception) {
+                    logger.warning({ "[多bot路由] 无效的正则配置：$pattern" }, e)
+                    NEVER_MATCH
+                }
+            }
+            if (regex.containsMatchIn(content)) return boundBot
+        }
+        return null
+    }
+
     override fun handleException(context: CoroutineContext, exception: Throwable) {
         when (exception) {
             is ExceptionInEventHandlerException -> {
@@ -46,16 +73,29 @@ object MultiBotGuard : SimpleListenerHost() {
     }
 
     /**
-     * 群消息去重：同一条消息仅首个bot继续处理，其余bot的事件被拦截
+     * 群消息去重：同一条消息仅一个bot继续处理，其余bot的事件被拦截
+     * - 命中指令路由的消息，固定由绑定的bot处理，避免仅存在于该bot的功能被抢占
+     * - 未命中路由的消息，按「首个认领」处理
      */
     @EventHandler(priority = EventPriority.HIGHEST)
     internal fun MessageEvent.multiBotCheck() {
-        val group = subject as? Group ?: return                                 // 仅群聊存在多bot冲突
-        if (Bot.instances.count { it.getGroup(group.id) != null } <= 1) return   // 本群仅一个bot
+        val group = subject as? Group ?: return                     // 仅群聊存在多bot冲突
+        val botsInGroup = Bot.instances.filter { it.getGroup(group.id) != null }
+        if (botsInGroup.size <= 1) return                            // 本群仅一个bot
 
         val botId = bot.id
+        val content = message.content
+        // 指令路由：命中规则的消息固定由绑定的bot处理，不参与认领竞争
+        val designated = matchRoute(content, botsInGroup)
+        if (designated != null) {
+            if (botId != designated) {
+                logger.debug { "[多bot路由] 消息已绑定至bot $designated，拦截 $botId 的事件：$content" }
+                intercept()
+            }
+            return
+        }
         // 以「群+发送者+消息时间+内容」作为跨bot的消息标识
-        val key = "${group.id}:${sender.id}:${time}:${message.content}"
+        val key = "${group.id}:${sender.id}:${time}:${content}"
         val now = System.currentTimeMillis()
         if (claims.size >= CLEAN_THRESHOLD) {
             claims.entries.removeIf { now - it.value.second > CLAIM_TTL }
