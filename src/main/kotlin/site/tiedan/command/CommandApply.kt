@@ -24,7 +24,6 @@ import site.tiedan.config.FunctionConfig
 import site.tiedan.data.AdminListData
 import site.tiedan.data.ApplyData
 import site.tiedan.data.WhiteListData
-import site.tiedan.module.MultiBotGuard.claimCommand
 
 object CommandApply : RawCommand(
     owner = TiedanGame,
@@ -48,7 +47,6 @@ object CommandApply : RawCommand(
     private const val MAX_LENGTH = 150
 
     override suspend fun CommandSender.onCommand(args: MessageChain) {
-        if (!claimCommand()) return   // 多bot冲突处理：同一条指令仅首个bot执行
 
         val qq = user?.id ?: 10000
         val hasAdminPermission = isAdmin(this)

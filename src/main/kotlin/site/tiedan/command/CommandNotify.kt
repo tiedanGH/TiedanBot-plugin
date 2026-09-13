@@ -18,7 +18,6 @@ import site.tiedan.TiedanGame.sendQuoteReply
 import site.tiedan.config.FunctionConfig
 import site.tiedan.data.NotifyData
 import site.tiedan.data.NotifyPlayer
-import site.tiedan.module.MultiBotGuard.claimCommand
 import java.time.LocalDate
 import java.time.LocalTime
 
@@ -60,7 +59,6 @@ object CommandNotify : RawCommand(
             "⏰ 接收时间：${commandPrefix}n time <时间段> [星期 时间段 星期...]"
 
     override suspend fun CommandSender.onCommand(args: MessageChain) {
-        if (!claimCommand()) return   // 多bot冲突处理：同一条指令仅首个bot执行
 
         if (!FunctionConfig.notify_enable) {
             sendQuoteReply("游戏通知功能未启用")

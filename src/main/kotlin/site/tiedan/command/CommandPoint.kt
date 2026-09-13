@@ -16,7 +16,6 @@ import site.tiedan.TiedanGame.masterOnly
 import site.tiedan.TiedanGame.save
 import site.tiedan.TiedanGame.sendQuoteReply
 import site.tiedan.data.PointData
-import site.tiedan.module.MultiBotGuard.claimCommand
 
 object CommandPoint : RawCommand(
     owner = TiedanGame,
@@ -36,7 +35,6 @@ object CommandPoint : RawCommand(
     )
 
     override suspend fun CommandSender.onCommand(args: MessageChain) {
-        if (!claimCommand()) return   // 多bot冲突处理：同一条指令仅首个bot执行
 
         val qq = user?.id ?: 10000
         if (PointData.PointData.contains(qq).not()) {

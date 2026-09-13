@@ -34,6 +34,7 @@ import site.tiedan.config.ServerUploadConfig
 import site.tiedan.data.*
 import site.tiedan.module.Events
 import site.tiedan.module.MessageRecorder
+import site.tiedan.module.MultiBotGuard
 import site.tiedan.timer.AutoUpdateDailyData
 import site.tiedan.timer.DateTime
 import site.tiedan.timer.calculateNextSignDelay
@@ -124,6 +125,7 @@ object TiedanGame : KotlinPlugin(
     }
 
     private fun regEvent() {
+        GlobalEventChannel.registerListenerHost(MultiBotGuard)
         GlobalEventChannel.registerListenerHost(Events)
         GlobalEventChannel.registerListenerHost(MessageRecorder)
     }
