@@ -1,9 +1,12 @@
 package site.tiedan.command
 
-import net.mamoe.mirai.console.command.BuiltInCommands
+import net.mamoe.mirai.console.command.CommandExecuteResult
+import net.mamoe.mirai.console.command.CommandManager
 import net.mamoe.mirai.console.command.CommandManager.INSTANCE.commandPrefix
 import net.mamoe.mirai.console.command.CommandSender
 import net.mamoe.mirai.console.command.RawCommand
+import net.mamoe.mirai.console.command.descriptor.ExperimentalCommandDescriptors
+import net.mamoe.mirai.message.data.PlainText
 import net.mamoe.mirai.message.data.MessageChain
 import net.mamoe.mirai.message.data.content
 import site.tiedan.TiedanGame
@@ -128,9 +131,13 @@ object CommandBot : RawCommand(
                 }
 
                 "status", "状态"-> {   // 查看mirai状态
-                    BuiltInCommands.StatusCommand.runCatching {
-                        handle()
-                    }.getOrElse {
+                    @OptIn(ExperimentalCommandDescriptors::class)
+                    val result = CommandManager.INSTANCE.executeCommand(
+                        this, PlainText("${commandPrefix}status"), checkPermission = false
+                    )
+                    @OptIn(ExperimentalCommandDescriptors::class)
+                    if (result !is CommandExecuteResult.Success) {
+                        logger.warning("执行status指令失败：${result::class.simpleName}")
                         sendQuoteReply("当前mirai状态不可用")
                     }
                 }
