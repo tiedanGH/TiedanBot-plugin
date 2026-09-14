@@ -7,6 +7,7 @@ import net.mamoe.mirai.event.EventPriority
 import net.mamoe.mirai.event.ExceptionInEventHandlerException
 import net.mamoe.mirai.event.SimpleListenerHost
 import net.mamoe.mirai.event.events.MessageEvent
+import net.mamoe.mirai.message.data.MessageSource
 import net.mamoe.mirai.message.data.content
 import net.mamoe.mirai.utils.debug
 import net.mamoe.mirai.utils.warning
@@ -43,9 +44,10 @@ object MultiBotGuard : SimpleListenerHost() {
 
     /**
      * 按配置顺序匹配指令路由，返回绑定的botId；未命中时返回null
+     * - 同时匹配纯文本内容与mirai码：用于 `[mirai:at:xxx]` 这类元素规则
      * - 绑定的bot不在该群时跳过该规则，交由后续规则或认领逻辑处理
      */
-    private fun matchRoute(content: String, botsInGroup: List<Bot>): Long? {
+    private fun matchRoute(content: String, miraiCode: String, botsInGroup: List<Bot>): Long? {
         for ((pattern, boundBot) in FunctionConfig.multibot_routes) {
             if (botsInGroup.none { it.id == boundBot }) continue
             val regex = regexCache.getOrPut(pattern) {
@@ -56,7 +58,7 @@ object MultiBotGuard : SimpleListenerHost() {
                     NEVER_MATCH
                 }
             }
-            if (regex.containsMatchIn(content)) return boundBot
+            if (regex.containsMatchIn(content) || regex.containsMatchIn(miraiCode)) return boundBot
         }
         return null
     }
@@ -80,13 +82,19 @@ object MultiBotGuard : SimpleListenerHost() {
     @EventHandler(priority = EventPriority.HIGHEST)
     internal fun MessageEvent.multiBotCheck() {
         val group = subject as? Group ?: return                     // 仅群聊存在多bot冲突
-        val botsInGroup = Bot.instances.filter { it.getGroup(group.id) != null }
-        if (botsInGroup.size <= 1) return                            // 本群仅一个bot
-
         val botId = bot.id
-        val content = message.content
+        // 黑名单群中的bot不参与处理
+        if (Events.isBlackListGroup(botId, group.id)) return
+        val botsInGroup = Bot.instances.filter {
+            it.getGroup(group.id) != null && !Events.isBlackListGroup(it.id, group.id)
+        }
+        if (botsInGroup.size <= 1) return                            // 本群仅一个可用bot
+
+        val content = message.content                                // 纯文本内容（At呈现为@123456）
+        val miraiCode = message.filterNot { it is MessageSource }     // mirai码（At呈现为[mirai:at:123456]）
+            .joinToString("") { it.toString() }
         // 指令路由：命中规则的消息固定由绑定的bot处理，不参与认领竞争
-        val designated = matchRoute(content, botsInGroup)
+        val designated = matchRoute(content, miraiCode, botsInGroup)
         if (designated != null) {
             if (botId != designated) {
                 logger.debug { "[多bot路由] 消息已绑定至bot $designated，拦截 $botId 的事件：$content" }
